@@ -1,0 +1,95 @@
+const char* versionstring = "v2.0.0";
+const char compile_date[] = __DATE__ " " __TIME__;
+
+// the following defines will overwrite the standard arduino-defines from https://github.com/arduino/ArduinoCore-samd/blob/84c09b3265e2a8b548a29b141f0c9281b1baf154/variants/mkrvidor4000/variant.h
+//#define I2S_INTERFACES_COUNT 1 // SAMD21 has two interfaces
+//#define I2S_DEVICE 0 // select if I2S device 0 or 1
+//#define I2S_CLOCK_GENERATOR 3 // select the correct clock for I2S-interface
+//#define PIN_I2S_SD 21 // pin for SerialData (= A6)
+//#define PIN_I2S_SCK 02 // pin for bit-clock (= D2)
+//#define PIN_I2S_FS 03 // pin for FrameSelect / Wordclock (= D3)
+
+#define USE_DISPLAY       1      // enables a SSD1308 display connected to I2C
+
+// includes for FPGA
+#include <wiring_private.h>
+#include "jtag.h"
+#include "fpga.h"
+#include <Ethernet.h>
+#include <SPI.h>
+#include "Ticker.h"
+
+// definitions for I2C EEPROM
+#include "Wire.h"
+#include "I2C_eeprom.h"
+#define EEPROM_Address 0x50
+
+// includes for Serial2 to communicate with NINA. As Serial2 is not within the scope of Arduino,
+// we have to create it using the SERCOM-system of the SAMD21
+#define PIN_SERIAL2_TX       (0ul)                // Pin description number for PIO_SERCOM on D0
+#define PIN_SERIAL2_RX       (1ul)                // Pin description number for PIO_SERCOM on D1
+#define PAD_SERIAL2_TX       (UART_TX_PAD_0)      // SERCOM pad 0 TX
+#define PAD_SERIAL2_RX       (SERCOM_RX_PAD_1)    // SERCOM pad 1 RX
+Uart Serial2(&sercom3, PIN_SERIAL2_RX, PIN_SERIAL2_TX, PAD_SERIAL2_RX, PAD_SERIAL2_TX);
+bool passthroughNINA = false;
+
+struct{ // don't change order of struct! Just add variables or replace with same size!!!
+  uint16_t Version = 0;
+  IPAddress ip;
+  float OutputVoltage = 0.0f;
+} eeprom_config;
+
+struct{
+  uint8_t mac[6] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
+} config;
+I2C_eeprom eeprom(EEPROM_Address, I2C_DEVICESIZE_24LC16);
+
+// Ethernet-objects
+EthernetServer server(80);
+EthernetServer cmdserver(5025);
+
+#if USE_DISPLAY == 1
+  #include "Ticker.h"
+  #include "Wire.h"
+
+  // includes for display
+  #include "Bitmaps.h"
+  #include <Adafruit_GFX.h>
+  #include <Adafruit_SSD1306.h>
+  #define SCREEN_WIDTH 128 // OLED display width, in pixels
+  #define SCREEN_HEIGHT 64 // OLED display height, in pixels
+  #define OLED_RESET     -1 // Reset pin # (or -1 if sharing Arduino reset pin)
+  #define SCREEN_ADDRESS 0x3C // this address does not fit to the address on the PCB!!!
+  Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+  uint8_t currentDisplayLine = 0;
+
+  struct {
+    String title = "Standby...";
+    float volumeMain;
+    uint8_t balanceMain;
+    float volumeSub;
+    float volumeAnalog;
+    float volumeCard;
+    float volumeBass;
+    uint32_t time;
+    uint32_t duration;
+    uint8_t progress;
+    bool WiFiEnabled = 1;
+    bool BluetoothEnabled = 0;
+    String MainCtrlVersion;
+    String FPGAVersion;
+    uint32_t samplerate;
+  }playerinfo;
+
+#endif
+
+// some defines for NINA update mode
+#define NINA_PIO27 11
+#define NINA_RESET_N 31
+unsigned long baud = 115200;
+int rts = -1;
+int dtr = -1;
+bool firmwareUpdateMode = false;
+
+// general variables
+uint32_t refreshCounter = 0;
