@@ -112,6 +112,21 @@
   Ticker ticker100ms(ticker100msFcn, 100, 0, MILLIS);
 #endif
 
+void ticker85msFcn() {
+  x32AliveCounter--;
+  if (x32AliveCounter == 0) {
+    x32AliveCounter = 59; // preload to 5 seconds
+
+    Serial1.print(x32AliveCommand);
+  }
+
+  if (x32Playback) {
+    // send current sample-position every 85ms if playing
+    Serial1.print("*9N22" + intToHex(x32PlaybackPosition, 8) + "#");
+  }
+}
+Ticker ticker85ms(ticker85msFcn, 85, 0, MILLIS);
+
 void setup() {
   // initialize peripherals
   pinMode(LED_BUILTIN, OUTPUT); // red color on RGB-LED of Vidor4000
@@ -142,8 +157,9 @@ void setup() {
   #endif
 
   // Serial1 for communication with Behringer X32 MainControl
-  Serial1.begin(115200);
+  Serial1.begin(38400);
   Serial1.setTimeout(1000); // Timeout for commands
+  x32InitCommand(); // send some initialization-commands
 
   // Serial2 for communication with NINA-module
   Serial2.begin(115200);
@@ -169,6 +185,9 @@ void setup() {
     // start ticker
     ticker100ms.start();
   #endif
+
+  // start ticker
+  ticker85ms.start();
 }
 
 void loop() {
@@ -201,5 +220,6 @@ void loop() {
     #if USE_DISPLAY == 1
       ticker100ms.update();
     #endif
+    ticker85ms.update();
   }
 }

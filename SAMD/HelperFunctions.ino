@@ -51,6 +51,14 @@ float dBfs2pu(float dBfs, float min) {
     return rs;
   }
 
+  uint8_t getNumberOfTocEntries() {
+    uint8_t entries = 0;
+    for (uint8_t i=0; i<TOC.length(); i++) {
+      if (TOC[i] == ',') entries++;
+    }
+    return entries;
+  }
+
   // convert seconds to string of hour, minute and seconds
   String secondsToHMS(uint32_t seconds){
     unsigned int tme=0;
@@ -130,4 +138,19 @@ void initEeprom() {
     eeprom_config.ip = IPAddress(192, 168, 0, 42);
     eeprom_config.OutputVoltage = 0.0f;
   }
+}
+
+String intToHex(uint32_t val, uint8_t outputLength) {
+  String hexString;
+  for (int8_t shift = outputLength * sizeof(val) - 4; shift >= 0; shift -= 4) {
+    uint8_t hexDigit = (val >> shift) & 0xF;
+    hexString += String(hexDigit, HEX);
+  }
+  return hexString;
+}
+
+uint32_t hexToInt(String hexString){
+  char c[hexString.length() + 1];
+  hexString.toCharArray(c, hexString.length() + 1);
+  return strtol(c, NULL, 16); 
 }

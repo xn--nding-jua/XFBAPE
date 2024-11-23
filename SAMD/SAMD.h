@@ -32,6 +32,13 @@ const char compile_date[] = __DATE__ " " __TIME__;
 #define PAD_SERIAL2_RX       (SERCOM_RX_PAD_1)    // SERCOM pad 1 RX
 Uart Serial2(&sercom3, PIN_SERIAL2_RX, PIN_SERIAL2_TX, PAD_SERIAL2_RX, PAD_SERIAL2_TX);
 bool passthroughNINA = false;
+#define X32_RINGBUF_LEN 32 //longest command seems to be 22 chars
+uint8_t x32RingBuffer[X32_RINGBUF_LEN];
+uint16_t x32RingBufferPointer = 0;
+uint8_t x32AliveCounter = 59; // preload to 5 seconds (for ticker with 85ms)
+String x32AliveCommand = "*8BE#";
+bool x32Playback = false;
+uint32_t x32PlaybackPosition = 0;
 
 struct{ // don't change order of struct! Just add variables or replace with same size!!!
   uint16_t Version = 0;
@@ -49,7 +56,6 @@ EthernetServer server(80);
 EthernetServer cmdserver(5025);
 
 #if USE_DISPLAY == 1
-  #include "Ticker.h"
   #include "Wire.h"
 
   // includes for display
@@ -62,6 +68,9 @@ EthernetServer cmdserver(5025);
   #define SCREEN_ADDRESS 0x3C // this address does not fit to the address on the PCB!!!
   Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
   uint8_t currentDisplayLine = 0;
+  String TOC;
+  uint8_t tocEntries = 0;
+  uint8_t tocCounter = 0;
 
   struct {
     String title = "Standby...";

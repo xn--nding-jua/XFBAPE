@@ -15,13 +15,6 @@ void handleUSBCommunication() {
   }
 }
 
-// Serial-CMD-Receiver
-void handleX32Communication() {
-  if (Serial1.available() > 0) {
-    // TODO: Do something with the data
-  }
-}
-
 // NINA-CMD-Receiver
 void handleNINACommunication() {
   // passthrough all incoming data to USB-serial
@@ -64,7 +57,11 @@ String executeCommand(String Command) {
     // we got a new command. Lets find out what we have to do today...
 
     #if USE_DISPLAY == 1
-      if (Command.indexOf(F("samd:player:title")) > -1){
+      if (Command.indexOf(F("samd:toc")) > -1) {
+        TOC = Command.substring(Command.indexOf("@")+1);
+        tocEntries = getNumberOfTocEntries();
+        Answer = "OK";
+      }else if (Command.indexOf(F("samd:player:title")) > -1){
         playerinfo.title = Command.substring(Command.indexOf("@")+1);
         Answer = "OK";
       }else if (Command.indexOf("samd:player:volume:main") > -1){
