@@ -39,6 +39,7 @@ uint8_t x32AliveCounter = 59; // preload to 5 seconds (for ticker with 85ms)
 String x32AliveCommand = "*8BE#";
 bool x32Playback = false;
 uint32_t x32PlaybackPosition = 0;
+bool x32Debug = false;
 
 struct{ // don't change order of struct! Just add variables or replace with same size!!!
   uint16_t Version = 0;

@@ -88,9 +88,15 @@ void x32SearchCmd() {
             memcpy(&commandArray[X32_RINGBUF_LEN - commandBeginIndex], &x32RingBuffer[0], commandEndIndex + 1); // copy last part from the beginning
           }
 
-          // convert to String, execute the command and output the answer
+          // convert to String, execute the command and output the Answer
           command = String((char*)commandArray);
-          x32ExecCmd(command);
+          String Answer = x32ExecCmd(command);
+          if (Answer.length() > 0) {
+            Serial1.print(Answer);
+          }
+          if (x32Debug) {
+            Serial.println("X32: " + command + " | X-FBAPE: " + Answer);
+          }
 
           // delete used chars from ring-buffer
           for (k=i; k<(i+commandLength); k++) {
@@ -109,15 +115,17 @@ void x32SearchCmd() {
 }
 
 // execute the command
-void x32ExecCmd(String command) {
+String x32ExecCmd(String command) {
+  String Answer = "";
+
   if (command.length()>2) {
     if (command.indexOf("*8I#")==0) {
       // I = IDENTIFY
       // X32 wants to know who we are
-      Serial1.print("*8X-UREC:A:12#"); // we pretend to be an X-LIVE card with firmware-version A12 :)
+      Answer = "*8X-UREC:A:12#"; // we pretend to be an X-LIVE card with firmware-version A12 :)
     }else if (command.indexOf("*8R#")==0) {
       // X32 wants to know who we are - dont ask me, whats the difference between *8I# and *8R#
-      Serial1.print("*8X-UREC:A:12#"); // we pretend to be an X-LIVE card with firmware-version A12 :)
+      Answer = "*8X-UREC:A:12#"; // we pretend to be an X-LIVE card with firmware-version A12 :)
     }else if (command.indexOf("*8C8")==0) {
       // switch between card and USB: *8C8od#
       uint8_t channelOption = command[4] - 48; // options between 0 and 5
@@ -127,23 +135,23 @@ void x32ExecCmd(String command) {
       }else{
         deviceOption = 1; // SDCARD
       }
-      Serial1.print("*8Y#");
+      Answer = "*8Y#";
     }else if (command.indexOf("*9X")==0) {
       // delete file
       String filename = command.substring(3, command.indexOf("#"));
-      Serial1.print("*9Y00#");
+      Answer = "*9Y00#";
     }else if (command.indexOf("*9H")==0) {
       // start recording
       String filename = command.substring(3, command.indexOf("#")-3);
       uint8_t channelCount = command.substring(command.indexOf("#")-3, command.indexOf("#")-1).toInt();
-      Serial1.print("*9Y00#");
+      Answer = "*9Y00#";
     }else if (command.indexOf("*9F#")==0) {
       // stop recording
 
-      Serial1.print("*9Y00#");
+      Answer = "*9Y00#";
 
       /*
-        Card now answers with a bunch of results
+        Card now Answers with a bunch of results
         *9N24003F38D0# -> probably info-command for new entries?
 
         *9N0003A6DD80#
@@ -158,7 +166,7 @@ void x32ExecCmd(String command) {
       */
     }else if (command.indexOf("*9D#")==0) {
       // play file
-      Serial1.print("*9D00#");
+      Answer = "*9D00#";
 
       // during playback, the card should send current position as samples every 85ms:
       //Serial1.print("*9N22xxxxxxxx#");
@@ -167,28 +175,26 @@ void x32ExecCmd(String command) {
       // seek to specific sample based on 48kHz
       uint32_t sampleIndex = hexToInt(command.substring(3, command.indexOf("#")));
 
-      Serial1.print("*9M00#");
+      Answer = "*9M00#";
     }else if (command.indexOf("*9Q~#")==0) { // TODO: check command. Maybe it is *9Q0# for card1 and *9Q1# for card2?
       // format SD-Card
 
-      Serial1.print("*9Y00#"); // TODO: check response. Maybe it should be *9Y00# for card1 and *9Y01# for card2?
-      // delay?
-      Serial1.print("*9N0700000000#"); // formatting done
+      Answer = "*9Y00#*9N0700000000#"; // TODO: check response. Maybe it should be *9Y00# for card1 and *9Y01# for card2?
     }else if (command.indexOf("*9I")==0) {
       // create new Marker
       uint32_t sampleIndex = hexToInt(command.substring(3, command.indexOf("#")));
 
-      Serial1.print("*9Y00#");
+      Answer = "*9Y00#";
     }else if (command.indexOf("*9B")==0) {
       // select file
       String filename = command.substring(3, command.indexOf("#")-3);
 
-      // prepare answer
+      // prepare Answer
       uint32_t markerCount = 0; // X32 will request markers even when this is set to 0
       uint32_t channelCount = 32;
       // *9B0000232000F4E900000000000#
       // *9B000 MARKERCOUNT CHANNELCOUNT NUMBEROFTOTALSAMPLES(?)
-      Serial1.print("*9B000" + intToHex(markerCount, 2) + String(channelCount) + "000000000000000000#");
+      Answer = "*9B000" + intToHex(markerCount, 2) + String(channelCount) + "000000000000000000#";
     }else if (command.indexOf("*9C")==0) {
       // request marker
       uint32_t markerIndex = hexToInt(command.substring(3, command.indexOf("#")));
@@ -197,28 +203,28 @@ void x32ExecCmd(String command) {
       // maybe MP3-TOC can be used for this if file-handling is not working well
       uint32_t timeIndex = 0; // if timeIndex == 0 X32 will handle this as "no marker"
 
-      Serial1.print("*9C00" + intToHex(markerIndex, 2) + intToHex(timeIndex, 8) + "#");
+      Answer = "*9C00" + intToHex(markerIndex, 2) + intToHex(timeIndex, 8) + "#";
     }else if (command.indexOf("*9R")==0) {
       // read SD-Card
       uint8_t cardNumber = command[3] - 48; // either 0 or 1
 
-      Serial1.print("*9R00#");
+      Answer = "*9R00#";
     }else if (command.indexOf("*9AF#")==0) {
       // request first entry of TOC
       tocCounter = 0; // reset tocCounter as we are requesting first entry
       String title = split(TOC, ',', tocCounter); // name of title0
 
-      Serial1.print("*9ASF" + title + "#");
+      Answer = "*9ASF" + title + "#";
     }else if (command.indexOf("*9AN#")==0) {
       // request followup-titles of TOC
       tocCounter++;
       if (tocCounter<tocEntries) {
         String title = split(TOC, ',', tocCounter); // name of titleX
 
-        Serial1.print("*9ASN" + title + "#");
+        Answer = "*9ASN" + title + "#";
       }else{
         // no more entries available
-        Serial1.print("*9AEN00#");
+        Answer = "*9AEN00#";
       }
     }else if (command.indexOf("*9N")==0) {
       // N for german "NOCH" = remaining?
@@ -226,26 +232,30 @@ void x32ExecCmd(String command) {
       uint8_t cardNumber = command[3] - 48; // either 0 or 1
       uint32_t cardSpaceAvailable = 32 * 1024 * 1024 * 1024 * 1024 * 1024 * 8; // convert 32GB to expected value (hopefully)
 
-      Serial1.print("*9N" + String(cardNumber) + "0" + intToHex(cardSpaceAvailable, 16) + "#");
+      Answer = "*9N" + String(cardNumber) + "0" + intToHex(cardSpaceAvailable, 16) + "#";
     }else if (command.indexOf("*9G")==0) {
       // G for german "GESAMT" = total?
       uint8_t cardNumber = command[3] - 48; // either 0 or 1
       uint32_t cardSize = 62326272;// "03B70600" for a 32GB card!? TODO: check the calculation
 
-      Serial1.print("*9G" + String(cardNumber) + "0" + intToHex(cardSize, 8) + "#");
+      Answer = "*9G" + String(cardNumber) + "0" + intToHex(cardSize, 8) + "#";
     }else if (command.indexOf("G")==2) {
       // received one of the initialization-commands *0G00000# ... *3G70000#
       // the usage is unclear so far
       uint8_t index = command[1] - 48; // index between 0 and 3
       uint8_t value = command[3] - 48; // value between 0 and 7
 
-      // the X-LIVE is not responding to these commands
+      // the X-LIVE is not responding to these commands so we either
+
+      Answer = ""; // TODO: check if we have to Answer this command
     }else{
       // Error: unknown command -> help!
     }
   }else{
     // command to short
   }
+
+  return Answer;
 }
 
 void x32InitCommand() {

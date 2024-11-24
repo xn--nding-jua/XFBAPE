@@ -157,7 +157,7 @@ void setup() {
   #endif
 
   // Serial1 for communication with Behringer X32 MainControl
-  Serial1.begin(38400);
+  Serial1.begin(38400); // X32 uses regular 38400 8N1 for communication
   Serial1.setTimeout(1000); // Timeout for commands
   x32InitCommand(); // send some initialization-commands
 

@@ -124,6 +124,9 @@ String executeCommand(String Command) {
     }else if (Command.indexOf("samd:passthrough:nina") > -1){
       passthroughNINA = (Command.substring(Command.indexOf("@")+1).toInt() == 1);
       Answer = "OK";
+    }else if (Command.indexOf(F("samd:debug:x32")) > -1) {
+      x32Debug = (Command.substring(Command.indexOf("@")+1).toInt() == 1);
+      Answer = "OK";
     }else{
       // unknown command
       Answer = "SAMD: UNKNOWN_CMD";
