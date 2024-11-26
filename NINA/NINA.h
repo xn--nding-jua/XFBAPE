@@ -18,7 +18,7 @@ String password = "YourVerySafeWiFiPassword";
 */
 
 // configure the system
-#define MAX_AUDIO_CHANNELS  22  // the number of audio-channels must match the number of channels in the FPGA
+#define MAX_AUDIO_CHANNELS  36  // the number of audio-channels must match the number of channels in the FPGA
 #define MAX_EQUALIZERS      5   // number of PEQ must match number of PEQ in SAMD21 and FPGA
 #define MAX_ADCS            1
 #define MAX_NOISEGATES      1
@@ -31,6 +31,8 @@ String password = "YourVerySafeWiFiPassword";
 #define USE_FTP_SERVER      1   // enable FtpServer for uploading/deleting/editing files
 #define USE_DISPLAY         1   // enable functions for I2C display connected to SAMD21 (takes ~ 384 bytes)
 #define USE_VUMETER         1   // enable functions for VUmeter (WS2812B) connected to SAMD21
+#define USE_DMX512          1   // enable outputting DMX512 via UART2
+#define USE_DMX512_RX       0   // enable DMX512-receiver via UART2
 
 #define FPGA_IDX_MAIN_VOL   0   // main-volume
 #define FPGA_IDX_CH_VOL     3   // first channel-volume
@@ -113,6 +115,7 @@ File configFile;
   #define mqtt_serverport 1883
 
   #include <PubSubClient.h>
+  #include <ArduinoJson.h>
 
   WiFiClient mqttnetworkclient;
   PubSubClient mqttclient(mqttnetworkclient);
@@ -131,6 +134,22 @@ File configFile;
   #include "FTPFilesystem.h"
 
   FTPServer ftp;
+#endif
+
+#if USE_DMX512 == 1
+  #include <esp_dmx.h>
+  #define DMX512_TX_PIN NINA_PIO31
+  #define DMX512_RX_PIN NINA_PIO24
+  #define DMX512_EN_PIN NINA_PIO25
+  #define DMX_PACKET_SIZE 513
+  dmx_port_t dmxPort = 2; // Serial0 = Comm with SAMD21, Serial1 = Comm with FPGA, Serial2 = DMX512 output
+  uint8_t dmxData[DMX_PACKET_SIZE];
+  TaskHandle_t Dmx512Task;
+#endif
+#if USE_DMX512_RX == 1
+  uint8_t dmxRxData[DMX_PACKET_SIZE];
+  dmx_packet_t DmxReceiverPacket;
+  TaskHandle_t Dmx512ReceiverTask;
 #endif
 
 // includes for Ticker

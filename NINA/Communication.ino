@@ -165,50 +165,9 @@ void handleFPGACommunication() {
       mqttclient.subscribe("fbape/mixer/volume/main");
       mqttclient.subscribe("fbape/mixer/balance/main");
       mqttclient.subscribe("fbape/mixer/volume/sub");
-      mqttclient.subscribe("fbape/mixer/volume/ch1");
-      mqttclient.subscribe("fbape/mixer/volume/ch2");
-      mqttclient.subscribe("fbape/mixer/volume/ch3");
-      mqttclient.subscribe("fbape/mixer/volume/ch4");
-      mqttclient.subscribe("fbape/mixer/volume/ch5");
-      mqttclient.subscribe("fbape/mixer/volume/ch6");
-      mqttclient.subscribe("fbape/mixer/volume/ch7");
-      mqttclient.subscribe("fbape/mixer/volume/ch8");
-      mqttclient.subscribe("fbape/mixer/volume/ch9");
-      mqttclient.subscribe("fbape/mixer/volume/ch10");
-      mqttclient.subscribe("fbape/mixer/volume/ch11");
-      mqttclient.subscribe("fbape/mixer/volume/ch12");
-      mqttclient.subscribe("fbape/mixer/volume/ch13");
-      mqttclient.subscribe("fbape/mixer/volume/ch14");
-      mqttclient.subscribe("fbape/mixer/volume/ch15");
-      mqttclient.subscribe("fbape/mixer/volume/ch16");
-      mqttclient.subscribe("fbape/mixer/volume/ch17");
-      mqttclient.subscribe("fbape/mixer/volume/ch18");
-      mqttclient.subscribe("fbape/mixer/volume/ch19");
-      mqttclient.subscribe("fbape/mixer/volume/ch20");
-      mqttclient.subscribe("fbape/mixer/volume/ch21");
-      mqttclient.subscribe("fbape/mixer/volume/ch22");
-      mqttclient.subscribe("fbape/mixer/balance/ch1");
-      mqttclient.subscribe("fbape/mixer/balance/ch2");
-      mqttclient.subscribe("fbape/mixer/balance/ch3");
-      mqttclient.subscribe("fbape/mixer/balance/ch4");
-      mqttclient.subscribe("fbape/mixer/balance/ch5");
-      mqttclient.subscribe("fbape/mixer/balance/ch6");
-      mqttclient.subscribe("fbape/mixer/balance/ch7");
-      mqttclient.subscribe("fbape/mixer/balance/ch8");
-      mqttclient.subscribe("fbape/mixer/balance/ch9");
-      mqttclient.subscribe("fbape/mixer/balance/ch10");
-      mqttclient.subscribe("fbape/mixer/balance/ch11");
-      mqttclient.subscribe("fbape/mixer/balance/ch12");
-      mqttclient.subscribe("fbape/mixer/balance/ch13");
-      mqttclient.subscribe("fbape/mixer/balance/ch14");
-      mqttclient.subscribe("fbape/mixer/balance/ch15");
-      mqttclient.subscribe("fbape/mixer/balance/ch16");
-      mqttclient.subscribe("fbape/mixer/balance/ch17");
-      mqttclient.subscribe("fbape/mixer/balance/ch18");
-      mqttclient.subscribe("fbape/mixer/balance/ch19");
-      mqttclient.subscribe("fbape/mixer/balance/ch20");
-      mqttclient.subscribe("fbape/mixer/balance/ch21");
-      mqttclient.subscribe("fbape/mixer/balance/ch22");
+      for (uint8_t i=1; i<=MAX_AUDIO_CHANNELS; i++) {
+        mqttclient.subscribe(String("fbape/mixer/volume/ch" + String(i)).c_str());
+      }
       mqttclient.subscribe("fbape/mixer/reset");
       mqttclient.subscribe("fbape/mixer/eq/reset");
       mqttclient.subscribe("fbape/mixer/dynamics/reset");
@@ -272,27 +231,8 @@ void handleFPGACommunication() {
       /*
       // TODO: here we could publish more data about individual channel-volumes, EQs, Gates, Compressors, etc.
       mqttclient.publish("fbape/status/mixer/volume/ch1", String(audiomixer.chVolume[0]).c_str());
-      mqttclient.publish("fbape/status/mixer/volume/ch2", String(audiomixer.chVolume[1]).c_str());
-      mqttclient.publish("fbape/status/mixer/volume/ch3", String(audiomixer.chVolume[2]).c_str());
-      mqttclient.publish("fbape/status/mixer/volume/ch4", String(audiomixer.chVolume[3]).c_str());
-      mqttclient.publish("fbape/status/mixer/volume/ch5", String(audiomixer.chVolume[4]).c_str());
-      mqttclient.publish("fbape/status/mixer/volume/ch6", String(audiomixer.chVolume[5]).c_str());
-      mqttclient.publish("fbape/status/mixer/volume/ch7", String(audiomixer.chVolume[6]).c_str());
-      mqttclient.publish("fbape/status/mixer/volume/ch8", String(audiomixer.chVolume[7]).c_str());
-      mqttclient.publish("fbape/status/mixer/volume/ch9", String(audiomixer.chVolume[8]).c_str());
-      mqttclient.publish("fbape/status/mixer/volume/ch10", String(audiomixer.chVolume[9]).c_str());
-      mqttclient.publish("fbape/status/mixer/volume/ch11", String(audiomixer.chVolume[10]).c_str());
-      mqttclient.publish("fbape/status/mixer/volume/ch12", String(audiomixer.chVolume[11]).c_str());
-      mqttclient.publish("fbape/status/mixer/volume/ch13", String(audiomixer.chVolume[12]).c_str());
-      mqttclient.publish("fbape/status/mixer/volume/ch14", String(audiomixer.chVolume[13]).c_str());
-      mqttclient.publish("fbape/status/mixer/volume/ch15", String(audiomixer.chVolume[14]).c_str());
-      mqttclient.publish("fbape/status/mixer/volume/ch16", String(audiomixer.chVolume[15]).c_str());
-      mqttclient.publish("fbape/status/mixer/volume/ch17", String(audiomixer.chVolume[16]).c_str());
-      mqttclient.publish("fbape/status/mixer/volume/ch18", String(audiomixer.chVolume[17]).c_str());
-      mqttclient.publish("fbape/status/mixer/volume/ch19", String(audiomixer.chVolume[18]).c_str());
-      mqttclient.publish("fbape/status/mixer/volume/ch20", String(audiomixer.chVolume[19]).c_str());
-      mqttclient.publish("fbape/status/mixer/volume/ch21", String(audiomixer.chVolume[20]).c_str());
-      mqttclient.publish("fbape/status/mixer/volume/ch22", String(audiomixer.chVolume[21]).c_str());
+      ...
+      mqttclient.publish("fbape/status/mixer/volume/ch32", String(audiomixer.chVolume[31]).c_str());
       */
     }
   }
@@ -716,6 +656,36 @@ String executeCommand(String Command) {
       sendDataToFPGA(254, &data);
       Answer = "OK";
 */
+    #if USE_DMX512 == 1
+      }else if (Command.indexOf("dmx512:output") > -1){
+        // received command "dmx512:output@{"ch": 1; "value": 0}"
+        JsonDocument doc;
+        String valueStr = Command.substring(Command.indexOf("@")+1);
+        DeserializationError error = deserializeJson(doc, valueStr);
+
+        if (!error) {
+          uint16_t dmxCh = doc["ch"];
+          uint8_t dmxValue = doc["value"];
+          dmxData[dmxCh] = dmxValue;
+          Answer = "OK";
+        }else{
+          Answer = "ERROR";
+        }
+      #if USE_DMX512_RX
+        }else if (Command.indexOf("dmx512:input") > -1){
+          // received command "dmx512:output@{"ch": 1}"
+          JsonDocument doc;
+          String valueStr = Command.substring(Command.indexOf("@")+1);
+          DeserializationError error = deserializeJson(doc, valueStr);
+
+          if (!error) {
+            uint16_t dmxCh = doc["ch"];
+            Answer = String(dmxRxData[dmxCh]);
+          }else{
+            Answer = "ERROR";
+          }
+      #endif
+    #endif
     }else if (Command.indexOf("ver?") > -1){
       // return version of controller
       Answer = versionstring;

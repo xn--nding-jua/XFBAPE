@@ -69,12 +69,12 @@
   | D11         |                | PIO21    | 19         | R6            | SPI-MISO               | SPI-MISO (SD-Card)                    |
   | D1          |                | PIO22    | 01         | E15           | SCI-TxD                | -> UART0 TxD to SAMD21                |
   | D0          |                | PIO23    | 03         | T6            | SCI-RxD                | <- UART0 RxD from SAMD21              |
-  |             | A10            | PIO24    | 04         |               |                        |                                       |
-  |             | A12            | PIO25    | 02         |               |                        |                                       |
+  |             | A10            | PIO24    | 04         |               |                        | <- UART2 RxD DMX512 Input             |
+  |             | A12            | PIO25    | 02         |               |                        | <- DMX512 EN Pin                      |
   | D7          | A11            | PIO27    | 00         | N9            |                        | BOOT-Pin to select Bootloader-Mode    |
   | D10         |                | PIO28    | 05         | N11           | SPI-SS                 | SPI-CS (SD-Card)                      |
   | D13         |                | PIO29    | 18         | T10           | SPI-SCK                | SPI-SCK (SD-Card)                     | 
-  | D9          | A16            | PIO31    | 14         | T4            |                        |                                       |
+  | D9          | A16            | PIO31    | 14         | T4            |                        | -> UART2 TxD DMX512 Output            |
   | D8          | A13            | PIO32    | 15         | J13           |                        | BT I2S SerialClock                    | ! pin controls Uart0 TxD Debug during boot
   | D4          | A7             | PIO34    | 35         |               |                        | BT I2S MClk                           |
   | D14         | A14            | PIO35    | 13         | R4            | I2C-SCL                | BT I2S WordClock                      |
@@ -248,6 +248,13 @@ void initSystem() {
   // Initiate the timers
   TimerSeconds.attach_ms(1000, timerSecondsFcn);
   Timer100ms.attach_ms(100, timer100msFcn);
+
+  #if USE_DMX512 == 1
+    initDmx512();
+    #if USE_DMX512_RX == 1
+      initDmx512Receiver();
+    #endif
+  #endif
 
   // initialize the Audiomixer. Try to read configuration from SD
   //if (!configRead("/fbape.cfg", 100)) { // read config-file with maxmimum of 100 lines - uncomment if you like to load configuration-file on startup
