@@ -50,36 +50,36 @@
 
   Pin information:
   =====================================================================
-  +-------------+----------------+----------+------------+---------------+------------------------+---------------------------------------+
-  | Arduino Pin | Arduino Analog | NINA Pin |  ESP32 Pin | FPGA Pin      |  Property              | Notes                                 |
-  +-------------+----------------+----------+------------+---------------+------------------------+---------------------------------------+
-  |             |                |          |    GPIO    |               |                        |                                       |
-  |             |                | RESET_N  | RESET      | R1            | Reset-Pin              | RESET for NINA/ESP32                  |
-  | D12         |                | PIO1     | 23         | T11           | SPI-MOSI               | SPI-MOSI (SD-Card)                    |
-  | D19         | A6             | PIO2     | 34         |               |                        |                                       |
-  | D21         | A3             | PIO3     | 39         |               |                        |                                       |
-  | D20         | A0             | PIO4     | 36         |               |                        |                                       |
-  | D16         | A4             | PIO5     | 32         | N6            |                        | SD I2S SerialClock                    |
-  | D17         | A5             | PIO7     | 33         | P6            |                        | SD I2S WordClock                      |
-  | D18         |                | PIO8     | 21         | N5            |                        | SD I2S SerialData                     |
-  | D3          | A18            | PIO16    | 25         |               | DAC2 / LED Blue        |                                       |
-  | D2          | A19            | PIO17    | 26         |               | DAC1 / LED Green       |                                       |
-  | D5          | A17            | PIO18    | 27         | T5            |                        | -> UART1 TxD to FPGA                  |
-  | D6          |                | PIO20    | 22         | R5            |                        | <- UART1 RxD to FPGA                  |
-  | D11         |                | PIO21    | 19         | R6            | SPI-MISO               | SPI-MISO (SD-Card)                    |
-  | D1          |                | PIO22    | 01         | E15           | SCI-TxD                | -> UART0 TxD to SAMD21                |
-  | D0          |                | PIO23    | 03         | T6            | SCI-RxD                | <- UART0 RxD from SAMD21              |
-  |             | A10            | PIO24    | 04         |               |                        | <- UART2 RxD DMX512 Input             |
-  |             | A12            | PIO25    | 02         |               |                        | <- DMX512 EN Pin                      |
-  | D7          | A11            | PIO27    | 00         | N9            |                        | BOOT-Pin to select Bootloader-Mode    |
-  | D10         |                | PIO28    | 05         | N11           | SPI-SS                 | SPI-CS (SD-Card)                      |
-  | D13         |                | PIO29    | 18         | T10           | SPI-SCK                | SPI-SCK (SD-Card)                     | 
-  | D9          | A16            | PIO31    | 14         | T4            |                        | -> UART2 TxD DMX512 Output            |
-  | D8          | A13            | PIO32    | 15         | J13           |                        | BT I2S SerialClock                    | ! pin controls Uart0 TxD Debug during boot
-  | D4          | A7             | PIO34    | 35         |               |                        | BT I2S MClk                           |
-  | D14         | A14            | PIO35    | 13         | R4            | I2C-SCL                | BT I2S WordClock                      |
-  | D15         | A15            | PIO36    | 12         | N1            | I2C-SDA                | BT I2S SerialData                     | ! pin controls flash-voltage during boot
-  +-------------+----------------+----------+------------+---------------+------------------------+---------------------------------------+
+  +-------------+----------------+----------+------------+---------------+------------------------+----------------------------------------+
+  | Arduino Pin | Arduino Analog | NINA Pin |  ESP32 Pin | FPGA Pin      |  Property              | Notes                                  |
+  +-------------+----------------+----------+------------+---------------+------------------------+----------------------------------------+
+  |             |                |          |    GPIO    |               |                        |                                        |
+  |             |                | RESET_N  | RESET      | R1            | Reset-Pin              | RESET for NINA/ESP32                   |
+  | D12         |                | PIO1     | 23         | T11           | SPI-MOSI               | SPI-MOSI (SD-Card)                     |
+  | D19         | A6             | PIO2     | 34         |               |                        | free                      (X204 Pin 3) |
+  | D21         | A3             | PIO3     | 39         |               |                        | free                      (X204 Pin 4) |
+  | D20         | A0             | PIO4     | 36         |               |                        | free                      (X204 Pin 5) |
+  | D16         | A4             | PIO5     | 32         | N6            |                        | SD I2S SerialClock                     |
+  | D17         | A5             | PIO7     | 33         | P6            |                        | SD I2S WordClock                       |
+  | D18         |                | PIO8     | 21         | N5            |                        | SD I2S SerialData                      |
+  | D3          | A18            | PIO16    | 25         |               | DAC2 / LED Blue        |                                        |
+  | D2          | A19            | PIO17    | 26         |               | DAC1 / LED Green       |                                        |
+  | D5          | A17            | PIO18    | 27         | T5            |                        | -> UART1 TxD to FPGA                   |
+  | D6          |                | PIO20    | 22         | R5            |                        | <- UART1 RxD to FPGA                   |
+  | D11         |                | PIO21    | 19         | R6            | SPI-MISO               | SPI-MISO (SD-Card)                     |
+  | D1          |                | PIO22    | 01         | E15           | SCI-TxD                | -> UART0 TxD to SAMD21                 |
+  | D0          |                | PIO23    | 03         | T6            | SCI-RxD                | <- UART0 RxD from SAMD21               |
+  |             | A10            | PIO24    | 04         |               |                        | <- UART2 RxD DMX512 Input (X204 Pin 8) |
+  |             | A12            | PIO25    | 02         |               |                        | <- DMX512 EN Pin          (X204 Pin 9) |
+  | D7          | A11            | PIO27    | 00         | N9            |                        | BOOT-Pin to select Bootloader-Mode     |
+  | D10         |                | PIO28    | 05         | N11           | SPI-SS                 | SPI-CS (SD-Card)                       |
+  | D13         |                | PIO29    | 18         | T10           | SPI-SCK                | SPI-SCK (SD-Card)                      | 
+  | D9          | A16            | PIO31    | 14         | T4            |                        | -> UART2 TxD DMX512 Output             |
+  | D8          | A13            | PIO32    | 15         | J13           |                        | BT I2S SerialClock                     | ! pin controls Uart0 TxD Debug during boot
+  | D4          | A7             | PIO34    | 35         |               |                        | BT I2S MClk                            |
+  | D14         | A14            | PIO35    | 13         | R4            | I2C-SCL                | BT I2S WordClock                       |
+  | D15         | A15            | PIO36    | 12         | N1            | I2C-SDA                | BT I2S SerialData                      | ! pin controls flash-voltage during boot
+  +-------------+----------------+----------+------------+---------------+------------------------+----------------------------------------+
 
   Used files for Webserver:
   =====================================================================

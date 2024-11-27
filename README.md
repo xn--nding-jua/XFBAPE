@@ -36,14 +36,19 @@ As the Cyclone 10LP is not the largest FPGA we are a bit limited with the EQing,
 ## Connections
 USB -> SAMD21 <-> FPGA <-> ESP32
 
-## Uploading firmware
+## Uploading/Updating the firmware(s)
+
+As this system uses several controllers and ICs, a total of three different firmwares have to be compiled and uploaded. The USB-port is connected to the SAMD21. So this is the first place for updates. As the SAMD21 acts as a JTAG-uploader for the FPGA, too, it will upload the bitstream for the FPGA together with its firmware. Finally, the SAMD21 can be set to an upload-mode, to update the NINA W102-module (ESP32).
+
 ### SAMD21 with bitstream for Intel Cyclone 10-FPGA
-Start the Arduino IDE in version 2.x. Connect the SAMD via USB and connect Arduino IDE to the designated port. Select "Arduino MKR Vidor 4000" as board and upload the software using the regular upload-functions of Arduino IDE. The FPGA bitstream is part of the SAMD21 firmware. For this, you have to update the FPGA-bitstream using this command before uploading the code to SAMD21:
+Start Intel Quartus Prime Lite and compile the logic. If you alreade have a file "bitstream.h" this is not nescessary. As the FPGA bitstream is part of the SAMD21 firmware, you have to update the FPGA-bitstream using this command before uploading the code to SAMD21:
+    update_fpga_bitstream.bat
+
+This batch-file will call the following command, to convert the TabularTextFile (TTF) into an Arduino-Header:
 
     ..\FPGA\Tools\vidorcvt\vidorcvt.exe < ..\FPGA\output_files\Audioplayer.ttf > bitstream.h
 	
-This will convert the bitstream file "Audioplayer.ttf" to the headerfile "bitstream.h".
-Next to the regular Arduino upload-function, the software bossac.exe can be used to upload the firmware without Arduino IDE:
+Now start the Arduino IDE in version 2.x. Connect the SAMD via USB and connect Arduino IDE to the designated port. Select "Arduino MKR Vidor 4000" as board and upload the software using the regular upload-functions of Arduino IDE. Next to the regular Arduino upload-function, the software bossac.exe can be used to upload the firmware without Arduino IDE:
 
 * connect SAMD21 via USB
 * initialize the bootloader of the SAMD21:
@@ -51,11 +56,13 @@ Next to the regular Arduino upload-function, the software bossac.exe can be used
 upload the firmware
 `bossac.exe --port=COM21 -I -U true -e -w Audioplayer.ino.bin -R`
 
+Caution: As the power-demand of this board is quite high, use a sufficient power-supply for your USB-hub and a good cable!
+
 ### NINA WiFi-module
-A firmware-update to the ESP32 is only possible, when SAMD21-controller is set to passthrough-mode so that an UART communication to the ESP32 is possible directly through SAMD21 and the FPGA. So first, open a terminal and send the following command to the SAMD21:
+A firmware-update to the ESP32 is only possible, when SAMD21-controller is set to "passthrough-mode" so that an UART communication to the ESP32 is possible directly through SAMD21 and the FPGA. So first, open a terminal and send the following command to the SAMD21:
 
     samd:update:nina
-Alternatively you can open the updatemode using windows-terminal:
+Alternatively you can open the updatemode using windows-command-line (in this example the Vidor is connected to COM5):
 
     echo samd:update:nina > COM5
 Then use the Arduino IDE to upload the new software using the built-in uploading-functions for the ESP32 uBlox NINA W102. An upload is possible using the esptool.exe, directly:
@@ -69,4 +76,6 @@ After uploading the new firmware, please reset the board using the RESET-button.
 There are several options to control the system:
 * WiFi via integrated Webinterface
 * UART via FBAPE.EXE
-* via ASCII-commands via UART
+* via ASCII-commands via UART and Ethernet
+
+As the Ethernet-Contoller is connected only to the SAMD21, the webinterface of the NINA-W102 cannot be accessed. Maybe we can change this in a later design. But for now the ethernet-port is limited to plain ASCII-commands.
