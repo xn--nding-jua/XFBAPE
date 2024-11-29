@@ -46,10 +46,7 @@
 
   // for esp_a2d_connection_state_t see https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/bluetooth/esp_a2dp.html#_CPPv426esp_a2d_connection_state_t
   void bt_samplerate_changed(uint16_t rate){
-    if (rate != audiomixer.sampleRate) {
-      // update the current samplerate
-      setSampleRate(rate);
-    }
+    // Serial.println(String(rate));
   }
 
   void bt_avrc_metadata_callback(uint8_t id, const uint8_t *text) {
@@ -109,7 +106,7 @@
     // handle audio- and state-changes
     //a2dp_sink.set_on_connection_state_changed(bt_connection_state_changed);
     //a2dp_sink.set_on_audio_state_changed(bt_audio_state_changed);
-    a2dp_sink.set_sample_rate_callback(bt_samplerate_changed);
+    //a2dp_sink.set_sample_rate_callback(bt_samplerate_changed);
     a2dp_sink.set_avrc_metadata_callback(bt_avrc_metadata_callback);
     a2dp_sink.set_avrc_metadata_attribute_mask(ESP_AVRC_MD_ATTR_TITLE | ESP_AVRC_MD_ATTR_PLAYING_TIME); // only get specific meta-data
 

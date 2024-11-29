@@ -1,4 +1,4 @@
-const char* versionstring = "v2.0.0";
+const char* versionstring = "v3.0.0";
 const char compile_date[] = __DATE__ " " __TIME__;
 
 String hostname = "xfbape";
@@ -12,27 +12,30 @@ String ssid     = "xfbape";
 String password = "xf/bapePASSWORD"; // at least 8 characters
 /*
 // Client-Mode
-bool WiFiAP = false;
-String ssid     = "YourVeryOriginalSSID";
-String password = "YourVerySafeWiFiPassword";
+bool WiFiAP = false; // WiFi-mode can be changed via USB or Ethernet during operation
+String ssid     = "YourVeryOriginalSSID"; // SSID can be changed via USB or Ethernet during operation
+String password = "YourVerySafeWiFiPassword"; // password can be changed via USB or Ethernet during operation
 */
 
 // configure the system
-#define MAX_AUDIO_CHANNELS  36  // the number of audio-channels must match the number of channels in the FPGA
+#define MAX_AUDIO_CHANNELS  32  // the number of audio-channels must match the number of channels in the FPGA
 #define MAX_EQUALIZERS      5   // number of PEQ must match number of PEQ in SAMD21 and FPGA
 #define MAX_ADCS            1
 #define MAX_NOISEGATES      1
 #define MAX_COMPRESSORS     2
-#define USE_BLUETOOTH       0   // enable the bluetooth-A2DP-receiver (takes ~ 741,104 bytes)
+#define USE_STORAGE         0   // 0 = SD, 1 = SD_MMC, 2 = FATFS, 3 = LITTLEFS
 #define USE_SDPLAYER        1   // enable or disable SD-Card-Player-functions as the ESP32 has not enough space for both SD-Card-Playback and Bluetooth
+#define USE_BLUETOOTH       0   // enable the bluetooth-A2DP-receiver (takes ~ 741,104 bytes)
 #define USE_STATICIP        0   // only for client-mode. In AccessPoint-Mode it will use static-IP and ignores this options
 #define USE_TCPSERVER       1   // enable TCP-Server (takes ~ 10029 bytes)
 #define USE_MQTT            1   // enable MQTT (takes ~ 8360 bytes)
 #define USE_FTP_SERVER      1   // enable FtpServer for uploading/deleting/editing files
 #define USE_DISPLAY         1   // enable functions for I2C display connected to SAMD21 (takes ~ 384 bytes)
-#define USE_VUMETER         1   // enable functions for VUmeter (WS2812B) connected to SAMD21
 #define USE_DMX512          1   // enable outputting DMX512 via UART2
 #define USE_DMX512_RX       0   // enable DMX512-receiver via UART2
+
+#define AUDIO_INIT_VOLUME   21          // 0...21, so set to max on initialization
+#define AUDIO_SAMPLERATE    48000       // if using X32 this is fixed to 48kHz
 
 #define FPGA_IDX_MAIN_VOL   0   // main-volume
 #define FPGA_IDX_CH_VOL     3   // first channel-volume
@@ -54,15 +57,52 @@ String password = "YourVerySafeWiFiPassword";
   #define BT_BITS           16  // select 16 or 32 bit. Please change receiver-block in FPGA to this bitrate
 #endif
 
-// setup SD-Card
-  #define SPI_CLOCK           16000000    // ESP32 supports clks up to 80 MHz (on good cables), Audio library limits to 25MHz. 16MHz seems to be enought for MP3s, for WAV use at least 20MHz
-  #define AUDIO_INIT_VOLUME   21          // 0...21, so set to max on initialization
-  #define SD_CS               NINA_PIO28
-  #define SPI_MOSI            NINA_PIO1
-  #define SPI_MISO            NINA_PIO21
-  #define SPI_SCK             NINA_PIO29
-  String currentAudioFile;
-  uint32_t currentAudioPosition;
+// here the interface to the SD-Card can be setup
+#if USE_STORAGE == 0
+  #define SPI_CLOCK           16000000    // ESP32 supports SPI-clock of up to 80 MHz (on good cables). 20MHz is working
+
+  // defines for SD-SPI-mode
+  #define SD_CS               NINA_PIO28  // connected to PCIE-Adapter T9/P23 <- is read-only. So we are using N12/P20
+  #define SPI_MOSI            NINA_PIO1   // connected to PCIE-Adapter R9/P25 <- is read-only. So we are using R8/P6
+  #define SPI_MISO            NINA_PIO21  // connected to PCIE-Adapter R12/P30
+  #define SPI_SCK             NINA_PIO29  // connected to PCIE-Adapter T13/P28
+
+  // include official Arduino-headers
+  #include "SD.h"
+  #include "SPI.h"
+  #include "FS.h"
+
+  #define FileSystem SD
+#elif  USE_STORAGE == 1
+  // defines for SDMMC-mode
+  #define SDMMC_DAT0          NINA_PIO2  // needs to be bidirectional so we cannot pass through FPGA!
+  #define SDMMC_DAT1          NINA_PIO3  // needs to be bidirectional so we cannot pass through FPGA!
+  #define SDMMC_DAT2          NINA_PIO4  // needs to be bidirectional so we cannot pass through FPGA!
+  #define SDMMC_DAT3          NINA_PIO24 // needs to be bidirectional so we cannot pass through FPGA!
+  #define SDMMC_CMD           NINA_PIO25 // needs to be bidirectional so we cannot pass through FPGA!
+  #define SDMMC_CLK           NINA_PIO29 // only unidirectional
+
+  // include official Arduino-headers
+  #include "SD_MMC.h"
+  #include "SPI.h"
+  #include "FS.h"
+
+  #define FileSystem SD_MMC
+#elif USE_STORAGE == 2
+  // setup FatFS (store files within the FLASH)
+  #include "FFat.h"
+
+  #define FileSystem FFat
+#elif USE_STORAGE == 3
+  // setup LittleFS (store files within the FLASH)
+  #include "LittleFS.h"
+
+  #define FileSystem LittleFS
+#endif
+
+String currentAudioFile;
+uint32_t currentAudioPosition;
+
 #if USE_SDPLAYER == 1
   #define I2S_DOUT            NINA_PIO8
   #define I2S_BCLK            NINA_PIO5
@@ -71,6 +111,7 @@ String password = "YourVerySafeWiFiPassword";
 
 // include official Arduino-headers
 #include <WiFi.h>
+#include <ESPmDNS.h>
 #include <WebServer.h>
 #include <WiFiClient.h>
 #include <Ticker.h> // timer-functions
@@ -91,9 +132,6 @@ IPAddress secondaryDNS(1, 1, 1, 1);
   BluetoothA2DPSink a2dp_sink(i2s);
 #endif
 
-#include "SPI.h"
-#include "SD.h"
-#include "FS.h"
 #if USE_SDPLAYER == 1
   // includes for Audiosystem and SD-Card-Playback
   #include "Audio.h"
@@ -110,8 +148,8 @@ WebServer webserver(80); // Webserver
 File configFile;
 
 #if USE_MQTT == 1
-  #define mqtt_id "fbape"
-  IPAddress mqtt_server(192, 168, 0, 24);
+  #define mqtt_id "xfbape"
+  IPAddress mqtt_server(192, 168, 0, 24); // can be changed via USB or Ethernet
   #define mqtt_serverport 1883
 
   #include <PubSubClient.h>
@@ -156,18 +194,21 @@ File configFile;
 #include <Ticker.h>
 Ticker TimerSeconds;
 Ticker Timer100ms;
-uint8_t updateTimer = 50;
 
 // general variables
 bool systemOnline = false;
 String USBCtrlIDN = "0";
 String FPGA_Version = "0";
+uint8_t gateStatusInfo = 0; // info about individual gates (at the moment we are not using this here)
+uint8_t compStatusInfo = 0; // info about individual gates (at the moment we are using only 2 compressors for left/right and sub)
+uint8_t clipStatusInfo = 0; // info about individual gates (at the moment we are using only 3 clip-channels for left, right and sub)
+uint8_t audioStatusInfo = 0; // most important infos in one byte for SAMD21
 bool debugRedirectFpgaSerialToUSB = false;
-uint8_t fpgaRxBuffer[11];
-
-// setup audiosystem
-uint8_t LEDHoldCounter = 0;
-uint8_t LEDFadeCounter = 255;
+#define SCI_PAYLOAD_LEN 7 // 7 bytes as payload
+#define SCI_RINGBUF_LEN 15
+#define SCI_CMD_LEN (SCI_PAYLOAD_LEN + 4) // payload + "A", "C0", "C1", "E"
+uint8_t fpgaRingBuffer[SCI_RINGBUF_LEN];
+uint16_t fpgaRingBufferPointer = 0;
 
 // vu-meter
 #define vumeter_halfLife 0.25f // seconds
@@ -279,17 +320,19 @@ struct sCompressor {
 
 // struct for audiomixer
 struct {
-  float mainVolume;
-  uint8_t mainBalance;
-  float mainVolumeSub;
+  float mainVolume = -20.0; // dBfs
+  uint8_t mainBalance = 50; // center L/R
+  float mainVolumeSub = -20.0; // dBfs
+  float cardVolume = -20.0; // dBfs
+  float btVolume = -20.0; // dBfs
 
   float chVolume[MAX_AUDIO_CHANNELS];
   uint8_t chBalance[MAX_AUDIO_CHANNELS];
 
-  uint8_t audioSyncSource = 1; // SD-Card as standard
-  uint32_t sampleRate = 48000; // 48kHz as standard
-
+  // equalizers
   sPEQ peq[MAX_EQUALIZERS];
+
+  // crossover
   sLR24 LR24_LP_Sub; // <=100Hz
   sLR24 LR24_HP_LR; // >=100Hz
 

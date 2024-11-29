@@ -35,30 +35,30 @@ float dBfs2pu(float dBfs, float min) {
   return pu;
 }
 
+String split(String s, char parser, int index) {
+  String rs="";
+  int parserCnt=0;
+  int rFromIndex=0, rToIndex=-1;
+  while (index >= parserCnt) {
+    rFromIndex = rToIndex+1;
+    rToIndex = s.indexOf(parser,rFromIndex);
+    if (index == parserCnt) {
+      if (rToIndex == 0 || rToIndex == -1) return "";
+      return s.substring(rFromIndex,rToIndex);
+    } else parserCnt++;
+  }
+  return rs;
+}
+
+uint8_t getNumberOfTocEntries() {
+  uint8_t entries = 0;
+  for (uint8_t i=0; i<TOC.length(); i++) {
+    if (TOC[i] == ',') entries++;
+  }
+  return entries;
+}
+
 #if USE_DISPLAY == 1
-  String split(String s, char parser, int index) {
-    String rs="";
-    int parserCnt=0;
-    int rFromIndex=0, rToIndex=-1;
-    while (index >= parserCnt) {
-      rFromIndex = rToIndex+1;
-      rToIndex = s.indexOf(parser,rFromIndex);
-      if (index == parserCnt) {
-        if (rToIndex == 0 || rToIndex == -1) return "";
-        return s.substring(rFromIndex,rToIndex);
-      } else parserCnt++;
-    }
-    return rs;
-  }
-
-  uint8_t getNumberOfTocEntries() {
-    uint8_t entries = 0;
-    for (uint8_t i=0; i<TOC.length(); i++) {
-      if (TOC[i] == ',') entries++;
-    }
-    return entries;
-  }
-
   // convert seconds to string of hour, minute and seconds
   String secondsToHMS(uint32_t seconds){
     unsigned int tme=0;
@@ -136,7 +136,6 @@ void initEeprom() {
   if ((eeprom_config.ip[0]==0) && (eeprom_config.ip[1]==0) && (eeprom_config.ip[2]==0) && (eeprom_config.ip[3]==0)) {
     // IP-Address is zero. So the configuration seems to be bad
     eeprom_config.ip = IPAddress(192, 168, 0, 42);
-    eeprom_config.OutputVoltage = 0.0f;
   }
 }
 

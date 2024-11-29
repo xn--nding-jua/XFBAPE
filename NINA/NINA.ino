@@ -1,6 +1,6 @@
 /*
   X-f/bape MainCtrl for Arduino MKR Vidor4000 Device
-  v2.0.0 built on 20.11.2024
+  v3.0.0 built on 29.11.2024
   Infos: https://www.github.com/xn--nding-jua/Audioplayer
   Copyright (c) 2023-2024 Dr.-Ing. Christian Nöding
 
@@ -98,60 +98,23 @@
 #include "NINA.h"
 
 void timerSecondsFcn() {
-  digitalWrite(LED_GREEN, !digitalRead(LED_GREEN)); // toggle green led
+  ledcFade(LED_GREEN, 255, 0, 500); // pin, StartDutyCycle, TargetDutyCycle, FadeTime in ms
 
   #if USE_MQTT == 1
     mqttPublish();
   #endif
   
-  #if USE_DISPLAY == 1
-    updateSAMDDisplay(); // update the display of the SAMD with current information
-  #endif
+  updateSAMD(); // update the display of the SAMD with current information
 }
 
 void timer100msFcn() {
-  updateTimer--;
-
-  if (updateTimer == 0) {
-    // reload updateTimer to 10x 100ms = 1 second
-    updateTimer = 10;
-  }
-
-  if (LEDHoldCounter>0) {
-    LEDHoldCounter--;
-
-    if (LEDHoldCounter == 0) {
-      // turn off blue LED
-      LEDFadeCounter = 0; // set counter to zero
-      //digitalWrite(LED_BLUE, HIGH); // hard turn off
-    }
-  }
-  if (LEDFadeCounter<255) {
-    // fade LED off
-
-    if (LEDFadeCounter >= 250) { // 255/10
-      // make sure to count to full 255
-      LEDFadeCounter = 255;
-    }else{
-      LEDFadeCounter+=25; // to get 10x0.1s = 1 second = 255/10
-    }
-    analogWrite(LED_BLUE, LEDFadeCounter);
-  }
-
-  #if USE_SDPLAYER == 1
-    // check audio-samplerate and update sample-rate if nescessary
-    if (audio.isRunning() && (audio.getSampleRate() != audiomixer.sampleRate)) {
-      // update the current samplerate
-      setSampleRate(audio.getSampleRate());
-    }
-  #endif
 }
 
 void setup() {
-  pinMode(LED_BLUE, OUTPUT);
   pinMode(LED_GREEN, OUTPUT);
-  analogWrite(LED_BLUE, 255); // turn off blue LED
-  digitalWrite(LED_GREEN, LOW); // turn on green LED
+  pinMode(LED_BLUE, OUTPUT);
+  ledcAttach(LED_GREEN, 2000, 8); // IO-pin, frequency in Hz, Resolution in Bit
+  ledcAttach(LED_BLUE, 2000, 8); // IO-pin, frequency in Hz, Resolution in Bit
 
   // init communication with SAMD21/USB
   Serial.begin(115200, SERIAL_8N1, 3, 1, false, 1000); // BaudRate, Config, RxPin, TxPin, Invert, TimeoutMs, rxfifo_full_thrhd
@@ -200,10 +163,10 @@ void initSystem() {
   Serial.println("samd:passthrough:nina@1");
   delay(100);
   // send welcome-text to USB
-  Serial.println("f/bape MainCtrl " + String(versionstring) + " built on " + String(compile_date));
+  Serial.println("X-f/bape MainCtrl " + String(versionstring) + " built on " + String(compile_date));
 
   // init SD-Card
-  initSD();
+  initStorage();
 
   // initWifi
   configRead("/wifi.cfg", 10); // read WiFi-settings with maximum of 10 lines (if file is available)

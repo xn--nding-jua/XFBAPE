@@ -1,4 +1,4 @@
-const char* versionstring = "v2.0.0";
+const char* versionstring = "v3.0.0";
 const char compile_date[] = __DATE__ " " __TIME__;
 
 // the following defines will overwrite the standard arduino-defines from https://github.com/arduino/ArduinoCore-samd/blob/84c09b3265e2a8b548a29b141f0c9281b1baf154/variants/mkrvidor4000/variant.h
@@ -60,7 +60,6 @@ bool x32Debug = false;
 struct{ // don't change order of struct! Just add variables or replace with same size!!!
   uint16_t Version = 0;
   IPAddress ip;
-  float OutputVoltage = 0.0f;
 } eeprom_config;
 
 struct{
@@ -85,29 +84,32 @@ EthernetServer cmdserver(5025);
   #define SCREEN_ADDRESS 0x3C // this address does not fit to the address on the PCB!!!
   Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
   uint8_t currentDisplayLine = 0;
-  String TOC;
-  uint8_t tocEntries = 0;
-  uint8_t tocCounter = 0;
-
-  struct {
-    String title = "Standby...";
-    float volumeMain;
-    uint8_t balanceMain;
-    float volumeSub;
-    float volumeAnalog;
-    float volumeCard;
-    float volumeBass;
-    uint32_t time;
-    uint32_t duration;
-    uint8_t progress;
-    bool WiFiEnabled = 1;
-    bool BluetoothEnabled = 0;
-    String MainCtrlVersion;
-    String FPGAVersion;
-    uint32_t samplerate;
-  }playerinfo;
-
 #endif
+
+String TOC;
+uint8_t tocEntries = 0;
+uint8_t tocCounter = 0;
+
+struct {
+  String title = "Standby...";
+  uint32_t time;
+  uint32_t duration;
+  uint8_t progress;
+  float volumeMain;
+  uint8_t balanceMain;
+  float volumeSub;
+  float volumeAnalog;
+  float volumeCard;
+  float frequencyLowPass;
+  float frequencyHighPass;
+  uint8_t adcGain;
+  float gateThreshold;
+  float limitThreshold;
+  uint8_t audioStatusInfo;
+
+  String MainCtrlVersion;
+  String FPGAVersion;
+}playerinfo;
 
 // some defines for NINA update mode
 #define NINA_PIO27 11

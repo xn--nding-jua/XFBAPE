@@ -72,12 +72,12 @@ bool configWrite(String configFileName) {
     configFile.println(String("mixer:volume:main@" + String(audiomixer.mainVolume, 2)).c_str());
     configFile.println("mixer:balance:main@" + String(audiomixer.mainBalance));
     configFile.println("mixer:volume:sub@" + String(audiomixer.mainVolumeSub, 2));
+    configFile.println("mixer:volume:sd@" + String(audiomixer.cardVolume, 2));
+    configFile.println("mixer:volume:bt@" + String(audiomixer.btVolume, 2));
     for (int i=1; i<=MAX_AUDIO_CHANNELS; i++) {
       configFile.println("mixer:volume:ch" + String(i) + "@" + String(audiomixer.chVolume[i-1], 2));
       configFile.println("mixer:balance:ch" + String(i) + "@" + String(audiomixer.chBalance[i-1]));
     }
-    configFile.println("mixer:sync@" + String(audiomixer.audioSyncSource));
-    configFile.println("mixer:samplerate@" + String(audiomixer.sampleRate));
 
     for (int i=1; i<=MAX_EQUALIZERS; i++) {
       configFile.println("eq:peq" + String(i) + "@" + String(audiomixer.peq[i-1].type) + "," + String(audiomixer.peq[i-1].fc, 2) + "," + String(audiomixer.peq[i-1].Q, 2) + "," + String(audiomixer.peq[i-1].gain, 2));
@@ -124,6 +124,9 @@ bool configWiFiWrite(String configFileName) {
     configFile.println("wifi:gateway@" + ipAddress2String(gateway));
     configFile.println("wifi:subnet@" + ipAddress2String(subnet));
     configFile.println("wifi:mode@" + WiFiAP);
+    #if USE_MQTT == 1
+      configFile.println("mqtt:ip@" + ipAddress2String(mqtt_server));
+    #endif
 
     // done
     configFile.close();

@@ -89,14 +89,14 @@ entity rs232_decoder is
 		ch31_volume_r	: out std_logic_vector(7 downto 0);
 		ch32_volume_l	: out std_logic_vector(7 downto 0);
 		ch32_volume_r	: out std_logic_vector(7 downto 0);
-		ch33_volume_l	: out std_logic_vector(7 downto 0) := (others=>'1');
-		ch33_volume_r	: out std_logic_vector(7 downto 0) := (others=>'0');
-		ch34_volume_l	: out std_logic_vector(7 downto 0) := (others=>'0');
-		ch34_volume_r	: out std_logic_vector(7 downto 0) := (others=>'1');
-		ch35_volume_l	: out std_logic_vector(7 downto 0) := (others=>'1');
-		ch35_volume_r	: out std_logic_vector(7 downto 0) := (others=>'0');
-		ch36_volume_l	: out std_logic_vector(7 downto 0) := (others=>'0');
-		ch36_volume_r	: out std_logic_vector(7 downto 0) := (others=>'1');
+		ch33_volume_l	: out std_logic_vector(7 downto 0); -- here we are expecting stereo signals, so we are not routing individual to left/right
+		ch33_volume_r	: out std_logic_vector(7 downto 0); -- here we are expecting stereo signals, so we are not routing individual to left/right
+		ch34_volume_l	: out std_logic_vector(7 downto 0); -- here we are expecting stereo signals, so we are not routing individual to left/right
+		ch34_volume_r	: out std_logic_vector(7 downto 0); -- here we are expecting stereo signals, so we are not routing individual to left/right
+		ch35_volume_l	: out std_logic_vector(7 downto 0); -- here we are expecting stereo signals, so we are not routing individual to left/right
+		ch35_volume_r	: out std_logic_vector(7 downto 0); -- here we are expecting stereo signals, so we are not routing individual to left/right
+		ch36_volume_l	: out std_logic_vector(7 downto 0); -- here we are expecting stereo signals, so we are not routing individual to left/right
+		ch36_volume_r	: out std_logic_vector(7 downto 0); -- here we are expecting stereo signals, so we are not routing individual to left/right
 
 		-- LR24 Highpass
 		c_a0_hp	: out std_logic_vector(39 downto 0);
@@ -384,23 +384,20 @@ begin
 						ch32_volume_l(7 downto 0) <= b8;
 					when 66 =>
 						ch32_volume_r(7 downto 0) <= b8;
-					-- TODO: if everything is working, make some space for the following commands
-					--when 67 =>
-					--	ch33_volume_l(7 downto 0) <= b8;
-					--when 68 =>
-					--	ch33_volume_r(7 downto 0) <= b8;
-					--when 69 =>
-					--	ch34_volume_l(7 downto 0) <= b8;
-					--when 70 =>
-					--	ch34_volume_r(7 downto 0) <= b8;
-					--when 71 =>
-					--	ch35_volume_l(7 downto 0) <= b8;
-					--when 72 =>
-					--	ch35_volume_r(7 downto 0) <= b8;
-					--when 73 =>
-					--	ch36_volume_l(7 downto 0) <= b8;
-					--when 74 =>
-					--	ch36_volume_r(7 downto 0) <= b8;
+					when 67 =>
+						-- stereo volume for SD-card
+						ch33_volume_l(7 downto 0) <= b8;
+						ch33_volume_r(7 downto 0) <= "00000000"; -- dont put left channel of SD to right channel in mixing
+						ch34_volume_l(7 downto 0) <= "00000000"; -- dont put left channel of SD to right channel in mixing
+						ch34_volume_r(7 downto 0) <= b8;
+					when 68 =>
+						-- stereo volume for Bluetooth
+						ch35_volume_l(7 downto 0) <= b8;
+						ch35_volume_r(7 downto 0) <= "00000000"; -- dont put left channel of Bluetooth to right channel in mixing
+						ch36_volume_l(7 downto 0) <= "00000000"; -- dont put left channel of Bluetooth to right channel in mixing
+						ch36_volume_r(7 downto 0) <= b8;
+					when 69 =>
+						-- this command is unused for now
 
 					-- commands from 70 are reserved for coefficients
 					when 70 =>

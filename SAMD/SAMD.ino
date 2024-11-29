@@ -1,6 +1,6 @@
 /*
   X-f/bape USBCtrl for Arduino MKR Vidor4000 Device
-  v2.0.0 built on 20.11.2024
+  v3.0.0 built on 29.11.2024
   Infos: https://www.github.com/xn--nding-jua/Audioplayer
   Copyright (c) 2023-2024 Dr.-Ing. Christian Nöding
 
@@ -122,7 +122,7 @@ void ticker85msFcn() {
 
   if (x32Playback) {
     // send current sample-position every 85ms if playing
-    Serial1.print("*9N22" + intToHex(x32PlaybackPosition, 8) + "#");
+    Serial1.print("*9N22" + intToHex(x32PlaybackPosition * 48000, 8) + "#");
   }
 }
 Ticker ticker85ms(ticker85msFcn, 85, 0, MILLIS);
@@ -174,7 +174,7 @@ void setup() {
   initEthernet();
 
   // start mainsystem
-  Serial.println("f/bape USBCtrl " + String(versionstring) + " | " + String(compile_date)); // send to USB
+  Serial.println("X-f/bape USBCtrl " + String(versionstring) + " | " + String(compile_date)); // send to USB
   Serial.println(F("Init MainCtrl..."));
   Serial2.println(F("system:init")); // initialize main-system
 

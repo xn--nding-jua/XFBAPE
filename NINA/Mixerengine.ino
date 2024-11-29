@@ -3,6 +3,8 @@ void initAudiomixer() {
   audiomixer.mainVolume = -20.0; // set to -20dBfs
   audiomixer.mainBalance = 50; // set to center
   audiomixer.mainVolumeSub = -20.0; // set to -20dBfs
+  audiomixer.cardVolume = 0.0; // set to 0dBfs
+  audiomixer.btVolume = 0.0; // set to 0dBfs
   sendVolumeToFPGA(0); // send main to FPGA
 
   // set individual channels to 100% and left/right
@@ -24,6 +26,9 @@ void initAudiomixer() {
     sendVolumeToFPGA(i+1); // send values to FPGA
   }
   
+  sendStereoVolumeToFPGA(0, 0); // set SD-Card to 0dBfs
+  sendStereoVolumeToFPGA(1, -140); // set Bluetooth to -140dBfs
+
   for (int i=0; i<MAX_ADCS; i++) {
     setADCgain(i, 0);
   }
@@ -35,10 +40,16 @@ void initAudiomixer() {
   // reset dynamics (noisegates and compressors) to standard-values
   resetDynamics();
   sendDynamicsToFPGA();
+}
 
-  // set sync-source and samplerate to standard-values
-  setSyncSource(0);
-  setSampleRate(48000);
+void sendStereoVolumeToFPGA(uint8_t channel, float volume) {
+  // channel = 0 -> SD-Card
+  // channel = 1 -> Bluetooth
+  float value = (pow(10, volume/20.0f) * 128.0f); // convert dB to uint8_t
+
+  data_64b fpga_data;
+  fpga_data.u32[0] = trunc(value);
+  sendDataToFPGA(FPGA_IDX_MAIN_VOL+67+channel, &fpga_data);
 }
 
 void sendVolumeToFPGA(uint8_t channel) {
@@ -102,7 +113,7 @@ void recalcFilterCoefficients_PEQ(struct sPEQ *peq) {
   // Source: https://www.earlevel.com/main/2012/11/26/biquad-c-source-code
 
   double V = pow(10.0, fabs(peq->gain)/20.0);
-  double K = tan(PI * peq->fc / audiomixer.sampleRate);
+  double K = tan(PI * peq->fc / AUDIO_SAMPLERATE);
   double norm;
   double coeff_a[3];
   double coeff_b[3];
@@ -205,8 +216,8 @@ void recalcFilterCoefficients_PEQ(struct sPEQ *peq) {
 
   // convert to Q30-format
   for (int i=0; i<3; i++) {
-    peq->a[i].s32 = coeff_a[i] * 1073741824; // convert to Q30
-    peq->b[i].s32 = coeff_b[i] * 1073741824; // convert to Q30
+    peq->a[i].s32 = coeff_a[i] * 1073741823; // convert to Q30
+    peq->b[i].s32 = coeff_b[i] * 1073741823; // convert to Q30
   }
 }
 
@@ -214,7 +225,7 @@ void recalcFilterCoefficients_LR12(struct sLR12 *LR12) {
   double wc = 2.0 * PI * LR12->fc;
   double wc2 = wc * wc;
   double wc22 = 2 * wc2;
-  double k = wc / tan(PI * (LR12->fc / audiomixer.sampleRate));
+  double k = wc / tan(PI * (LR12->fc / AUDIO_SAMPLERATE));
   double k2 = k * k;
   double k22 = 2 * k2;
   double wck2 = 2 * wc * k;
@@ -248,7 +259,7 @@ void recalcFilterCoefficients_LR24(struct sLR24 *LR24) {
   double wc2 = wc * wc;
   double wc3 = wc2 * wc;
   double wc4 = wc2 * wc2;
-  double k = wc / tan(PI * (LR24->fc / audiomixer.sampleRate));
+  double k = wc / tan(PI * (LR24->fc / AUDIO_SAMPLERATE));
   double k2 = k * k;
   double k3 = k2 * k;
   double k4 = k2 * k2;
@@ -292,11 +303,11 @@ void recalcNoiseGate(struct sNoisegate *Noisegate) {
   float value_gainmin_fs = pow(2, Noisegate->gainmin_bitwidth)-1; // maximum allowed value within FPGA
   Noisegate->value_gainmin.u16 = saturate_f(value_gainmin_fs/(pow(10, Noisegate->range/20)), 0, value_gainmin_fs);
 
-  Noisegate->value_coeff_attack.s16 = round(exp(-2197.22457734f/(audiomixer.sampleRate * Noisegate->attackTime_ms)) * 32767); // convert to Q15
+  Noisegate->value_coeff_attack.s16 = round(exp(-2197.22457734f/(AUDIO_SAMPLERATE * Noisegate->attackTime_ms)) * 32767); // convert to Q15
 
-  Noisegate->value_hold_ticks.u16 = Noisegate->holdTime_ms * (audiomixer.sampleRate / 1000.0f);
+  Noisegate->value_hold_ticks.u16 = Noisegate->holdTime_ms * (AUDIO_SAMPLERATE / 1000.0f);
 
-  Noisegate->value_coeff_release.s16 = round(exp(-2197.22457734f/(audiomixer.sampleRate * Noisegate->releaseTime_ms)) * 32767); // convert to Q15
+  Noisegate->value_coeff_release.s16 = round(exp(-2197.22457734f/(AUDIO_SAMPLERATE * Noisegate->releaseTime_ms)) * 32767); // convert to Q15
 }
 
 void recalcCompressor(struct sCompressor *Compressor) {
@@ -312,11 +323,11 @@ void recalcCompressor(struct sCompressor *Compressor) {
 
   Compressor->value_makeup.u16 = round(Compressor->makeup/6.0f); // we are allowing only 6dB-steps, so we have to round to optimize the user-input
 
-  Compressor->value_coeff_attack.s16 = round(exp(-2197.22457734f/(audiomixer.sampleRate * Compressor->attackTime_ms)) * 32767); // convert to Q15
+  Compressor->value_coeff_attack.s16 = round(exp(-2197.22457734f/(AUDIO_SAMPLERATE * Compressor->attackTime_ms)) * 32767); // convert to Q15
 
-  Compressor->value_hold_ticks.u16 = Compressor->holdTime_ms * (audiomixer.sampleRate / 1000.0f);
+  Compressor->value_hold_ticks.u16 = Compressor->holdTime_ms * (AUDIO_SAMPLERATE / 1000.0f);
 
-  Compressor->value_coeff_release.s16 = round(exp(-2197.22457734f/(audiomixer.sampleRate * Compressor->releaseTime_ms)) * 32767); // convert to Q15
+  Compressor->value_coeff_release.s16 = round(exp(-2197.22457734f/(AUDIO_SAMPLERATE * Compressor->releaseTime_ms)) * 32767); // convert to Q15
 }
 
 void setADCgain(uint8_t channel, uint8_t gain) {
@@ -410,34 +421,5 @@ void sendDynamicsToFPGA() {
     sendDataToFPGA(FPGA_IDX_COMP+3+(comp*6), &audiomixer.compressors[comp].value_coeff_attack);
     sendDataToFPGA(FPGA_IDX_COMP+4+(comp*6), &audiomixer.compressors[comp].value_hold_ticks);
     sendDataToFPGA(FPGA_IDX_COMP+5+(comp*6), &audiomixer.compressors[comp].value_coeff_release);
-  }
-}
-
-void setSyncSource(uint8_t newAudioSyncSource) {
-  audiomixer.audioSyncSource = newAudioSyncSource;
-
-  data_16b syncSource;
-  syncSource.u16 = audiomixer.audioSyncSource;
-  sendDataToFPGA(FPGA_IDX_AUX_CMD+2, &syncSource);
-}
-
-bool setSampleRate(uint32_t newSampleRate) {
-  if ((newSampleRate == 44100) || (newSampleRate == 48000) || (newSampleRate == 96000)) {
-    audiomixer.sampleRate = newSampleRate;
-
-    data_16b sampleRate;
-    if (audiomixer.sampleRate == 44100) {
-      sampleRate.u16 = 0;
-    }else if (audiomixer.sampleRate == 96000) {
-      sampleRate.u16 = 2;
-    }else{
-      // set 48000 as default
-      sampleRate.u16 = 1;
-    }
-    sendDataToFPGA(FPGA_IDX_AUX_CMD+3, &sampleRate);
-
-    return true;
-  }else{
-    return false;
   }
 }

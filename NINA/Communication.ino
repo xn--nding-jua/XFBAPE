@@ -24,6 +24,10 @@ void initWifi() {
       delay(500);
     }
   }
+
+  if (MDNS.begin(hostname)) {
+    MDNS.addService("http", "tcp", 80);
+  }
 }
 
 void handleUartCommunication() {
@@ -33,9 +37,9 @@ void handleUartCommunication() {
     command = Serial.readStringUntil('\n');
     command.trim();
 
-    if (command.indexOf("OK") > -1) {
+    if (command.indexOf("SAMD: OK") > -1) {
       // received "OK" from SAMD -> last command is OK
-    }else if (command.indexOf("ERROR") > -1) {
+    }else if (command.indexOf("SAMD: ERROR") > -1) {
       // received "ERROR" from SAMD -> last command had an error
     }else if (command.indexOf("SAMD: UNKNOWN_CMD") > -1) {
       // SAMD received some garbage or communication-problem -> ignore it for the moment
@@ -45,7 +49,7 @@ void handleUartCommunication() {
         Serial.println("v" + FPGA_Version);
       }else if (command.indexOf("*IDN?") > -1){
         // return info-string of fpga
-        Serial.println("f/bape FPGA v" + String(FPGA_Version));
+        Serial.println("X-f/bape FPGA v" + String(FPGA_Version));
       }else{
         // this is a command for the FPGA
         Serial1.print(command);
@@ -59,47 +63,86 @@ void handleUartCommunication() {
 }
 
 // FPGA-Receiver
-void handleFPGACommunication() {
-  if (Serial1.available() > 0) {
-    if (debugRedirectFpgaSerialToUSB) {
-      // redirect all incoming bytes to SAMD-processor
-      Serial.write(Serial1.read());
-    }else{
-      // FPGA sends 20 messages per second
+uint16_t fpgaRingBufferPointerOverflow(uint16_t bufPointer) {
+  if (bufPointer>=SCI_RINGBUF_LEN) {
+    return (bufPointer-SCI_RINGBUF_LEN);
+  }else{
+    return bufPointer;
+  }
+}
 
-      // receiving data from FPGA AbbbbbbbCCE
-      Serial1.readBytes(fpgaRxBuffer, sizeof(fpgaRxBuffer));
+void fpgaSearchCmd() {
+  uint16_t i;
+  uint16_t j;
+  uint16_t ErrorCheckData;
+  uint16_t payloadSum;
+  uint8_t newData[SCI_PAYLOAD_LEN];
 
-      // check data
-      uint16_t payloadSum = fpgaRxBuffer[1] + fpgaRxBuffer[2] + fpgaRxBuffer[3] + fpgaRxBuffer[4] + fpgaRxBuffer[5] + fpgaRxBuffer[6] + fpgaRxBuffer[7];
-      uint16_t ErrorCheckData = (fpgaRxBuffer[sizeof(fpgaRxBuffer)-3] << 8) + fpgaRxBuffer[sizeof(fpgaRxBuffer)-2];
-      if ((fpgaRxBuffer[0] == 65) && (fpgaRxBuffer[sizeof(fpgaRxBuffer)-1] == 69) && (payloadSum == ErrorCheckData)) {
+  for (i = 0; i < (SCI_RINGBUF_LEN + SCI_CMD_LEN - 1); i++) { // increment (SCI_CMD_LEN-1) beyond SCI_RINGBUF_LEN to catch commands around the border
+    if ((fpgaRingBuffer[fpgaRingBufferPointerOverflow(i)] == 65) && // check for "A"
+            (fpgaRingBuffer[fpgaRingBufferPointerOverflow(i + SCI_CMD_LEN - 1)] == 69)) // check for "E"
+    {
+      // check error-check-byte
+      payloadSum = 0;
+      for (j=i+1; j<=(i + SCI_PAYLOAD_LEN); j++) { // summarize all values between "A" and "E"
+        payloadSum += fpgaRingBuffer[fpgaRingBufferPointerOverflow(j)];
+      }
+      uint16_t ErrorCheckData = (fpgaRingBuffer[fpgaRingBufferPointerOverflow(i + SCI_CMD_LEN - 3)] << 8) + fpgaRingBuffer[fpgaRingBufferPointerOverflow(i + SCI_CMD_LEN - 2)];
+
+      if (payloadSum == ErrorCheckData) {
         // we received valid data
-        // fpgaRxBuffer[1] contains version of FPGA * 100
+
+        // copy data to newData-array
+        for (j=0; j<(SCI_PAYLOAD_LEN); j++) {
+            newData[j] = fpgaRingBuffer[fpgaRingBufferPointerOverflow(i+1+j)];
+        }
+
+        // newData[0] contains version of FPGA * 100
         if (FPGA_Version.length() == 1) {
-          FPGA_Version = String(fpgaRxBuffer[1]/100.0f, 2);
-          #if USE_DISPLAY == 1
-            // send version information to SAMD21
-            Serial.println("samd:version:fpga@" + FPGA_Version); // send FPGA version to SAMD21
-          #endif
+          FPGA_Version = String(newData[0]/100.0f, 2);
+          Serial.println("samd:version:fpga@" + FPGA_Version); // send FPGA version to SAMD21
         }else{
-          FPGA_Version = String(fpgaRxBuffer[1]/100.0f, 2);
+          FPGA_Version = String(newData[0]/100.0f, 2);
         }
 
-		    // fpgaRxBuffer will be sent to Webserver-Clients within Webserver.ino
-        // fpgaRxBuffer[2] contains information about the noisegate(s)
-
-        // fpgaRxBuffer[3] contains information about the compressors
-        if ((fpgaRxBuffer[3] & 0b00000001) || (fpgaRxBuffer[3] & 0b00000010)) {
-          // audio is being compressing
+        audioStatusInfo = 0;
+        // newData[1] contains information about the noisegate(s)
+        gateStatusInfo = newData[1];
+        if (newData[1] & 0b00000001) {
+          // audiogate is closed
+          audioStatusInfo += 1;
         }
 
-        // fpgaRxBuffer[4] contains information about clipping
+        // newData[2] contains information about the compressors
+        compStatusInfo = newData[2];
+        if (newData[2] & 0b00000001) {
+          // audio left/right is being compressed/limited
+          audioStatusInfo += 2;
+        }
+        if (newData[2] & 0b00000010) {
+          // audio subwoofer is being compressed/limited
+          audioStatusInfo += 4;
+        }
 
-        // fpgaRxBuffer[5] ... fpgaRxBuffer[7] contain VU-meter information for left, right and subwoofer
+        // newData[3] contains information about clipping
+        clipStatusInfo = newData[3];
+        if (newData[3] & 0b00000001) {
+          // left is clipping
+          audioStatusInfo += 8;
+        }
+        if (newData[3] & 0b00000010) {
+          // right is clipping
+          audioStatusInfo += 16;
+        }
+        if (newData[3] & 0b00000100) {
+          // sub is clipping
+          audioStatusInfo += 32;
+        }
+
+        // newData[4] ... newData[5] contain VU-meter information for left, right and subwoofer
         for (int i=0; i<3; i++) {
           // we are taking only larger values than the current value
-          uint8_t new_value = log2(fpgaRxBuffer[i+5] + 1) * (255/8);
+          uint8_t new_value = log2(newData[i+4] + 1) * (255/8);
 
           if (new_value > vu_meter_value[i]) {
             // convert bit-values to a linear scale
@@ -111,9 +154,40 @@ void handleFPGACommunication() {
           }
         }
       }else{
-        // error in received data
-        // at the moment we do not handle communication-errors
+        // wrong error-check-data
       }
+
+      // set array-elements to zero as we have executed the command
+      for (j=i; j<(i + SCI_CMD_LEN); j++) {
+        fpgaRingBuffer[fpgaRingBufferPointerOverflow(j)] = 0;
+      }
+    }else{
+      // wrong begin or end
+    }
+  }
+}
+
+void handleFPGACommunication() {
+  if (Serial1.available() > 0) {
+    uint8_t rxChar = Serial1.read();
+
+    if (debugRedirectFpgaSerialToUSB) {
+      // redirect all incoming bytes to SAMD-processor
+      Serial.write(rxChar);
+    }
+
+
+    // FPGA sends 20 messages per second
+    // read new byte into ringbuffer
+    fpgaRingBuffer[fpgaRingBufferPointer++] = rxChar;
+
+    if (fpgaRingBufferPointer>=SCI_RINGBUF_LEN) {
+      // reset to beginning of sciRingbuffer
+      fpgaRingBufferPointer = 0;
+    }
+    // check for complete message if we receive expected end of message
+    if (rxChar == 69) { // received an 'E'
+      fpgaSearchCmd();
     }
   }
 }
@@ -227,6 +301,10 @@ void handleFPGACommunication() {
 
       mqttclient.publish("fbape/status/mixer/volume/main", String(audiomixer.mainVolume).c_str());
       mqttclient.publish("fbape/status/mixer/volume/sub", String(audiomixer.mainVolumeSub).c_str());
+      mqttclient.publish("fbape/status/mixer/volume/sdcard", String(audiomixer.cardVolume).c_str());
+      #if USE_BLUETOOTH == 1
+        mqttclient.publish("fbape/status/mixer/volume/bt", String(audiomixer.btVolume).c_str());
+      #endif
       
       /*
       // TODO: here we could publish more data about individual channel-volumes, EQs, Gates, Compressors, etc.
@@ -245,9 +323,8 @@ String executeCommand(String Command) {
   if (Command.length()>2){
     // we got a new command. Lets find out what we have to do today...
 
-	// enable Blue LED
-	analogWrite(LED_BLUE, 0);
-	LEDHoldCounter = 3; // set HoldCounter to 3 = 300ms
+    // enable red LED and set HoldCounter to 3 = 300ms
+    ledcFade(LED_BLUE, 255, 0, 500); // pin, StartDutyCycle, TargetDutyCycle, FadeTime in ms
 
     if (Command.indexOf("wifi:ssid") > -1){
       // we received "wifi:ssid@TEXT"
@@ -481,6 +558,17 @@ String executeCommand(String Command) {
       }else{
         Answer = "ERROR: Channel or value out of range!";
       }
+    }else if (Command.indexOf("mixer:volume:sd") > -1){
+      // received command "mixer:volume:sd@value"
+
+      // we are setting volume for SD and bluetooth as stereo-pair at commands 
+      sendStereoVolumeToFPGA(0, Command.substring(Command.indexOf("@")+1).toFloat());
+      Answer = "OK";
+    }else if (Command.indexOf("mixer:volume:bt") > -1){
+      // received command "mixer:volume:bt@value"
+
+      sendStereoVolumeToFPGA(1, Command.substring(Command.indexOf("@")+1).toFloat());
+      Answer = "OK";
     }else if (Command.indexOf("mixer:balance:ch") > -1){
       // received command "mixer:balance:chxx@yyy"
       uint8_t channel = Command.substring(16, Command.indexOf("@")).toInt();
@@ -634,18 +722,6 @@ String executeCommand(String Command) {
       }else{
         Answer = "ERROR: Invalid value for compressor! Comp #" + String(comp+1) + " Ratio = " + String(ratio) + ":1";
       }
-    }else if (Command.indexOf("mixer:sync") > -1){
-      // received command "mixer:sync@0"
-      setSyncSource(Command.substring(Command.indexOf("@")+1).toInt());
-      Answer = "OK";
-    }else if (Command.indexOf("mixer:samplerate") > -1){
-      // received command "mixer:samplerate@48000"
-      if (setSampleRate(Command.substring(Command.indexOf("@")+1).toInt())) {
-        Answer = "OK";
-      }else{
-        Answer = "ERROR";
-      }
-
 /*
     }else if (Command.indexOf("test:senddata") > -1){
       // received command "test:senddata@yyy"
@@ -690,9 +766,9 @@ String executeCommand(String Command) {
       // return version of controller
       Answer = versionstring;
     }else if (Command.indexOf("*IDN?") > -1){
-      Answer = "f/bape MainCtrl " + String(versionstring) + " built on " + String(compile_date);
+      Answer = "X-f/bape MainCtrl " + String(versionstring) + " built on " + String(compile_date);
     }else if (Command.indexOf("info?") > -1){
-      Answer = "f/bape Audioplayer " + String(versionstring) + " built on " + String(compile_date) + "\nFPGA v" + FPGA_Version + "\n(c) Dr.-Ing. Christian Noeding\nhttps://www.github.com/xn--nding-jua/Audioplayer";
+      Answer = "X-f/bape X32 Expansion Card " + String(versionstring) + " built on " + String(compile_date) + "\nFPGA v" + FPGA_Version + "\n(c) Dr.-Ing. Christian Noeding\nhttps://www.github.com/xn--nding-jua/Audioplayer";
     }else if (Command.indexOf("system:debug:fpga") > -1){
       // receiving command "system:debug:fpga@0"
       debugRedirectFpgaSerialToUSB = (Command.substring(Command.indexOf("@")+1).toInt() == 1);
@@ -711,7 +787,7 @@ String executeCommand(String Command) {
       Answer = "OK";
     }else if (Command.indexOf("system:card:init") > -1){
       // reinitialize the SD-Card
-      initSD();
+      initStorage();
 
       Answer = "OK";
     }else if (Command.indexOf("system:config:read") > -1){
@@ -723,7 +799,7 @@ String executeCommand(String Command) {
     }else if (Command.indexOf("system:wificonfig:write") > -1){
       configWiFiWrite("/wifi.cfg");
       Answer = "OK";
-    }else if (Command.indexOf("f/bape USBCtrl") > -1){
+    }else if (Command.indexOf("X-f/bape USBCtrl") > -1){
       USBCtrlIDN = Command;
       Answer = "OK";
     }else{
@@ -792,32 +868,33 @@ void sendDataToFPGA(uint8_t cmd) {
   sendDataToFPGA(cmd, &data64);
 }
 
-#if USE_DISPLAY == 1
-  void updateSAMDDisplay() {
-    Serial.println("samd:player:title@" + currentAudioFile);
-    Serial.println("samd:player:volume:main@" + String(audiomixer.mainVolume, 1));
-	  Serial.println("samd:player:balance:main@" + String(audiomixer.mainBalance));
-    Serial.println("samd:player:volume:sub@" + String(audiomixer.mainVolumeSub, 1));
-    Serial.println("samd:player:samplerate@" + String(audiomixer.sampleRate));
+void updateSAMD() {
+  uint32_t audioTime = audio.getAudioCurrentTime();
+  uint32_t audioDuration = audio.getAudioFileDuration();
 
-    #if USE_VUMETER == 1
-      Serial.println("samd:vumeter:left@" + String(vu_meter_value[0], 1));
-      //Serial.println("samd:vumeter:right@" + String(vu_meter_value[1], 1));
-      //Serial.println("samd:vumeter:sub@" + String(vu_meter_value[2], 1));
-    #endif
-
-	  #if USE_SDPLAYER == 1
-      uint32_t audioTime = audio.getAudioCurrentTime();
-      uint32_t audioDuration = audio.getAudioFileDuration();
-      Serial.println("samd:player:time@" + String(audioTime));
-      Serial.println("samd:player:duration@" + String(audioDuration));
-      if (audioDuration > 0) {
-        Serial.println("samd:player:progress@" + String(((float)audioTime/(float)audioDuration)*100.0f, 0));
-      }else{
-        Serial.println("samd:player:progress@0");
-      }
-	  #endif
-    //Serial.println("samd:player:updatedisplay"); // SAMD will update display every 100ms automatically
+  String audioProgress_s;
+  if (audioDuration > 0) {
+    audioProgress_s = String(((float)audioTime/(float)audioDuration)*100.0f, 0);
+  }else{
+    audioProgress_s = "0";
   }
-#endif
- 
+
+  // send updatepacket
+  Serial.println("samd:update:info@" + currentAudioFile + "," +
+	String(audioTime) + "," +
+	String(audioDuration) + "," +
+	audioProgress_s + "," +
+  String(audiomixer.mainVolume, 1) + "," +
+	String(audiomixer.mainBalance) + "," +
+	String(audiomixer.mainVolumeSub, 1) + "," +
+	String(audiomixer.cardVolume, 1) + "," +
+	String(audiomixer.btVolume, 1) + "," +
+	String(audiomixer.LR24_LP_Sub.fc, 1) + "," +
+	String(audiomixer.LR24_HP_LR.fc, 1) + "," +
+	String(audiomixer.adcGain[0]) + "," +
+	String(audiomixer.gates[0].threshold, 1) + "," +
+	String(audioStatusInfo) + "," +
+	SD_getTOC(2) + "|," + // request TOC in PSV-format. We need a trailing "|" so that the split() function in SAMD can work correctly
+	"E"
+	);
+}

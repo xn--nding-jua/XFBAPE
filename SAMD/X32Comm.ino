@@ -212,14 +212,14 @@ String x32ExecCmd(String command) {
     }else if (command.indexOf("*9AF#")==0) {
       // request first entry of TOC
       tocCounter = 0; // reset tocCounter as we are requesting first entry
-      String title = split(TOC, ',', tocCounter); // name of title0
+      String title = split(TOC, '|', tocCounter); // name of title0
 
       Answer = "*9ASF" + title + "#";
     }else if (command.indexOf("*9AN#")==0) {
       // request followup-titles of TOC
       tocCounter++;
       if (tocCounter<tocEntries) {
-        String title = split(TOC, ',', tocCounter); // name of titleX
+        String title = split(TOC, '|', tocCounter); // name of titleX
 
         Answer = "*9ASN" + title + "#";
       }else{

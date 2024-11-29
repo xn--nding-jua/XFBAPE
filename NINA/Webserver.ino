@@ -128,11 +128,11 @@ void httpHandleJson() {
 
   // channel-clipping
   message += ",\"clip_left\":";
-  message += ((fpgaRxBuffer[4] & 0b00000001) > 0);
+  message += ((audioStatusInfo & 0b00001000) > 0);
   message += ",\"clip_right\":";
-  message += ((fpgaRxBuffer[4] & 0b00000010) > 0);
+  message += ((audioStatusInfo & 0b00010000) > 0);
   message += ",\"clip_sub\":";
-  message += ((fpgaRxBuffer[4] & 0b00000100) > 0);
+  message += ((audioStatusInfo & 0b0010000) > 0);
 
   // Equalizers
   for (int i=0; i<MAX_EQUALIZERS; i++) {
@@ -171,7 +171,7 @@ void httpHandleJson() {
     message += ",\"gate" + String(i+1) + "_rel\":";
     message += audiomixer.gates[i].releaseTime_ms;
     message += ",\"gate" + String(i+1) + "_closed\":";
-    message += ((fpgaRxBuffer[2] & (1 << i)) > 0);
+    message += ((gateStatusInfo & (1 << i)) > 0);
   }
 
   // Dynamic-Compressors / Limiters
@@ -189,7 +189,7 @@ void httpHandleJson() {
     message += ",\"comp" + String(i+1) + "_rel\":";
     message += audiomixer.compressors[i].releaseTime_ms;
     message += ",\"comp" + String(i+1) + "_active\":";
-    message += ((fpgaRxBuffer[3] & (1 << i)) > 0);
+    message += ((compStatusInfo & (1 << i)) > 0);
   }
 
   message += (F("}")); // End of JSON

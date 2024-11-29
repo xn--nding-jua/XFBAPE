@@ -56,77 +56,81 @@ String executeCommand(String Command) {
   if (Command.length()>2){
     // we got a new command. Lets find out what we have to do today...
 
+    if (Command.indexOf(F("samd:update:info")) > -1){
+      String ParameterString = Command.substring(Command.indexOf("@")+1);
+
+      playerinfo.title = split(ParameterString, ',', 0);
+      playerinfo.time = split(ParameterString, ',', 1).toInt();
+      playerinfo.duration = split(ParameterString, ',', 2).toInt();
+      playerinfo.progress = split(ParameterString, ',', 3).toInt();
+      playerinfo.volumeMain = split(ParameterString, ',', 4).toFloat();
+      playerinfo.balanceMain = split(ParameterString, ',', 5).toInt();
+      playerinfo.volumeSub = split(ParameterString, ',', 6).toFloat();
+      playerinfo.volumeAnalog = split(ParameterString, ',', 7).toFloat();
+      playerinfo.volumeCard = split(ParameterString, ',', 8).toFloat();
+      playerinfo.frequencyLowPass = split(ParameterString, ',', 9).toFloat();
+      playerinfo.frequencyHighPass = split(ParameterString, ',', 10).toFloat();
+      playerinfo.adcGain = split(ParameterString, ',', 11).toInt();
+      playerinfo.gateThreshold = split(ParameterString, ',', 12).toFloat();
+      playerinfo.audioStatusInfo = split(ParameterString, ',', 13).toInt(); // contains infos about noisegate, clip (L/R/S) and compression (LR/S)
+      TOC = split(ParameterString, ',', 14);
+      
+      Answer = "SAMD: OK";
     #if USE_DISPLAY == 1
-      if (Command.indexOf(F("samd:toc")) > -1) {
-        TOC = Command.substring(Command.indexOf("@")+1);
-        tocEntries = getNumberOfTocEntries();
-        Answer = "OK";
-      }else if (Command.indexOf(F("samd:player:title")) > -1){
-        playerinfo.title = Command.substring(Command.indexOf("@")+1);
-        Answer = "OK";
-      }else if (Command.indexOf("samd:player:volume:main") > -1){
-        playerinfo.volumeMain = Command.substring(Command.indexOf("@")+1).toFloat();
-        Answer = "OK";
-      }else if (Command.indexOf("samd:player:balance:main") > -1){
-        playerinfo.balanceMain = Command.substring(Command.indexOf("@")+1).toInt();
-        Answer = "OK";
-      }else if (Command.indexOf("samd:player:volume:sub") > -1){
-        playerinfo.volumeSub = Command.substring(Command.indexOf("@")+1).toFloat();
-        Answer = "OK";
-      }else if (Command.indexOf(F("samd:player:volume:analog")) > -1){
-        playerinfo.volumeAnalog = Command.substring(Command.indexOf("@")+1).toFloat();
-        Answer = "OK";
-      }else if (Command.indexOf(F("samd:player:volume:card")) > -1){
-        playerinfo.volumeCard = Command.substring(Command.indexOf("@")+1).toFloat();
-        Answer = "OK";
-      }else if (Command.indexOf(F("samd:player:samplerate")) > -1){
-        playerinfo.samplerate = Command.substring(Command.indexOf("@")+1).toInt();
-        Answer = "OK";
-      }else if (Command.indexOf("samd:player:time") > -1){
-        playerinfo.time = Command.substring(Command.indexOf("@")+1).toInt();
-        Answer = "OK";
-      }else if (Command.indexOf("samd:player:duration") > -1){
-        playerinfo.duration = Command.substring(Command.indexOf("@")+1).toInt();
-        Answer = "OK";
-      }else if (Command.indexOf("samd:player:progress") > -1){
-        playerinfo.progress = Command.substring(Command.indexOf("@")+1).toInt();
-        Answer = "OK";
-      }else if (Command.indexOf("samd:player:updatedisplay") > -1){
+      }else if (Command.indexOf(F("samd:player:updatedisplay")) > -1){
         displayDrawMenu();
-        Answer = "OK";
-      }else if (Command.indexOf("samd:version:main") > -1){
-        playerinfo.MainCtrlVersion = Command.substring(Command.indexOf("@")+1);
-        Answer = "OK";
-      }else if (Command.indexOf("samd:version:fpga") > -1){
-        playerinfo.FPGAVersion = Command.substring(Command.indexOf("@")+1);
-        Answer = "OK";
-      }else if (Command.indexOf("samd:ver?") > -1){
-    #else
-      if (Command.indexOf("samd:ver?") > -1){
+        Answer = "SAMD: OK";
     #endif
+    }else if (Command.indexOf("samd:ver?") > -1){
       // return version of controller
       Answer = versionstring;
     }else if (Command.indexOf("samd:*IDN?") > -1){
       // return some short info-text for the GUI
-      Answer = "f/bape USBCtrl " + String(versionstring) + " built on " + String(compile_date);
+      Answer = "X-f/bape USBCtrl " + String(versionstring) + " built on " + String(compile_date);
     }else if (Command.indexOf("samd:info?") > -1){
       // return some info-text for the GUI
-      Answer = "f/bape USB-Controller " + String(versionstring) + " built on " + String(compile_date) + "\n(c) Dr.-Ing. Christian Noeding\nhttps://www.github.com/xn--nding-jua/Audioplayer";
+      Answer = "X-f/bape USB-Controller " + String(versionstring) + " built on " + String(compile_date) + "\n(c) Dr.-Ing. Christian Noeding\nhttps://www.github.com/xn--nding-jua/xfbape";
+    }else if (Command.indexOf("samd:version:main") > -1){
+      playerinfo.MainCtrlVersion = Command.substring(Command.indexOf("@")+1);
+      Answer = "SAMD: OK";
+    }else if (Command.indexOf("samd:version:fpga") > -1){
+      playerinfo.FPGAVersion = Command.substring(Command.indexOf("@")+1);
+      Answer = "SAMD: OK";
     }else if (Command.indexOf("samd:reset:fpga") > -1){
       setup_fpga();
-      Answer = "OK";
-    }else if (Command.indexOf("samd:reset:nina") > -1){
-      resetNina();
-      Answer = "OK";
+      Answer = "SAMD: OK";
     }else if (Command.indexOf(F("samd:update:nina")) > -1){
       enterNinaUpdateMode(true);
       Answer = F("Entered NINA-Update-Mode...\nPlease close serial-port and upload new firmware via Arduino or esptool.py.\n\nReboot system to return to normal mode.");
+    }else if (Command.indexOf("samd:reset:nina") > -1){
+      resetNina();
+      Answer = "SAMD: OK";
     }else if (Command.indexOf("samd:passthrough:nina") > -1){
       passthroughNINA = (Command.substring(Command.indexOf("@")+1).toInt() == 1);
-      Answer = "OK";
+      Answer = "SAMD: OK";
     }else if (Command.indexOf(F("samd:debug:x32")) > -1) {
       x32Debug = (Command.substring(Command.indexOf("@")+1).toInt() == 1);
-      Answer = "OK";
+      Answer = "SAMD: OK";
+    }else if (Command.indexOf(F("samd:config:mac")) > -1) {
+      // requesting the MAC-Address from EEPROM
+      Answer = mac2String(config.mac);
+    }else if (Command.indexOf(F("samd:config:ip")) > -1) {
+      // requesting the 
+      Answer = IpAddress2String(eeprom_config.ip);
+    }else if (Command.indexOf("samd:config:set:ip") > -1){
+      //samd:config:set:ip@000.000.000.000
+	  String ipString = Command.substring(Command.indexOf("@")+1) + '.'; // adding leading dot at the end to ensure function of split()
+      uint8_t ip0 = split(ipString, '.', 0).toInt();
+      uint8_t ip1 = split(ipString, '.', 1).toInt();
+      uint8_t ip2 = split(ipString, '.', 2).toInt();
+      uint8_t ip3 = split(ipString, '.', 3).toInt();
+
+      eeprom_config.ip = IPAddress(ip0, ip1, ip2, ip3);
+      initEthernet();
+      Answer = "SAMD: OK";
+    }else if (Command.indexOf("samd:config:save") > -1){
+      saveConfig();
+      Answer = "SAMD: OK";
     }else{
       // unknown command
       Answer = "SAMD: UNKNOWN_CMD";
@@ -146,16 +150,23 @@ void SERCOM3_Handler()
 
 void resetNina() {
   pinMode(NINA_RESET_N, OUTPUT);
+
   digitalWrite(NINA_RESET_N, HIGH);
   delay(100);
   digitalWrite(NINA_RESET_N, LOW);
   delay(100);
   digitalWrite(NINA_RESET_N, HIGH);
   delay(100);
-  pinMode(NINA_RESET_N, INPUT);
+
+  //pinMode(NINA_RESET_N, INPUT);
 }
 
 void enterNinaUpdateMode(bool performReset) {
+  if (!performReset) {
+    // stop mainCtrl
+    Serial2.println(F("system:stop"));
+  }
+
   #if USE_DISPLAY == 1
     // disable ticker that access I2C
     ticker100ms.stop();
