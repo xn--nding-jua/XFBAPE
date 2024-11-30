@@ -33,6 +33,8 @@ SERCOM3: I2C      <- Display
 SERCOM4: SPI      <- W5500 Ethernet
 SERCOM5: Serial   <- USB
 */
+#define SerialX32 Serial1
+
 // includes for Serial2 to communicate with NINA. As Serial2 is not within the scope of Arduino,
 // we have to create it using the SERCOM-system of the SAMD21
 #define PIN_SERIAL2_TX       (0ul)                // Pin description number for PIO_SERCOM on D0
@@ -40,6 +42,8 @@ SERCOM5: Serial   <- USB
 #define PAD_SERIAL2_TX       (UART_TX_PAD_0)      // SERCOM pad 0 TX
 #define PAD_SERIAL2_RX       (SERCOM_RX_PAD_1)    // SERCOM pad 1 RX
 Uart Serial2(&sercom3, PIN_SERIAL2_RX, PIN_SERIAL2_TX, PAD_SERIAL2_RX, PAD_SERIAL2_TX);
+
+
 /*
 #define PIN_SERIAL3_TX       (4ul)                // Pin description number for PIO_SERCOM on D0
 #define PIN_SERIAL3_RX       (5ul)                // Pin description number for PIO_SERCOM on D1
@@ -56,6 +60,8 @@ String x32AliveCommand = "*8BE#";
 bool x32Playback = false;
 uint32_t x32PlaybackPosition = 0;
 bool x32Debug = false;
+uint8_t x32NumberOfCards = 2;
+uint32_t x32CardSize[2] = {31086720, 15543360}; // one 32GB and one 16GB
 
 struct{ // don't change order of struct! Just add variables or replace with same size!!!
   uint16_t Version = 0;
@@ -87,7 +93,7 @@ EthernetServer cmdserver(5025);
 #endif
 
 String TOC;
-uint8_t tocEntries = 0;
+uint8_t tocEntries = 3;
 uint8_t tocCounter = 0;
 
 struct {

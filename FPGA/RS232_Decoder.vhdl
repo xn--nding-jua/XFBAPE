@@ -183,6 +183,7 @@ entity rs232_decoder is
 
 		-- some auxiliary stuff
 		filter_rst	: out std_logic;
+		x32_enable	: out std_logic;
 		sync_select	: out std_logic_vector(7 downto 0);
 		fsclk_select	: out std_logic_vector(7 downto 0)
 	);
@@ -739,6 +740,8 @@ begin
 					when 203 =>
 						--fs_select(15 downto 8) <= b3;
 						fsclk_select(7 downto 0) <= b4;
+					when 204 =>
+						x32_enable <= b4(0);
 
 					when 220 =>
 						--adc1_gain(15 downto 8) <= b3;

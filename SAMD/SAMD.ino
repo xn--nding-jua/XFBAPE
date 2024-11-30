@@ -117,12 +117,12 @@ void ticker85msFcn() {
   if (x32AliveCounter == 0) {
     x32AliveCounter = 59; // preload to 5 seconds
 
-    Serial1.print(x32AliveCommand);
+    SerialX32.print(x32AliveCommand);
   }
 
   if (x32Playback) {
     // send current sample-position every 85ms if playing
-    Serial1.print("*9N22" + intToHex(x32PlaybackPosition * 48000, 8) + "#");
+    SerialX32.print("*9N22" + intToHex(x32PlaybackPosition * 48000, 8) + "#");
   }
 }
 Ticker ticker85ms(ticker85msFcn, 85, 0, MILLIS);
@@ -156,10 +156,9 @@ void setup() {
     //displayText(5, F("Init MainCtrl..."));
   #endif
 
-  // Serial1 for communication with Behringer X32 MainControl
-  Serial1.begin(38400); // X32 uses regular 38400 8N1 for communication
-  Serial1.setTimeout(1000); // Timeout for commands
-  x32InitCommand(); // send some initialization-commands
+  // SerialX32 for communication with Behringer X32 MainControl
+  SerialX32.begin(38400); // X32 uses regular 38400 8N1 for communication
+  SerialX32.setTimeout(1000); // Timeout for commands
 
   // Serial2 for communication with NINA-module
   Serial2.begin(115200);
@@ -175,6 +174,11 @@ void setup() {
 
   // start mainsystem
   Serial.println("X-f/bape USBCtrl " + String(versionstring) + " | " + String(compile_date)); // send to USB
+
+  // initialize the X32
+  Serial.println(F("Init X32..."));
+  x32Init();
+
   Serial.println(F("Init MainCtrl..."));
   Serial2.println(F("system:init")); // initialize main-system
 

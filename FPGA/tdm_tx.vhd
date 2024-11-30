@@ -47,7 +47,7 @@ architecture rtl of tdm_tx is
 	signal zfsync, zzfsync, zzzfsync	: std_logic;
 	signal zsclk, zzsclk, zzzsclk 	: std_logic;
 
-	signal bit_cnt							: integer range 0 to 31 := 0;
+	signal bit_cnt							: integer range 0 to 32 := 0;
 	signal chn_cnt							: integer range 0 to 7 := 0;
 begin
 	detect_fsync_pos_edge : process(clk)
@@ -89,9 +89,25 @@ begin
 				chn_cnt <= 0; -- reset channel-counter to 0
 			else
 				if pos_edge = '1' then
-					if bit_cnt < 31 then
-						bit_cnt <= bit_cnt + 1; -- increment bit_cnt until bit 31
+					if bit_cnt < 32 then
+						bit_cnt <= bit_cnt + 1; -- increment bit_cnt until bit 32
 					else
+						-- bit_cnt is now 32 -> reset bit-counter to 0
+						bit_cnt <= 1;
+					end if;
+				end if;
+				
+				if neg_edge = '1' then  	
+					if (bit_cnt >= bit_delay) and (bit_cnt < (24 + bit_delay)) then
+						-- output current bit
+						sdata <= sample_data(23 + bit_delay - bit_cnt); -- TDM sends MSB first
+					else
+						-- we are beyond the 24 audio-bits -> transmit only zeros
+						sdata <= '0';
+					end if;
+
+					
+					if (bit_cnt = 28) then
 						-- increase channel counter
 						if chn_cnt < (audio_channels-1) then
 							chn_cnt <= chn_cnt + 1; -- increase channel-counter on each LRCLK-edge
@@ -99,39 +115,29 @@ begin
 							chn_cnt <= 0; -- reset to 0 as we are receiving a fsync only every 192 frames
 						end if;
 					end if;
-				end if;
-				
-				if neg_edge = '1' then  	
-					if (bit_cnt >= bit_delay) and (bit_cnt < 24+bit_delay) then
-						-- output current bit
-						sdata <= sample_data(31 - bit_cnt); -- TDM sends MSB first
-					else
-						-- we are beyond the 24 audio-bits -> transmit only zeros
-						sdata <= '0';
-					end if;
-				end if;
-				
-				if bit_cnt = 30 and neg_edge = '1' then
-					-- we have reached the unused 8bits at the end of the frame -> copy next channel to transmit
+					
+					if bit_cnt = 29 then
+						-- we have reached the last zero-bits before new channel-data will start -> copy next channel to transmit
 
-					case chn_cnt is
-						when 0 =>
-							sample_data <= ch1_in;
-						when 1 =>
-							sample_data <= ch2_in;
-						when 2 =>
-							sample_data <= ch3_in;
-						when 3 =>
-							sample_data <= ch4_in;
-						when 4 =>
-							sample_data <= ch5_in;
-						when 5 =>
-							sample_data <= ch6_in;
-						when 6 =>
-							sample_data <= ch7_in;
-						when 7 =>
-							sample_data <= ch8_in;
-					end case;
+						case chn_cnt is
+							when 0 =>
+								sample_data <= ch1_in;
+							when 1 =>
+								sample_data <= ch2_in;
+							when 2 =>
+								sample_data <= ch3_in;
+							when 3 =>
+								sample_data <= ch4_in;
+							when 4 =>
+								sample_data <= ch5_in;
+							when 5 =>
+								sample_data <= ch6_in;
+							when 6 =>
+								sample_data <= ch7_in;
+							when 7 =>
+								sample_data <= ch8_in;
+						end case;
+					end if;
 				end if;
 			end if;
 		end if;

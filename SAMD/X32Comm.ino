@@ -25,11 +25,11 @@
 
 // Serial-CMD-Receiver
 void handleX32Communication() {
-  if (Serial1.available() > 0) {
+  if (SerialX32.available() > 0) {
     // read all characters. The individual commands can be distributed over several chunks.
     // so we have to fill everything into a buffer and scan the buffer for "*" and "#"
 
-    uint8_t rxChar = Serial1.read();
+    uint8_t rxChar = SerialX32.read();
 
     x32RingBuffer[x32RingBufferPointer++] = rxChar;
 
@@ -92,7 +92,7 @@ void x32SearchCmd() {
           command = String((char*)commandArray);
           String Answer = x32ExecCmd(command);
           if (Answer.length() > 0) {
-            Serial1.print(Answer);
+            SerialX32.print(Answer);
           }
           if (x32Debug) {
             Serial.println("X32: " + command + " | X-FBAPE: " + Answer);
@@ -169,7 +169,7 @@ String x32ExecCmd(String command) {
       Answer = "*9D00#";
 
       // during playback, the card should send current position as samples every 85ms:
-      //Serial1.print("*9N22xxxxxxxx#");
+      //SerialX32.print("*9N22xxxxxxxx#");
       // this is done via the 85ms-timer in the SAMD.ino
     }else if (command.indexOf("*9M")==0) {
       // seek to specific sample based on 48kHz
@@ -212,14 +212,17 @@ String x32ExecCmd(String command) {
     }else if (command.indexOf("*9AF#")==0) {
       // request first entry of TOC
       tocCounter = 0; // reset tocCounter as we are requesting first entry
-      String title = split(TOC, '|', tocCounter); // name of title0
+
+      String TOCtest = "5977A2A0|5977A2A4|5977A52B Part 1|Test|";
+      String title = split(TOCtest, '|', tocCounter); // name of title0
 
       Answer = "*9ASF" + title + "#";
     }else if (command.indexOf("*9AN#")==0) {
       // request followup-titles of TOC
       tocCounter++;
       if (tocCounter<tocEntries) {
-        String title = split(TOC, '|', tocCounter); // name of titleX
+        String TOCtest = "5977A2A0|5977A2A4|5977A52B Part 1|Test|";
+        String title = split(TOCtest, '|', tocCounter); // name of titleX
 
         Answer = "*9ASN" + title + "#";
       }else{
@@ -230,15 +233,14 @@ String x32ExecCmd(String command) {
       // N for german "NOCH" = remaining?
       // X32 requests available space on SD-card
       uint8_t cardNumber = command[3] - 48; // either 0 or 1
-      uint32_t cardSpaceAvailable = 32 * 1024 * 1024 * 1024 * 1024 * 1024 * 8; // convert 32GB to expected value (hopefully)
+      uint32_t cardSpaceAvailable = 0.85f * x32CardSize[cardNumber]; // pretend to have 85% of maximum space
 
-      Answer = "*9N" + String(cardNumber) + "0" + intToHex(cardSpaceAvailable, 16) + "#";
+      Answer = "*9N" + String(cardNumber) + "0" + intToHex(cardSpaceAvailable, 8) + intToHex(0, 8) + "#";
     }else if (command.indexOf("*9G")==0) {
       // G for german "GESAMT" = total?
-      uint8_t cardNumber = command[3] - 48; // either 0 or 1
-      uint32_t cardSize = 62326272;// "03B70600" for a 32GB card!? TODO: check the calculation
+      uint32_t totalSize = x32CardSize[0] + x32CardSize[1];// "03B70600" for a 32GB card!? TODO: check the calculation. seems to be 2*32GB
 
-      Answer = "*9G" + String(cardNumber) + "0" + intToHex(cardSize, 8) + "#";
+      Answer = "*9G00" + intToHex(totalSize, 8) + "#";
     }else if (command.indexOf("G")==2) {
       // received one of the initialization-commands *0G00000# ... *3G70000#
       // the usage is unclear so far
@@ -258,10 +260,15 @@ String x32ExecCmd(String command) {
   return Answer;
 }
 
-void x32InitCommand() {
-  Serial1.print("*9Z00#*9N010000000000000000#*9N110000000000000000#"); // Expansion-Card seems to send a live-sign to X32 at the beginning. Card1 and Card2 are set to "NotThere"
+void x32Init() {
+  SerialX32.print("*8BE#");
+  delay(1000);
+  SerialX32.print("*9Z00#*9N010000000000000000#*9N110000000000000000#"); // no card present
+  delay(67);
+  SerialX32.print("*8BE#");
+  delay(500);
 }
 
 void x32NewCard(uint8_t cardIndex) {
-  Serial1.print("*9N" + String(cardIndex) + "000007F4000000000#");
+  SerialX32.print("*9N" + String(cardIndex) + "000007F4000000000#"); // 32576 could be MegaBytes?
 }

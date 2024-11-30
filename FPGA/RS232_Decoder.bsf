@@ -4,7 +4,7 @@ editor if you plan to continue editing the block that represents it in
 the Block Editor! File corruption is VERY likely to occur.
 */
 /*
-Copyright (C) 2024  Intel Corporation. All rights reserved.
+Copyright (C) 2022  Intel Corporation. All rights reserved.
 Your use of Intel Corporation's design tools, logic functions 
 and other software and tools, and any partner logic 
 functions, and any output files from any of the foregoing 
@@ -1007,16 +1007,23 @@ https://fpgasoftware.intel.com/eula.
 	(port
 		(pt 264 2224)
 		(output)
-		(text "sync_select[7..0]" (rect 0 0 68 12)(font "Arial" ))
-		(text "sync_select[7..0]" (rect 175 2219 243 2231)(font "Arial" ))
-		(line (pt 264 2224)(pt 248 2224)(line_width 3))
+		(text "x32_enable" (rect 0 0 44 12)(font "Arial" ))
+		(text "x32_enable" (rect 199 2219 243 2231)(font "Arial" ))
+		(line (pt 264 2224)(pt 248 2224)(line_width 1))
 	)
 	(port
 		(pt 264 2240)
 		(output)
-		(text "fsclk_select[7..0]" (rect 0 0 67 12)(font "Arial" ))
-		(text "fsclk_select[7..0]" (rect 176 2235 243 2247)(font "Arial" ))
+		(text "sync_select[7..0]" (rect 0 0 68 12)(font "Arial" ))
+		(text "sync_select[7..0]" (rect 175 2235 243 2247)(font "Arial" ))
 		(line (pt 264 2240)(pt 248 2240)(line_width 3))
+	)
+	(port
+		(pt 264 2256)
+		(output)
+		(text "fsclk_select[7..0]" (rect 0 0 67 12)(font "Arial" ))
+		(text "fsclk_select[7..0]" (rect 176 2251 243 2263)(font "Arial" ))
+		(line (pt 264 2256)(pt 248 2256)(line_width 3))
 	)
 	(drawing
 		(rectangle (rect 16 16 248 2272)(line_width 1))

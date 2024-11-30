@@ -49,7 +49,7 @@ architecture rtl of tdm_rx is
 	signal zfsync, zzfsync, zzzfsync	: std_logic;
 	signal zsclk, zzsclk, zzzsclk 	: std_logic;
 
-	signal bit_cnt							: integer range 0 to 31 := 0;
+	signal bit_cnt							: integer range 0 to 32 := 0;
 	signal chn_cnt							: integer range 0 to 7 := 0;
 begin
 	detect_fsync_pos_edge : process(clk)
@@ -92,55 +92,58 @@ begin
 				sync_out <= '0';
 			else
 				if pos_edge = '1' then
-					if bit_cnt < 31 then
-						bit_cnt <= bit_cnt + 1; -- increment bit_cnt until bit 31
+					if bit_cnt < 32 then
+						bit_cnt <= bit_cnt + 1; -- increment bit_cnt until bit 32
 					else
+						-- reset bit-counter
+						bit_cnt <= 1;
+					
 						-- increase channel counter
 						if chn_cnt < (audio_channels-1) then
 							chn_cnt <= chn_cnt + 1; -- increase channel-counter on each LRCLK-edge
 						else
-							chn_cnt <= 0; -- reset to 0 as we are receiving a fsync only every 192 frames
+							chn_cnt <= 0; -- reset to 0
 						end if;
 					end if;
 				end if;
 				
 				if neg_edge = '1' then  	
-					if bit_cnt = bit_delay then -- data is x cycles after the word strobe
-						rx_sampledata <= '1';
-					elsif bit_cnt >= 24+bit_delay then -- reached end of sampledata
-						rx_sampledata <= '0';
+					if (bit_cnt >= bit_delay) and (bit_cnt < (24 + bit_delay))  then -- data is x cycles after the word strobe
+						rx_sampledata <= '1'; -- sample 24 bits
+					else
+						rx_sampledata <= '0'; -- ignore additional 8 bits
 					end if;
-				end if;
-				
-				if bit_cnt = 30 and neg_edge = '1' then
-					-- we have reached the unused 8bits at the end of the frame
 
-					-- set output and raise sync-signal when receiving the last channel
-					case chn_cnt is
-						when 0 =>
-							ch1_out <= sample_data;
-						when 1 =>
-							ch2_out <= sample_data;
-						when 2 =>
-							ch3_out <= sample_data;
-						when 3 =>
-							ch4_out <= sample_data;
-						when 4 =>
-							ch5_out <= sample_data;
-						when 5 =>
-							ch6_out <= sample_data;
-						when 6 =>
-							ch7_out <= sample_data;
-						when 7 =>
-							ch8_out <= sample_data;
-					end case;
-					
-					if (chn_cnt = audio_channels-1) then
-						-- set output
-						sync_out <= '1';
+					if bit_cnt = 30 then
+						-- we have reached the unused 8bits at the end of the frame
+
+						-- set output and raise sync-signal when receiving the last channel
+						case chn_cnt is
+							when 0 =>
+								ch1_out <= sample_data;
+							when 1 =>
+								ch2_out <= sample_data;
+							when 2 =>
+								ch3_out <= sample_data;
+							when 3 =>
+								ch4_out <= sample_data;
+							when 4 =>
+								ch5_out <= sample_data;
+							when 5 =>
+								ch6_out <= sample_data;
+							when 6 =>
+								ch7_out <= sample_data;
+							when 7 =>
+								ch8_out <= sample_data;
+						end case;
+						
+						if (chn_cnt = audio_channels-1) then
+							-- set output
+							sync_out <= '1';
+						end if;
+					else
+						sync_out <= '0';
 					end if;
-				else
-					sync_out <= '0';
 				end if;
 			end if;
 		end if;

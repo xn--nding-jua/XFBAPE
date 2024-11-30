@@ -98,7 +98,8 @@
 #include "NINA.h"
 
 void timerSecondsFcn() {
-  ledcFade(LED_GREEN, 255, 0, 500); // pin, StartDutyCycle, TargetDutyCycle, FadeTime in ms
+  //ledcFade(LED_GREEN, 255, 0, 500); // pin, StartDutyCycle, TargetDutyCycle, FadeTime in ms
+  digitalWrite(LED_GREEN, !digitalRead(LED_GREEN));
 
   #if USE_MQTT == 1
     mqttPublish();
@@ -113,7 +114,7 @@ void timer100msFcn() {
 void setup() {
   pinMode(LED_GREEN, OUTPUT);
   pinMode(LED_BLUE, OUTPUT);
-  ledcAttach(LED_GREEN, 2000, 8); // IO-pin, frequency in Hz, Resolution in Bit
+  //ledcAttach(LED_GREEN, 2000, 8); // IO-pin, frequency in Hz, Resolution in Bit
   ledcAttach(LED_BLUE, 2000, 8); // IO-pin, frequency in Hz, Resolution in Bit
 
   // init communication with SAMD21/USB
@@ -121,6 +122,8 @@ void setup() {
 
   // init communication with FPGA
   Serial1.begin(4000000, SERIAL_8N1, 22, 27, false, 1000); // BaudRate, Config, RxPin, TxPin, Invert, TimeoutMs, rxfifo_full_thrhd
+
+  setX32state(false); // disable X32
 }
 
 void loop() {
@@ -129,7 +132,7 @@ void loop() {
     handleFPGACommunication(); // communication through software-serial
 
     // handle webserver
-    webserver.handleClient();
+    //webserver.handleClient(); // DEBUG: WITHOUT SDCARD
 
     #if USE_TCPSERVER == 1
       handleTCPCommunication();
@@ -166,10 +169,10 @@ void initSystem() {
   Serial.println("X-f/bape MainCtrl " + String(versionstring) + " built on " + String(compile_date));
 
   // init SD-Card
-  initStorage();
+  //initStorage(); // DEBUG: WITHOUT SDCARD
 
   // initWifi
-  configRead("/wifi.cfg", 10); // read WiFi-settings with maximum of 10 lines (if file is available)
+  //configRead("/wifi.cfg", 10); // read WiFi-settings with maximum of 10 lines (if file is available) // DEBUG: WITHOUT SDCARD
   initWifi(); // initialize WiFi
 
   /*
@@ -189,7 +192,7 @@ void initSystem() {
   #endif
 
   // init Webserver
-  initWebserver(); // starting regular HTTP-server
+  //initWebserver(); // starting regular HTTP-server // DEBUG: WITHOUT SDCARD
 
   // init command-server
   #if USE_TCPSERVER == 1
@@ -224,6 +227,9 @@ void initSystem() {
     // reading config-file failed -> load defaults
     initAudiomixer();
   //}
+
+  // enable X32
+  setX32state(true); // first command to SAMD21 should be *8I# followed by *8R# after around 250ms
 
   // set system-flag to online
   systemOnline = true;

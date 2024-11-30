@@ -28,10 +28,10 @@ String password = "YourVerySafeWiFiPassword"; // password can be changed via USB
 #define USE_BLUETOOTH       0   // enable the bluetooth-A2DP-receiver (takes ~ 741,104 bytes)
 #define USE_STATICIP        0   // only for client-mode. In AccessPoint-Mode it will use static-IP and ignores this options
 #define USE_TCPSERVER       1   // enable TCP-Server (takes ~ 10029 bytes)
-#define USE_MQTT            1   // enable MQTT (takes ~ 8360 bytes)
-#define USE_FTP_SERVER      1   // enable FtpServer for uploading/deleting/editing files
+#define USE_MQTT            0   // enable MQTT (takes ~ 8360 bytes)
+#define USE_FTP_SERVER      0   // enable FtpServer for uploading/deleting/editing files
 #define USE_DISPLAY         1   // enable functions for I2C display connected to SAMD21 (takes ~ 384 bytes)
-#define USE_DMX512          1   // enable outputting DMX512 via UART2
+#define USE_DMX512          0   // enable outputting DMX512 via UART2
 #define USE_DMX512_RX       0   // enable DMX512-receiver via UART2
 
 #define AUDIO_INIT_VOLUME   21          // 0...21, so set to max on initialization
@@ -116,6 +116,7 @@ uint32_t currentAudioPosition;
 #include <WiFiClient.h>
 #include <Ticker.h> // timer-functions
 #include <stdlib.h> // atoi()
+#include <ArduinoJson.h>
 
 // IP-Address of Access-Point
 IPAddress ip(192, 168, 0, 1);
@@ -153,7 +154,6 @@ File configFile;
   #define mqtt_serverport 1883
 
   #include <PubSubClient.h>
-  #include <ArduinoJson.h>
 
   WiFiClient mqttnetworkclient;
   PubSubClient mqttclient(mqttnetworkclient);

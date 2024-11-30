@@ -74,7 +74,7 @@ String executeCommand(String Command) {
       playerinfo.gateThreshold = split(ParameterString, ',', 12).toFloat();
       playerinfo.audioStatusInfo = split(ParameterString, ',', 13).toInt(); // contains infos about noisegate, clip (L/R/S) and compression (LR/S)
       TOC = split(ParameterString, ',', 14);
-      
+
       Answer = "SAMD: OK";
     #if USE_DISPLAY == 1
       }else if (Command.indexOf(F("samd:player:updatedisplay")) > -1){

@@ -176,7 +176,6 @@ void handleFPGACommunication() {
       Serial.write(rxChar);
     }
 
-
     // FPGA sends 20 messages per second
     // read new byte into ringbuffer
     fpgaRingBuffer[fpgaRingBufferPointer++] = rxChar;
@@ -897,4 +896,16 @@ void updateSAMD() {
 	SD_getTOC(2) + "|," + // request TOC in PSV-format. We need a trailing "|" so that the split() function in SAMD can work correctly
 	"E"
 	);
+}
+
+void setX32state(bool state) {
+  data_16b fpga_data;
+  if (state) {
+    // enable X32
+    fpga_data.u16 = 1; // we are allowing only 6dB-steps, so we have to round to optimize the user-input
+  }else{
+    // disable X32
+    fpga_data.u16 = 0; // we are allowing only 6dB-steps, so we have to round to optimize the user-input
+  }
+  sendDataToFPGA(FPGA_IDX_AUX_CMD+4, &fpga_data);
 }
