@@ -74,10 +74,6 @@ void httpHandleJson() {
   message += audiomixer.mainBalance;
   message += (F(",\"volume_sub\":"));
   message += audiomixer.mainVolumeSub;
-  message += (F(",\"power_main\":"));
-  message += ((48*48) * pow(10, audiomixer.compressors[0].threshold/20)) / 6; // calculate (V^2/threshold)/(6 Ohm)
-  message += (F(",\"power_sub\":"));
-  message += ((48*48) * pow(10, audiomixer.compressors[1].threshold/20)) / 6; // calculate (V^2/threshold)/(6 Ohm)
 
   // Player-Data
   message += (F(",\"player_isplaying\":"));
@@ -118,6 +114,11 @@ void httpHandleJson() {
     message += audiomixer.chBalance[i];
   }
 
+  message += ",\"volume_sd\":";
+  message += audiomixer.cardVolume;
+  message += ",\"volume_bt\":";
+  message += audiomixer.btVolume;
+
   // VU-meter-values
   message += ",\"vumeter_left\":";
   message += vu_meter_value[0];
@@ -146,6 +147,10 @@ void httpHandleJson() {
     message += audiomixer.peq[i].gain;
   }
 
+/*
+  // The following lines could be used. But due to a small FPGA we have not enough ressources
+  // for all features. So we are ignoring Crossover, Gains and Noise for now
+  
   // Crossover-Filter
   message += (F(",\"lp_fc\":"));
   message += audiomixer.LR24_LP_Sub.fc;
@@ -173,6 +178,7 @@ void httpHandleJson() {
     message += ",\"gate" + String(i+1) + "_closed\":";
     message += ((gateStatusInfo & (1 << i)) > 0);
   }
+*/
 
   // Dynamic-Compressors / Limiters
   for (int i=0; i<MAX_COMPRESSORS; i++) {

@@ -27,10 +27,12 @@ function renew(){
 		document.getElementById('player_progressbar').setAttribute('class', 'progress-bar bg-danger progress-bar-striped');
 	}
 	 
+/*
 	// set ADC-Gains
 	for (let adc = 1; adc <= 1; adc++) {
 		document.getElementById('select_adc' + adc + '_gain').selectedIndex = Math.round(jsonOutput['adc' + adc + '_gain'] / 6); // convert dB (6dB/bit) to selectedIndex
 	}
+*/
 	// set PEQ-types
 	for (let peq = 1; peq <= 5; peq++) {
 		//document.getElementById('select_peq' + peq + '_type').value = EQ_Types[jsonOutput['peq' + peq + '_type']];
@@ -54,13 +56,6 @@ function renew(){
 	if (timeseries?.["timeseries_right"] !== undefined) timeseries["timeseries_right"].append(new Date().getTime(), parseFloat(jsonOutput['vumeter_right'])/2.55);
 	if (timeseries?.["timeseries_sub"] !== undefined) timeseries["timeseries_sub"].append(new Date().getTime(), parseFloat(jsonOutput['vumeter_sub'])/2.55);
 
-	// set power
-	var vsquaremain = jsonOutput['power_main']*6; // convert value for 6ohm to generic v^2 value
-	var vsquaresub = jsonOutput['power_sub']*6; // convert value for 6ohm to generic v^2 value
-	document.getElementById('power_main_overview').innerHTML = "Peak: " + Math.round(vsquaremain/4) + "W / " + Math.round(vsquaremain/6) + "W / " + Math.round(vsquaremain/8) + "W<br>" + "RMS: " + Math.round((vsquaremain/Math.sqrt(2))/4) + "W / " + Math.round((vsquaremain/Math.sqrt(2))/6) + "W / " + Math.round((vsquaremain/Math.sqrt(2))/8) + "W";
-	document.getElementById('power_sub_overview').innerHTML = "Peak: " + Math.round(vsquaresub/4) + "W / " + Math.round(vsquaresub/6) + "W / " + Math.round(vsquaresub/8) + "W<br>" + "RMS: " + Math.round((vsquaresub/Math.sqrt(2))/4) + "W / " + Math.round((vsquaresub/Math.sqrt(2))/6) + "W / " + Math.round((vsquaresub/Math.sqrt(2))/8) + "W";
-
-	
 	// set clip- and comp-badges
 	if (jsonOutput['comp1_active'] == 1) {
 		document.getElementById('comp_main_left').setAttribute('class', 'badge bg-warning');
@@ -89,6 +84,7 @@ function renew(){
 	}else{
 		document.getElementById('clip_main_sub').setAttribute('class', 'badge bg-secondary text-dark');
 	}
+/*
 	if (jsonOutput['gate1_closed'] == 1) {
 		document.getElementById('gate1_state').setAttribute('class', 'badge bg-danger');
 		document.getElementById('gate1_state').innerHTML = 'Gate closed';
@@ -96,6 +92,7 @@ function renew(){
 		document.getElementById('gate1_state').setAttribute('class', 'badge bg-success');
 		document.getElementById('gate1_state').innerHTML = 'Gate open';
 	}
+*/
 
 	// try to set sliders based on the element-name
 	for (var i in jsonOutput)

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-		<title>f/bape</title>
+		<title>X-f/bape</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<link rel="icon" type="image/x-icon" href="img/favicon.ico">
         <link rel="icon" type="image/png" sizes="16x16" href="img/favico16.png">
@@ -101,7 +101,7 @@
 		<center>
 		<br>
 		<div class="alert alert-dismissible alert-light">
-			<h3>f/bape - The FPGA-based Audioplayer with EQ</h3>
+			<h3>X-f/bape - The FPGA-based Expansion-Card for Behringer X32</h3>
 		</div>
 
 		<br>
@@ -160,27 +160,6 @@
 										
 										<tr class="table-light">
 											<td width="100%" align="center" colspan="2">
-												<button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Sync-Source</button>
-												<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-													<output id="synclist">
-														<a class="dropdown-item" onclick="fetch('/cmd.php?mixer:sync=0')">ADC</a>
-														<a class="dropdown-item" onclick="fetch('/cmd.php?mixer:sync=1')">SD-Card</a>
-														<a class="dropdown-item" onclick="fetch('/cmd.php?mixer:sync=2')">Bluetooth</a>
-														<a class="dropdown-item" onclick="fetch('/cmd.php?mixer:sync=3')">S/PDIF</a>
-														<a class="dropdown-item" onclick="fetch('/cmd.php?mixer:sync=4')">Ultranet A</a>
-														<a class="dropdown-item" onclick="fetch('/cmd.php?mixer:sync=5')">Ultranet B</a>
-													</output>
-												</div>&nbsp;
-
-												<button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Samplerate</button>
-												<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-													<output id="sampleratelist">
-														<a class="dropdown-item" onclick="fetch('/cmd.php?mixer:samplerate=44100')">44.1 kHz</a>
-														<a class="dropdown-item" onclick="fetch('/cmd.php?mixer:samplerate=48000')">48 kHz</a>
-														<a class="dropdown-item" onclick="fetch('/cmd.php?mixer:samplerate=96000')">96 kHz</a>
-													</output>
-												</div>&nbsp;
-
 												<button type="button" class="btn btn-warning" id="buttonEQReset" onclick="fetch('/cmd.php?mixer:eq:reset'); $('#resetToast').toast('show')">Reset EQs</button>
 												&nbsp;
 												<button type="button" class="btn btn-warning" id="buttonMixerReset" onclick="fetch('/cmd.php?mixer:reset'); $('#resetToast').toast('show')">Reset all</button>
@@ -199,7 +178,7 @@
 						<h5 class="card-header">
 							<a class="d-block text-white" data-toggle="collapse" data-bs-toggle="collapse" href="#collapse_mainvolume" role="button" aria-expanded="false" aria-controls="collapse_mainvolume">
 								<i class="fa-solid fa-volume-high"></i>
-								Main Volume
+								Main-Channels
 								<i class="fa fa-chevron-down pull-right"></i>
 							</a>
 						</h5>
@@ -218,11 +197,11 @@
 										</tr>
 
 										<tr class="table-light">
-											<td width="10%" align="right">Speaker</td>
+											<td width="10%" align="right">Main L/R</td>
 											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:main=' + this.value); document.getElementById('volume_main').value = parseFloat(this.value).toFixed(1)" id="slider_volume_main" name="slider_volume_main"></td>
 											<td width="15%" align="left"><output id="volume_main">-48.0</output><label>&nbsp;dB</label></td>
 
-											<td width="15%" rowspan="3">
+											<td width="15%" rowspan="5">
 												<center>
 												<span id="clip_main_left" class="badge bg-secondary text-dark">Clip</span>
 												<br>
@@ -231,7 +210,7 @@
 												<span id="comp_main_left" class="badge bg-secondary text-dark">Cmp</span>
 												</center>
 											</td>
-											<td width="15%" rowspan="3">
+											<td width="15%" rowspan="5">
 												<center>
 												<span id="clip_main_right" class="badge bg-secondary text-dark">Clip</span>
 												<br>
@@ -240,7 +219,7 @@
 												<span id="comp_main_right" class="badge bg-secondary text-dark">Cmp</span>
 												</center>
 											</td>
-											<td width="15%" rowspan="3">
+											<td width="15%" rowspan="5">
 												<center>
 												<span id="clip_main_sub" class="badge bg-secondary text-dark">Clip</span>
 												<br>
@@ -260,6 +239,18 @@
 											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:sub=' + this.value); document.getElementById('volume_sub').value = parseFloat(this.value).toFixed(1)" id="slider_volume_sub" name="slider_volume_sub"></td>
 											<td width="15%" align="left"><output id="volume_sub">-48.0</output><label>&nbsp;dB</label></td>
 										</tr>
+
+										<tr class="table-light">
+											<td width="10%" align="right">SD-Card</td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="0" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:sd=' + this.value); document.getElementById('volume_sd').value = parseFloat(this.value).toFixed(1)" id="slider_volume_sd" name="slider_volume_sd"></td>
+											<td width="15%" align="left"><output id="volume_sd">0.0</output><label>&nbsp;dB</label></td>
+										</tr>
+
+										<tr class="table-light">
+											<td width="10%" align="right">Bluetooth</td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:bt=' + this.value); document.getElementById('volume_bt').value = parseFloat(this.value).toFixed(1)" id="slider_volume_bt" name="slider_volume_bt"></td>
+											<td width="15%" align="left"><output id="volume_bt">-48.0</output><label>&nbsp;dB</label></td>
+										</tr>
 									</tbody>
 								</table>
 							</div>
@@ -270,77 +261,87 @@
 				<div class="col-md-6 mb-4" style="max-width: 40rem;">
 					<div class="card border-light" style="max-width: 38rem;">
 						<h5 class="card-header">
-							<a class="d-block text-white" data-toggle="collapse" data-bs-toggle="collapse" href="#collapse_channelmixer" role="button" aria-expanded="false" aria-controls="collapse_channelmixer">
+							<a class="collapsed d-block text-white" data-toggle="collapse" data-bs-toggle="collapse" href="#collapse_ultranetmixer" role="button" aria-expanded="false" aria-controls="collapse_ultranetmixer">
 								<i class="fa-solid fa-sliders"></i>
-								Channel Mixer
+								Mixer Channels 1...8
 								<i class="fa fa-chevron-down pull-right"></i>
 							</a>
 						</h5>
-						<div class="collapse show" id="collapse_channelmixer">
+						<div class="collapse" id="collapse_ultranetmixer">
 							<div class="card-body">
 								<table class="table table-hover">
 									<tbody>
 										<tr class="table-light">
 											<th width="10%" align="right">Channel</th>
-											<th width="30%" align="center">Left</th>
+											<th width="30%" align="center">Volume</th>
 											<th width="15%" align="left"></th>
-											<th width="30%" align="center">Right</th>
+											<th width="30%" align="center">Balance</th>
 											<th width="15%" align="left"></th>
 										</tr>
 
 										<tr class="table-light">
-											<td width="10%" align="right">Mic/Line</td>
-											<td width="30%" align="right"><input type="range" class="form-range" value="0" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch1=' + this.value); document.getElementById('volume_ch1').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch1" name="slider_volume_ch1"></td>
-											<td width="15%" align="left"><output id="volume_ch1">0.0</output><label>&nbsp;dB</label></td>
-											<td width="30%" align="right"><input type="range" class="form-range" value="0" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch2=' + this.value); document.getElementById('volume_ch2').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch2" name="slider_volume_ch2"></td>
-											<td width="15%" align="left"><output id="volume_ch2">0.0</output><label>&nbsp;dB</label></td>
+											<td width="10%" align="right">Ch 1</td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch1=' + this.value); document.getElementById('volume_ch1').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch1" name="slider_volume_ch1"></td>
+											<td width="15%" align="left"><output id="volume_ch1">-48.0</output><label>&nbsp;dB</label></td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch1=' + this.value); document.getElementById('balance_ch1').value = this.value" id="slider_balance_ch1" name="slider_balance_ch1"></td>
+											<td width="15%" align="left"><output id="balance_ch1">50</output><label>&nbsp;%</label></td>
 										</tr>
 
 										<tr class="table-light">
-											<td width="10%" align="right">Bal</td>
-											<td width="30%" align="right"><input type="range" class="form-range" value="0" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch1=' + this.value); document.getElementById('balance_ch1').value = this.value" id="slider_balance_ch1" name="slider_balance_ch1"></td>
-											<td width="15%" align="left"><output id="balance_ch1">0</output><label>&nbsp;%</label></td>
-
-											<td width="30%" align="right"><input type="range" class="form-range" value="100" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch2=' + this.value); document.getElementById('balance_ch2').value = this.value" id="slider_balance_ch2" name="slider_balance_ch2"></td>
-											<td width="15%" align="left"><output id="balance_ch2">100</output><label>&nbsp;%</label></td>
+											<td width="10%" align="right">Ch 2</td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch2=' + this.value); document.getElementById('volume_ch2').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch2" name="slider_volume_ch2"></td>
+											<td width="15%" align="left"><output id="volume_ch2">-48.0</output><label>&nbsp;dB</label></td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch2=' + this.value); document.getElementById('balance_ch2').value = this.value" id="slider_balance_ch2" name="slider_balance_ch2"></td>
+											<td width="15%" align="left"><output id="balance_ch2">50</output><label>&nbsp;%</label></td>
 										</tr>
 
 										<tr class="table-light">
-											<td width="10%" align="right">SD-Card</td>
-											<td width="30%" align="right"><input type="range" class="form-range" value="0" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch3=' + this.value); document.getElementById('volume_ch3').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch3" name="slider_volume_ch3"></td>
-											<td width="15%" align="left"><output id="volume_ch3">0.0</output><label>&nbsp;dB</label></td>
-
-											<td width="30%" align="right"><input type="range" class="form-range" value="0" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch4=' + this.value); document.getElementById('volume_ch4').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch4" name="slider_volume_ch4"></td>
-											<td width="15%" align="left"><output id="volume_ch4">0.0</output><label>&nbsp;dB</label></td>
+											<td width="10%" align="right">Ch 3</td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch3=' + this.value); document.getElementById('volume_ch3').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch3" name="slider_volume_ch3"></td>
+											<td width="15%" align="left"><output id="volume_ch3">-48.0</output><label>&nbsp;dB</label></td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch3=' + this.value); document.getElementById('balance_ch3').value = this.value" id="slider_balance_ch3" name="slider_balance_ch3"></td>
+											<td width="15%" align="left"><output id="balance_ch3">50</output><label>&nbsp;%</label></td>
 										</tr>
 
 										<tr class="table-light">
-											<td width="10%" align="right">Bal</td>
-											<td width="30%" align="right"><input type="range" class="form-range" value="0" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch3=' + this.value); document.getElementById('balance_ch3').value = this.value" id="slider_balance_ch3" name="slider_balance_ch3"></td>
-											<td width="15%" align="left"><output id="balance_ch3">0</output><label>&nbsp;%</label></td>
-
-											<td width="30%" align="right"><input type="range" class="form-range" value="100" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch4=' + this.value); document.getElementById('balance_ch4').value = this.value" id="slider_balance_ch4" name="slider_balance_ch4"></td>
-											<td width="15%" align="left"><output id="balance_ch4">100</output><label>&nbsp;%</label></td>
+											<td width="10%" align="right">Ch 4</td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch4=' + this.value); document.getElementById('volume_ch4').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch4" name="slider_volume_ch4"></td>
+											<td width="15%" align="left"><output id="volume_ch4">-48.0</output><label>&nbsp;dB</label></td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch4=' + this.value); document.getElementById('balance_ch4').value = this.value" id="slider_balance_ch4" name="slider_balance_ch4"></td>
+											<td width="15%" align="left"><output id="balance_ch4">50</output><label>&nbsp;%</label></td>
 										</tr>
 
 										<tr class="table-light">
-											<td width="10%" align="right">Bluetooth</td>
-											<td width="30%" align="right"><input type="range" class="form-range" value="0" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch5=' + this.value); document.getElementById('volume_ch5').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch5" name="slider_volume_ch5"></td>
-											<td width="15%" align="left"><output id="volume_ch5">0.0</output><label>&nbsp;dB</label></td>
-
-											<td width="30%" align="right"><input type="range" class="form-range" value="0" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch6=' + this.value); document.getElementById('volume_ch6').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch6" name="slider_volume_ch6"></td>
-											<td width="15%" align="left"><output id="volume_ch6">0.0</output><label>&nbsp;dB</label></td>
+											<td width="10%" align="right">Ch 5</td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch5=' + this.value); document.getElementById('volume_ch5').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch5" name="slider_volume_ch5"></td>
+											<td width="15%" align="left"><output id="volume_ch5">-48.0</output><label>&nbsp;dB</label></td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch5=' + this.value); document.getElementById('balance_ch5').value = this.value" id="slider_balance_ch5" name="slider_balance_ch5"></td>
+											<td width="15%" align="left"><output id="balance_ch5">50</output><label>&nbsp;%</label></td>
 										</tr>
 
 										<tr class="table-light">
-											<td width="10%" align="right">Bal</td>
-											<td width="30%" align="right"><input type="range" class="form-range" value="0" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch5=' + this.value); document.getElementById('balance_ch5').value = this.value" id="slider_balance_ch5" name="slider_balance_ch5"></td>
-											<td width="15%" align="left"><output id="balance_ch5">0</output><label>&nbsp;%</label></td>
-
-											<td width="30%" align="right"><input type="range" class="form-range" value="100" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch6=' + this.value); document.getElementById('balance_ch6').value = this.value" id="slider_balance_ch6" name="slider_balance_ch6"></td>
-											<td width="15%" align="left"><output id="balance_ch6">100</output><label>&nbsp;%</label></td>
+											<td width="10%" align="right">Ch 6</td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch6=' + this.value); document.getElementById('volume_ch6').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch6" name="slider_volume_ch6"></td>
+											<td width="15%" align="left"><output id="volume_ch6">-48.0</output><label>&nbsp;dB</label></td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch6=' + this.value); document.getElementById('balance_ch6').value = this.value" id="slider_balance_ch6" name="slider_balance_ch6"></td>
+											<td width="15%" align="left"><output id="balance_ch6">50</output><label>&nbsp;%</label></td>
 										</tr>
 
+										<tr class="table-light">
+											<td width="10%" align="right">Ch 7</td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch7=' + this.value); document.getElementById('volume_ch7').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch7" name="slider_volume_ch7"></td>
+											<td width="15%" align="left"><output id="volume_ch7">-48.0</output><label>&nbsp;dB</label></td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch7=' + this.value); document.getElementById('balance_ch7').value = this.value" id="slider_balance_ch7" name="slider_balance_ch7"></td>
+											<td width="15%" align="left"><output id="balance_ch7">50</output><label>&nbsp;%</label></td>
+										</tr>
+
+										<tr class="table-light">
+											<td width="10%" align="right">Ch 8</td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch8=' + this.value); document.getElementById('volume_ch8').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch8" name="slider_volume_ch8"></td>
+											<td width="15%" align="left"><output id="volume_ch8">-48.0</output><label>&nbsp;dB</label></td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch8=' + this.value); document.getElementById('balance_ch8').value = this.value" id="slider_balance_ch8" name="slider_balance_ch8"></td>
+											<td width="15%" align="left"><output id="balance_ch8">50</output><label>&nbsp;%</label></td>
+										</tr>
 									</tbody>
 								</table>
 							</div>
@@ -351,14 +352,91 @@
 				<div class="col-md-6 mb-4" style="max-width: 40rem;">
 					<div class="card border-light" style="max-width: 38rem;">
 						<h5 class="card-header">
-							<a class="d-block text-white" data-toggle="collapse" data-bs-toggle="collapse" href="#collapse_eq_graph" role="button" aria-expanded="false" aria-controls="collapse_eq_graph">
-								<i class="fa-solid fa-wave-square"></i>
-								Equalizer
+							<a class="collapsed d-block text-white" data-toggle="collapse" data-bs-toggle="collapse" href="#collapse_ultranetmixer" role="button" aria-expanded="false" aria-controls="collapse_ultranetmixer">
+								<i class="fa-solid fa-sliders"></i>
+								Mixer Channels 9...16
 								<i class="fa fa-chevron-down pull-right"></i>
 							</a>
 						</h5>
-						<div class="collapse show" id="collapse_eq_graph">
-							<div id="equalizer"></div>
+						<div class="collapse" id="collapse_ultranetmixer">
+							<div class="card-body">
+								<table class="table table-hover">
+									<tbody>
+										<tr class="table-light">
+											<th width="10%" align="right">Channel</th>
+											<th width="30%" align="center">Volume</th>
+											<th width="15%" align="left"></th>
+											<th width="30%" align="center">Balance</th>
+											<th width="15%" align="left"></th>
+										</tr>
+
+										<tr class="table-light">
+											<td width="10%" align="right">Ch 9</td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch9=' + this.value); document.getElementById('volume_ch9').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch9" name="slider_volume_ch9"></td>
+											<td width="15%" align="left"><output id="volume_ch9">-48.0</output><label>&nbsp;dB</label></td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch9=' + this.value); document.getElementById('balance_ch9').value = this.value" id="slider_balance_ch9" name="slider_balance_ch9"></td>
+											<td width="15%" align="left"><output id="balance_ch9">50</output><label>&nbsp;%</label></td>
+										</tr>
+
+										<tr class="table-light">
+											<td width="10%" align="right">Ch 10</td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch10=' + this.value); document.getElementById('volume_ch10').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch10" name="slider_volume_ch10"></td>
+											<td width="15%" align="left"><output id="volume_ch10">-48.0</output><label>&nbsp;dB</label></td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch10=' + this.value); document.getElementById('balance_ch10').value = this.value" id="slider_balance_ch10" name="slider_balance_ch10"></td>
+											<td width="15%" align="left"><output id="balance_ch10">50</output><label>&nbsp;%</label></td>
+										</tr>
+
+										<tr class="table-light">
+											<td width="10%" align="right">Ch 11</td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch11=' + this.value); document.getElementById('volume_ch11').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch11" name="slider_volume_ch11"></td>
+											<td width="15%" align="left"><output id="volume_ch11">-48.0</output><label>&nbsp;dB</label></td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch11=' + this.value); document.getElementById('balance_ch11').value = this.value" id="slider_balance_ch11" name="slider_balance_ch11"></td>
+											<td width="15%" align="left"><output id="balance_ch11">50</output><label>&nbsp;%</label></td>
+										</tr>
+
+										<tr class="table-light">
+											<td width="10%" align="right">Ch 12</td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch12=' + this.value); document.getElementById('volume_ch12').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch12" name="slider_volume_ch12"></td>
+											<td width="15%" align="left"><output id="volume_ch12">-48.0</output><label>&nbsp;dB</label></td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch12=' + this.value); document.getElementById('balance_ch12').value = this.value" id="slider_balance_ch12" name="slider_balance_ch12"></td>
+											<td width="15%" align="left"><output id="balance_ch12">50</output><label>&nbsp;%</label></td>
+										</tr>
+
+										<tr class="table-light">
+											<td width="10%" align="right">Ch 13</td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch13=' + this.value); document.getElementById('volume_ch13').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch13" name="slider_volume_ch13"></td>
+											<td width="15%" align="left"><output id="volume_ch13">-48.0</output><label>&nbsp;dB</label></td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch13=' + this.value); document.getElementById('balance_ch13').value = this.value" id="slider_balance_ch13" name="slider_balance_ch13"></td>
+											<td width="15%" align="left"><output id="balance_ch13">50</output><label>&nbsp;%</label></td>
+										</tr>
+
+										<tr class="table-light">
+										<tr class="table-light">
+											<td width="10%" align="right">Ch 14</td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch14=' + this.value); document.getElementById('volume_ch14').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch14" name="slider_volume_ch14"></td>
+											<td width="15%" align="left"><output id="volume_ch14">-48.0</output><label>&nbsp;dB</label></td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch14=' + this.value); document.getElementById('balance_ch14').value = this.value" id="slider_balance_ch14" name="slider_balance_ch14"></td>
+											<td width="15%" align="left"><output id="balance_ch14">50</output><label>&nbsp;%</label></td>
+										</tr>
+
+										<tr class="table-light">
+											<td width="10%" align="right">Ch 15</td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch15=' + this.value); document.getElementById('volume_ch15').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch15" name="slider_volume_ch15"></td>
+											<td width="15%" align="left"><output id="volume_ch15">-48.0</output><label>&nbsp;dB</label></td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch15=' + this.value); document.getElementById('balance_ch15').value = this.value" id="slider_balance_ch15" name="slider_balance_ch15"></td>
+											<td width="15%" align="left"><output id="balance_ch15">50</output><label>&nbsp;%</label></td>
+										</tr>
+
+										<tr class="table-light">
+											<td width="10%" align="right">Ch 16</td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch16=' + this.value); document.getElementById('volume_ch16').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch16" name="slider_volume_ch16"></td>
+											<td width="15%" align="left"><output id="volume_ch16">-48.0</output><label>&nbsp;dB</label></td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch16=' + this.value); document.getElementById('balance_ch16').value = this.value" id="slider_balance_ch16" name="slider_balance_ch16"></td>
+											<td width="15%" align="left"><output id="balance_ch16">50</output><label>&nbsp;%</label></td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -366,89 +444,178 @@
 				<div class="col-md-6 mb-4" style="max-width: 40rem;">
 					<div class="card border-light" style="max-width: 38rem;">
 						<h5 class="card-header">
-							<a class="collapsed d-block text-white" data-toggle="collapse" data-bs-toggle="collapse" href="#collapse_analoginput" role="button" aria-expanded="false" aria-controls="collapse_analoginput">
-								<i class="fa-solid fa-microphone"></i>
-								Analog Input
+							<a class="collapsed d-block text-white" data-toggle="collapse" data-bs-toggle="collapse" href="#collapse_ultranetmixer" role="button" aria-expanded="false" aria-controls="collapse_ultranetmixer">
+								<i class="fa-solid fa-sliders"></i>
+								Mixer Channels 17..24
 								<i class="fa fa-chevron-down pull-right"></i>
 							</a>
 						</h5>
-						<div class="collapse" id="collapse_analoginput">
+						<div class="collapse" id="collapse_ultranetmixer">
 							<div class="card-body">
 								<table class="table table-hover">
 									<tbody>
 										<tr class="table-light">
-											<th width="10%" align="right"></th>
-											<th width="25%" align="center">ADC-Input</th>
+											<th width="10%" align="right">Channel</th>
+											<th width="30%" align="center">Volume</th>
 											<th width="15%" align="left"></th>
-											<th width="10%" align="right"></th>
-											<th width="25%" align="center">Noise-Gate</th>
+											<th width="30%" align="center">Balance</th>
 											<th width="15%" align="left"></th>
 										</tr>
 
 										<tr class="table-light">
-											<td width="10%" align="right">Gain</td>
-											<td width="25%" align="right">
-												<select class="form-select" oninput="fetch('/cmd.php?mixer:adc:gain1=' + (this.selectedIndex * 6));" id="select_adc1_gain" name="select_adc1_gain">
-													<option selected="selected">+ 0dB</option>
-													<option>+ 6dB</option>
-													<option>+ 12dB</option>
-													<option>+ 18dB</option>
-													<option>+ 24dB</option>
-													<option>+ 30dB</option>
-													<option>+ 36dB</option>
-													<option>+ 42dB</option>
-													<option>+ 48dB</option>
-												</select>
-											</td>
-											<td width="15%" align="left">&nbsp;</label></td>
-											<td width="10%" align="right">Thresh</td>
-											<td width="25%" align="right"><input type="range" class="form-range" value="-80" min="-80" max="0" step="0.1" oninput="setGate(1); document.getElementById('gate1_thresh').value = parseFloat(this.value).toFixed(1)" id="slider_gate1_thresh" name="slider_gate1_thresh"></td>
-											<td width="15%" align="left"><output id="gate1_thresh">-80.0</output><label>&nbsp;dB</label></td>
+											<td width="10%" align="right">Ch 17</td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch17=' + this.value); document.getElementById('volume_ch17').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch17" name="slider_volume_ch17"></td>
+											<td width="15%" align="left"><output id="volume_ch17">-48.0</output><label>&nbsp;dB</label></td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch17=' + this.value); document.getElementById('balance_ch17').value = this.value" id="slider_balance_ch17" name="slider_balance_ch17"></td>
+											<td width="15%" align="left"><output id="balance_ch17">50</output><label>&nbsp;%</label></td>
 										</tr>
 
 										<tr class="table-light">
-											<td width="10%" align="right">&nbsp;</td>
-											<td width="25%" align="right">&nbsp;</td>
-											<td width="15%" align="left">&nbsp;</label></td>
-											<td width="10%" align="right">Range</td>
-											<td width="25%" align="right"><input type="range" class="form-range" value="60" min="0" max="60" step="0.1" oninput="setGate(1); document.getElementById('gate1_range').value = parseFloat(this.value).toFixed(1)" id="slider_gate1_range" name="slider_gate1_range"></td>
-											<td width="15%" align="left"><output id="gate1_range">60.0</output><label>&nbsp;dB</label></td>
+											<td width="10%" align="right">Ch 18</td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch18=' + this.value); document.getElementById('volume_ch18').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch18" name="slider_volume_ch18"></td>
+											<td width="15%" align="left"><output id="volume_ch18">-48.0</output><label>&nbsp;dB</label></td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch18=' + this.value); document.getElementById('balance_ch18').value = this.value" id="slider_balance_ch18" name="slider_balance_ch18"></td>
+											<td width="15%" align="left"><output id="balance_ch18">50</output><label>&nbsp;%</label></td>
 										</tr>
 
 										<tr class="table-light">
-											<td width="10%" align="right">&nbsp;</td>
-											<td width="25%" align="right">&nbsp;</td>
-											<td width="15%" align="left">&nbsp;</td>
-											<td width="10%" align="right">Attack</td>
-											<td width="25%" align="right"><input type="range" class="form-range" value="10" min="0" max="1000" oninput="setGate(1); document.getElementById('gate1_att').value = this.value" id="slider_gate1_att" name="slider_gate1_att"></td>
-											<td width="15%" align="left"><output id="gate1_att">10</output><label>&nbsp;ms</label></td>
+											<td width="10%" align="right">Ch 19</td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch19=' + this.value); document.getElementById('volume_ch19').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch19" name="slider_volume_ch19"></td>
+											<td width="15%" align="left"><output id="volume_ch19">-48.0</output><label>&nbsp;dB</label></td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch19=' + this.value); document.getElementById('balance_ch19').value = this.value" id="slider_balance_ch19" name="slider_balance_ch19"></td>
+											<td width="15%" align="left"><output id="balance_ch19">50</output><label>&nbsp;%</label></td>
 										</tr>
 
 										<tr class="table-light">
-											<td width="10%" align="right">&nbsp;</td>
-											<td width="25%" align="right">&nbsp;</td>
-											<td width="15%" align="left">&nbsp;</td>
-											<td width="10%" align="right">Hold</td>
-											<td width="25%" align="right"><input type="range" class="form-range" value="50" min="0" max="1000" oninput="setGate(1); document.getElementById('gate1_hold').value = this.value" id="slider_gate1_hold" name="slider_gate1_hold"></td>
-											<td width="15%" align="left"><output id="gate1_hold">50</output><label>&nbsp;ms</label></td>
+											<td width="10%" align="right">Ch 20</td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch20=' + this.value); document.getElementById('volume_ch20').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch20" name="slider_volume_ch20"></td>
+											<td width="15%" align="left"><output id="volume_ch20">-48.0</output><label>&nbsp;dB</label></td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch20=' + this.value); document.getElementById('balance_ch20').value = this.value" id="slider_balance_ch20" name="slider_balance_ch20"></td>
+											<td width="15%" align="left"><output id="balance_ch20">50</output><label>&nbsp;%</label></td>
 										</tr>
 
 										<tr class="table-light">
-											<td width="10%" align="right">&nbsp;</td>
-											<td width="25%" align="right">&nbsp;</td>
-											<td width="15%" align="left">&nbsp;</td>
-											<td width="10%" align="right">Release</td>
-											<td width="25%" align="right"><input type="range" class="form-range" value="258" min="0" max="1000" oninput="setGate(1); document.getElementById('gate1_rel').value = this.value" id="slider_gate1_rel" name="slider_gate1_rel"></td>
-											<td width="15%" align="left"><output id="gate1_rel">258</output><label>&nbsp;ms</label></td>
+											<td width="10%" align="right">Ch 21</td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch21=' + this.value); document.getElementById('volume_ch21').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch21" name="slider_volume_ch21"></td>
+											<td width="15%" align="left"><output id="volume_ch21">-48.0</output><label>&nbsp;dB</label></td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch21=' + this.value); document.getElementById('balance_ch21').value = this.value" id="slider_balance_ch21" name="slider_balance_ch21"></td>
+											<td width="15%" align="left"><output id="balance_ch21">50</output><label>&nbsp;%</label></td>
 										</tr>
 
 										<tr class="table-light">
-											<td width="10%" align="right">&nbsp;</td>
-											<td width="25%" align="right">&nbsp;</td>
-											<td width="15%" align="left">&nbsp;</td>
-											<td width="10%" align="right">State</td>
-											<td width="25%" align="right"><span id="gate1_state" class="badge bg-secondary text-dark">...</span></td>
-											<td width="15%" align="left"></td>
+											<td width="10%" align="right">Ch 22</td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch22=' + this.value); document.getElementById('volume_ch22').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch22" name="slider_volume_ch22"></td>
+											<td width="15%" align="left"><output id="volume_ch22">-48.0</output><label>&nbsp;dB</label></td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch22=' + this.value); document.getElementById('balance_ch22').value = this.value" id="slider_balance_ch22" name="slider_balance_ch22"></td>
+											<td width="15%" align="left"><output id="balance_ch22">50</output><label>&nbsp;%</label></td>
+										</tr>
+
+										<tr class="table-light">
+											<td width="10%" align="right">Ch 23</td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch23=' + this.value); document.getElementById('volume_ch23').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch23" name="slider_volume_ch23"></td>
+											<td width="15%" align="left"><output id="volume_ch23">-48.0</output><label>&nbsp;dB</label></td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch23=' + this.value); document.getElementById('balance_ch23').value = this.value" id="slider_balance_ch23" name="slider_balance_ch23"></td>
+											<td width="15%" align="left"><output id="balance_ch23">50</output><label>&nbsp;%</label></td>
+										</tr>
+
+										<tr class="table-light">
+											<td width="10%" align="right">Ch 24</td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch24=' + this.value); document.getElementById('volume_ch24').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch24" name="slider_volume_ch24"></td>
+											<td width="15%" align="left"><output id="volume_ch24">-48.0</output><label>&nbsp;dB</label></td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch24=' + this.value); document.getElementById('balance_ch24').value = this.value" id="slider_balance_ch24" name="slider_balance_ch24"></td>
+											<td width="15%" align="left"><output id="balance_ch24">50</output><label>&nbsp;%</label></td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-md-6 mb-4" style="max-width: 40rem;">
+					<div class="card border-light" style="max-width: 38rem;">
+						<h5 class="card-header">
+							<a class="collapsed d-block text-white" data-toggle="collapse" data-bs-toggle="collapse" href="#collapse_ultranetmixer" role="button" aria-expanded="false" aria-controls="collapse_ultranetmixer">
+								<i class="fa-solid fa-sliders"></i>
+								Mixer Channels 25...32
+								<i class="fa fa-chevron-down pull-right"></i>
+							</a>
+						</h5>
+						<div class="collapse" id="collapse_ultranetmixer">
+							<div class="card-body">
+								<table class="table table-hover">
+									<tbody>
+										<tr class="table-light">
+											<th width="10%" align="right">Channel</th>
+											<th width="30%" align="center">Volume</th>
+											<th width="15%" align="left"></th>
+											<th width="30%" align="center">Balance</th>
+											<th width="15%" align="left"></th>
+										</tr>
+
+										<tr class="table-light">
+											<td width="10%" align="right">Ch 25</td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch25=' + this.value); document.getElementById('volume_ch25').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch25" name="slider_volume_ch25"></td>
+											<td width="15%" align="left"><output id="volume_ch25">-48.0</output><label>&nbsp;dB</label></td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch25=' + this.value); document.getElementById('balance_ch25').value = this.value" id="slider_balance_ch25" name="slider_balance_ch25"></td>
+											<td width="15%" align="left"><output id="balance_ch25">50</output><label>&nbsp;%</label></td>
+										</tr>
+
+										<tr class="table-light">
+											<td width="10%" align="right">Ch 26</td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch26=' + this.value); document.getElementById('volume_ch26').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch26" name="slider_volume_ch26"></td>
+											<td width="15%" align="left"><output id="volume_ch26">-48.0</output><label>&nbsp;dB</label></td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch26=' + this.value); document.getElementById('balance_ch26').value = this.value" id="slider_balance_ch26" name="slider_balance_ch26"></td>
+											<td width="15%" align="left"><output id="balance_ch26">50</output><label>&nbsp;%</label></td>
+										</tr>
+
+										<tr class="table-light">
+											<td width="10%" align="right">Ch 27</td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch27=' + this.value); document.getElementById('volume_ch27').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch27" name="slider_volume_ch27"></td>
+											<td width="15%" align="left"><output id="volume_ch27">-48.0</output><label>&nbsp;dB</label></td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch27=' + this.value); document.getElementById('balance_ch27').value = this.value" id="slider_balance_ch27" name="slider_balance_ch27"></td>
+											<td width="15%" align="left"><output id="balance_ch27">50</output><label>&nbsp;%</label></td>
+										</tr>
+
+										<tr class="table-light">
+											<td width="10%" align="right">Ch 28</td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch28=' + this.value); document.getElementById('volume_ch28').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch28" name="slider_volume_ch28"></td>
+											<td width="15%" align="left"><output id="volume_ch28">-48.0</output><label>&nbsp;dB</label></td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch28=' + this.value); document.getElementById('balance_ch28').value = this.value" id="slider_balance_ch28" name="slider_balance_ch28"></td>
+											<td width="15%" align="left"><output id="balance_ch28">50</output><label>&nbsp;%</label></td>
+										</tr>
+
+										<tr class="table-light">
+											<td width="10%" align="right">Ch 29</td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch29=' + this.value); document.getElementById('volume_ch29').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch29" name="slider_volume_ch29"></td>
+											<td width="15%" align="left"><output id="volume_ch29">-48.0</output><label>&nbsp;dB</label></td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch29=' + this.value); document.getElementById('balance_ch29').value = this.value" id="slider_balance_ch29" name="slider_balance_ch29"></td>
+											<td width="15%" align="left"><output id="balance_ch29">50</output><label>&nbsp;%</label></td>
+										</tr>
+
+										<tr class="table-light">
+										<tr class="table-light">
+											<td width="10%" align="right">Ch 30</td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch30=' + this.value); document.getElementById('volume_ch30').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch30" name="slider_volume_ch30"></td>
+											<td width="15%" align="left"><output id="volume_ch30">-48.0</output><label>&nbsp;dB</label></td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch30=' + this.value); document.getElementById('balance_ch30').value = this.value" id="slider_balance_ch30" name="slider_balance_ch30"></td>
+											<td width="15%" align="left"><output id="balance_ch30">50</output><label>&nbsp;%</label></td>
+										</tr>
+
+										<tr class="table-light">
+											<td width="10%" align="right">Ch 31</td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch31=' + this.value); document.getElementById('volume_ch31').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch31" name="slider_volume_ch31"></td>
+											<td width="15%" align="left"><output id="volume_ch31">-48.0</output><label>&nbsp;dB</label></td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch31=' + this.value); document.getElementById('balance_ch31').value = this.value" id="slider_balance_ch31" name="slider_balance_ch31"></td>
+											<td width="15%" align="left"><output id="balance_ch31">50</output><label>&nbsp;%</label></td>
+										</tr>
+
+										<tr class="table-light">
+											<td width="10%" align="right">Ch 32</td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch32=' + this.value); document.getElementById('volume_ch32').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch32" name="slider_volume_ch32"></td>
+											<td width="15%" align="left"><output id="volume_ch32">-48.0</output><label>&nbsp;dB</label></td>
+											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch32=' + this.value); document.getElementById('balance_ch32').value = this.value" id="slider_balance_ch32" name="slider_balance_ch32"></td>
+											<td width="15%" align="left"><output id="balance_ch32">50</output><label>&nbsp;%</label></td>
 										</tr>
 									</tbody>
 								</table>
@@ -558,6 +725,21 @@
 									</tbody>
 								</table>
 							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-md-6 mb-4" style="max-width: 40rem;">
+					<div class="card border-light" style="max-width: 38rem;">
+						<h5 class="card-header">
+							<a class="collapsed d-block text-white" data-toggle="collapse" data-bs-toggle="collapse" href="#collapse_eqs" role="button" aria-expanded="false" aria-controls="collapse_eqs">
+								<i class="fa-solid fa-wave-square"></i>
+								Equalizer
+								<i class="fa fa-chevron-down pull-right"></i>
+							</a>
+						</h5>
+						<div class="collapse" id="collapse_eqs">
+							<div id="equalizer"></div>
 						</div>
 					</div>
 				</div>
@@ -815,220 +997,6 @@
 				<div class="col-md-6 mb-4" style="max-width: 40rem;">
 					<div class="card border-light" style="max-width: 38rem;">
 						<h5 class="card-header">
-							<a class="collapsed d-block text-white" data-toggle="collapse" data-bs-toggle="collapse" href="#collapse_crossover" role="button" aria-expanded="false" aria-controls="collapse_crossover">
-								<i class="fa-solid fa-shuffle"></i>
-								Crossover
-								<i class="fa fa-chevron-down pull-right"></i>
-							</a>
-						</h5>
-						<div class="collapse" id="collapse_crossover">
-							<div class="card-body">
-								<table class="table table-hover">
-									<tbody>
-										<tr class="table-light">
-											<td width="20%" align="right">Highpass</td>
-											<td width="50%" align="right"><input type="range" class="form-range" value="100" min="1" max="10000" oninput="fetch('/cmd.php?mixer:eq:hp=' + Math.round(slider2freq(this.value))); document.getElementById('hp_fc').value = Math.round(slider2freq(this.value))" id="slider_hp_fc" name="slider_hp_fc"></td>
-											<td width="30%" align="left"><output id="hp_fc">100</output><label>&nbsp;Hz</label></td>
-										</tr>
-
-										<tr class="table-light">
-											<td width="20%" align="right">LowPass</td>
-											<td width="50%" align="right"><input type="range" class="form-range" value="100" min="1" max="10000" oninput="fetch('/cmd.php?mixer:eq:lp=' + Math.round(slider2freq(this.value))); document.getElementById('lp_fc').value = Math.round(slider2freq(this.value))" id="slider_lp_fc" name="slider_lp_fc"></td>
-											<td width="30%" align="left"><output id="lp_fc">100</output><label>&nbsp;Hz</label></td>
-										</tr>
-									</tbody>
-								</table>
-							</div>
-						</div>
-					</div>
-				</div>
-
-				<div class="col-md-6 mb-4" style="max-width: 40rem;">
-					<div class="card border-light" style="max-width: 38rem;">
-						<h5 class="card-header">
-							<a class="collapsed d-block text-white" data-toggle="collapse" data-bs-toggle="collapse" href="#collapse_ultranetmixer" role="button" aria-expanded="false" aria-controls="collapse_ultranetmixer">
-								<i class="fa-solid fa-sliders"></i>
-								UltraNet Input Mixer 1/2
-								<i class="fa fa-chevron-down pull-right"></i>
-							</a>
-						</h5>
-						<div class="collapse" id="collapse_ultranetmixer">
-							<div class="card-body">
-								<table class="table table-hover">
-									<tbody>
-										<tr class="table-light">
-											<th width="10%" align="right">Channel</th>
-											<th width="30%" align="center">Volume</th>
-											<th width="15%" align="left"></th>
-											<th width="30%" align="center">Balance</th>
-											<th width="15%" align="left"></th>
-										</tr>
-
-										<tr class="table-light">
-											<td width="10%" align="right">Ch 1</td>
-											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch7=' + this.value); document.getElementById('volume_ch7').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch7" name="slider_volume_ch7"></td>
-											<td width="15%" align="left"><output id="volume_ch7">-48.0</output><label>&nbsp;dB</label></td>
-											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch7=' + this.value); document.getElementById('balance_ch7').value = this.value" id="slider_balance_ch7" name="slider_balance_ch7"></td>
-											<td width="15%" align="left"><output id="balance_ch7">50</output><label>&nbsp;%</label></td>
-										</tr>
-
-										<tr class="table-light">
-											<td width="10%" align="right">Ch 2</td>
-											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch8=' + this.value); document.getElementById('volume_ch8').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch8" name="slider_volume_ch8"></td>
-											<td width="15%" align="left"><output id="volume_ch8">-48.0</output><label>&nbsp;dB</label></td>
-											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch8=' + this.value); document.getElementById('balance_ch8').value = this.value" id="slider_balance_ch8" name="slider_balance_ch8"></td>
-											<td width="15%" align="left"><output id="balance_ch8">50</output><label>&nbsp;%</label></td>
-										</tr>
-
-										<tr class="table-light">
-											<td width="10%" align="right">Ch 3</td>
-											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch9=' + this.value); document.getElementById('volume_ch9').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch9" name="slider_volume_ch9"></td>
-											<td width="15%" align="left"><output id="volume_ch9">-48.0</output><label>&nbsp;dB</label></td>
-											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch9=' + this.value); document.getElementById('balance_ch9').value = this.value" id="slider_balance_ch9" name="slider_balance_ch9"></td>
-											<td width="15%" align="left"><output id="balance_ch9">50</output><label>&nbsp;%</label></td>
-										</tr>
-
-										<tr class="table-light">
-											<td width="10%" align="right">Ch 4</td>
-											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch10=' + this.value); document.getElementById('volume_ch10').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch10" name="slider_volume_ch10"></td>
-											<td width="15%" align="left"><output id="volume_ch10">-48.0</output><label>&nbsp;dB</label></td>
-											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch10=' + this.value); document.getElementById('balance_ch10').value = this.value" id="slider_balance_ch10" name="slider_balance_ch10"></td>
-											<td width="15%" align="left"><output id="balance_ch10">50</output><label>&nbsp;%</label></td>
-										</tr>
-
-										<tr class="table-light">
-											<td width="10%" align="right">Ch 5</td>
-											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch11=' + this.value); document.getElementById('volume_ch11').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch11" name="slider_volume_ch11"></td>
-											<td width="15%" align="left"><output id="volume_ch11">-48.0</output><label>&nbsp;dB</label></td>
-											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch11=' + this.value); document.getElementById('balance_ch11').value = this.value" id="slider_balance_ch11" name="slider_balance_ch11"></td>
-											<td width="15%" align="left"><output id="balance_ch11">50</output><label>&nbsp;%</label></td>
-										</tr>
-
-										<tr class="table-light">
-											<td width="10%" align="right">Ch 6</td>
-											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch12=' + this.value); document.getElementById('volume_ch12').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch12" name="slider_volume_ch12"></td>
-											<td width="15%" align="left"><output id="volume_ch12">-48.0</output><label>&nbsp;dB</label></td>
-											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch12=' + this.value); document.getElementById('balance_ch12').value = this.value" id="slider_balance_ch12" name="slider_balance_ch12"></td>
-											<td width="15%" align="left"><output id="balance_ch12">50</output><label>&nbsp;%</label></td>
-										</tr>
-
-										<tr class="table-light">
-											<td width="10%" align="right">Ch 7</td>
-											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch13=' + this.value); document.getElementById('volume_ch13').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch13" name="slider_volume_ch13"></td>
-											<td width="15%" align="left"><output id="volume_ch13">-48.0</output><label>&nbsp;dB</label></td>
-											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch13=' + this.value); document.getElementById('balance_ch13').value = this.value" id="slider_balance_ch13" name="slider_balance_ch13"></td>
-											<td width="15%" align="left"><output id="balance_ch13">50</output><label>&nbsp;%</label></td>
-										</tr>
-
-										<tr class="table-light">
-											<td width="10%" align="right">Ch 8</td>
-											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch14=' + this.value); document.getElementById('volume_ch14').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch14" name="slider_volume_ch14"></td>
-											<td width="15%" align="left"><output id="volume_ch14">-48.0</output><label>&nbsp;dB</label></td>
-											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch14=' + this.value); document.getElementById('balance_ch14').value = this.value" id="slider_balance_ch14" name="slider_balance_ch14"></td>
-											<td width="15%" align="left"><output id="balance_ch14">50</output><label>&nbsp;%</label></td>
-										</tr>
-									</tbody>
-								</table>
-							</div>
-						</div>
-					</div>
-				</div>
-
-				<div class="col-md-6 mb-4" style="max-width: 40rem;">
-					<div class="card border-light" style="max-width: 38rem;">
-						<h5 class="card-header">
-							<a class="collapsed d-block text-white" data-toggle="collapse" data-bs-toggle="collapse" href="#collapse_ultranetmixer" role="button" aria-expanded="false" aria-controls="collapse_ultranetmixer">
-								<i class="fa-solid fa-sliders"></i>
-								UltraNet Input Mixer 2/2
-								<i class="fa fa-chevron-down pull-right"></i>
-							</a>
-						</h5>
-						<div class="collapse" id="collapse_ultranetmixer">
-							<div class="card-body">
-								<table class="table table-hover">
-									<tbody>
-										<tr class="table-light">
-											<th width="10%" align="right">Channel</th>
-											<th width="30%" align="center">Volume</th>
-											<th width="15%" align="left"></th>
-											<th width="30%" align="center">Balance</th>
-											<th width="15%" align="left"></th>
-										</tr>
-
-										<tr class="table-light">
-											<td width="10%" align="right">Ch 9</td>
-											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch15=' + this.value); document.getElementById('volume_ch15').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch15" name="slider_volume_ch15"></td>
-											<td width="15%" align="left"><output id="volume_ch15">-48.0</output><label>&nbsp;dB</label></td>
-											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch15=' + this.value); document.getElementById('balance_ch15').value = this.value" id="slider_balance_ch15" name="slider_balance_ch15"></td>
-											<td width="15%" align="left"><output id="balance_ch15">50</output><label>&nbsp;%</label></td>
-										</tr>
-
-										<tr class="table-light">
-											<td width="10%" align="right">Ch 10</td>
-											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch16=' + this.value); document.getElementById('volume_ch16').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch16" name="slider_volume_ch16"></td>
-											<td width="15%" align="left"><output id="volume_ch16">-48.0</output><label>&nbsp;dB</label></td>
-											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch16=' + this.value); document.getElementById('balance_ch16').value = this.value" id="slider_balance_ch16" name="slider_balance_ch16"></td>
-											<td width="15%" align="left"><output id="balance_ch16">50</output><label>&nbsp;%</label></td>
-										</tr>
-
-										<tr class="table-light">
-											<td width="10%" align="right">Ch 11</td>
-											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch17=' + this.value); document.getElementById('volume_ch17').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch17" name="slider_volume_ch17"></td>
-											<td width="15%" align="left"><output id="volume_ch17">-48.0</output><label>&nbsp;dB</label></td>
-											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch17=' + this.value); document.getElementById('balance_ch17').value = this.value" id="slider_balance_ch17" name="slider_balance_ch17"></td>
-											<td width="15%" align="left"><output id="balance_ch17">50</output><label>&nbsp;%</label></td>
-										</tr>
-
-										<tr class="table-light">
-											<td width="10%" align="right">Ch 12</td>
-											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch18=' + this.value); document.getElementById('volume_ch18').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch18" name="slider_volume_ch18"></td>
-											<td width="15%" align="left"><output id="volume_ch18">-48.0</output><label>&nbsp;dB</label></td>
-											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch18=' + this.value); document.getElementById('balance_ch18').value = this.value" id="slider_balance_ch18" name="slider_balance_ch18"></td>
-											<td width="15%" align="left"><output id="balance_ch18">50</output><label>&nbsp;%</label></td>
-										</tr>
-
-										<tr class="table-light">
-											<td width="10%" align="right">Ch 13</td>
-											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch19=' + this.value); document.getElementById('volume_ch19').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch19" name="slider_volume_ch19"></td>
-											<td width="15%" align="left"><output id="volume_ch19">-48.0</output><label>&nbsp;dB</label></td>
-											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch19=' + this.value); document.getElementById('balance_ch19').value = this.value" id="slider_balance_ch19" name="slider_balance_ch19"></td>
-											<td width="15%" align="left"><output id="balance_ch19">50</output><label>&nbsp;%</label></td>
-										</tr>
-
-										<tr class="table-light">
-										<tr class="table-light">
-											<td width="10%" align="right">Ch 14</td>
-											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch20=' + this.value); document.getElementById('volume_ch20').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch20" name="slider_volume_ch20"></td>
-											<td width="15%" align="left"><output id="volume_ch20">-48.0</output><label>&nbsp;dB</label></td>
-											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch20=' + this.value); document.getElementById('balance_ch20').value = this.value" id="slider_balance_ch20" name="slider_balance_ch20"></td>
-											<td width="15%" align="left"><output id="balance_ch20">50</output><label>&nbsp;%</label></td>
-										</tr>
-
-										<tr class="table-light">
-											<td width="10%" align="right">Ch 15</td>
-											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch21=' + this.value); document.getElementById('volume_ch21').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch21" name="slider_volume_ch21"></td>
-											<td width="15%" align="left"><output id="volume_ch21">-48.0</output><label>&nbsp;dB</label></td>
-											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch21=' + this.value); document.getElementById('balance_ch21').value = this.value" id="slider_balance_ch21" name="slider_balance_ch21"></td>
-											<td width="15%" align="left"><output id="balance_ch21">50</output><label>&nbsp;%</label></td>
-										</tr>
-
-										<tr class="table-light">
-											<td width="10%" align="right">Ch 16</td>
-											<td width="30%" align="right"><input type="range" class="form-range" value="-48" min="-48" max="6" step="0.1" oninput="fetch('/cmd.php?mixer:volume:ch22=' + this.value); document.getElementById('volume_ch22').value = parseFloat(this.value).toFixed(1)" id="slider_volume_ch22" name="slider_volume_ch22"></td>
-											<td width="15%" align="left"><output id="volume_ch22">-48.0</output><label>&nbsp;dB</label></td>
-											<td width="30%" align="right"><input type="range" class="form-range" value="50" min="0" max="100" oninput="fetch('/cmd.php?mixer:balance:ch22=' + this.value); document.getElementById('balance_ch22').value = this.value" id="slider_balance_ch22" name="slider_balance_ch22"></td>
-											<td width="15%" align="left"><output id="balance_ch22">50</output><label>&nbsp;%</label></td>
-										</tr>
-									</tbody>
-								</table>
-							</div>
-						</div>
-					</div>
-				</div>
-
-				<div class="col-md-6 mb-4" style="max-width: 40rem;">
-					<div class="card border-light" style="max-width: 38rem;">
-						<h5 class="card-header">
 							<a class="d-block text-white" data-toggle="collapse" data-bs-toggle="collapse" href="#collapse_systeminfo" role="button" aria-expanded="false" aria-controls="collapse_systeminfo">
 								<i class="fa-solid fa-circle-info"></i>
 								System Info
@@ -1053,14 +1021,6 @@
 											</td>
 											<td width="50%" align="center">
 												<p class="card-text">System uptime<br><b><span id='week'></span> <span id='day'></span> <span id='hour'></span> <span id='min'></span> <span id='sec'></span></b></p>
-											</td>
-										</tr>
-										<tr class="table-light">
-											<td width="50%" align="center">
-												<p class="card-text">Output-Power L/R (4/6/8&#x2126;)<br><span id='power_main_overview'>Peak : 0W / 0W / 0W<br>RMS: 0W / 0W / 0W</span></p>
-											</td>
-											<td width="50%" align="center">
-												<p class="card-text">Output-Power Sub (4/6/8&#x2126;)<br><span id='power_sub_overview'>Peak: 0W / 0W / 0W<br>RMS: 0W / 0W / 0W</span></p>
 											</td>
 										</tr>
 									</tbody>

@@ -561,11 +561,13 @@ String executeCommand(String Command) {
       // received command "mixer:volume:sd@value"
 
       // we are setting volume for SD and bluetooth as stereo-pair at commands 
+	  audiomixer.cardVolume = value;
       sendStereoVolumeToFPGA(0, Command.substring(Command.indexOf("@")+1).toFloat());
       Answer = "OK";
     }else if (Command.indexOf("mixer:volume:bt") > -1){
       // received command "mixer:volume:bt@value"
 
+	  audiomixer.btVolume = value;
       sendStereoVolumeToFPGA(1, Command.substring(Command.indexOf("@")+1).toFloat());
       Answer = "OK";
     }else if (Command.indexOf("mixer:balance:ch") > -1){
