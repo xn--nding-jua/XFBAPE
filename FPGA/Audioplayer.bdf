@@ -4,7 +4,7 @@ editor if you plan to continue editing the block that represents it in
 the Block Editor! File corruption is VERY likely to occur.
 */
 /*
-Copyright (C) 2024  Intel Corporation. All rights reserved.
+Copyright (C) 2022  Intel Corporation. All rights reserved.
 Your use of Intel Corporation's design tools, logic functions 
 and other software and tools, and any partner logic 
 functions, and any output files from any of the foregoing 
@@ -769,7 +769,7 @@ https://fpgasoftware.intel.com/eula.
 		(line (pt 82 8)(pt 78 12))
 		(line (pt 78 12)(pt 82 8))
 	)
-	(annotation_block (location)(rect 6288 328 6344 352))
+	(annotation_block (location)(rect 6304 304 6360 328))
 )
 (symbol
 	(rect -704 232 -464 440)
@@ -4559,37 +4559,6 @@ https://fpgasoftware.intel.com/eula.
 	)
 )
 (symbol
-	(rect 5720 40 5832 88)
-	(text "LPM_CONSTANT" (rect 4 0 125 16)(font "Arial" (font_size 10)))
-	(text "inst30" (rect 3 37 31 54)(font "Intel Clear" ))
-	(port
-		(pt 112 32)
-		(output)
-		(text "result[LPM_WIDTH-1..0]" (rect 75 19 208 33)(font "Arial" (font_size 8)))
-		(text "result[]" (rect 75 19 113 33)(font "Arial" (font_size 8)))
-		(line (pt 64 32)(pt 112 32)(line_width 3))
-	)
-	(parameter
-		"LPM_CVALUE"
-		"20"
-		"Unsigned value to which outputs will be set"
-	)
-	(parameter
-		"LPM_WIDTH"
-		"8"
-		"Width of output, any integer > 0"
-		" 1" " 2" " 3" " 4" " 5" " 6" " 7" " 8" " 9" "10" "11" "12" "13" "14" "15" "16" "20" "24" "28" "32" 
-	)
-	(drawing
-		(text "(cvalue)" (rect 21 26 68 40)(font "Arial" (font_size 8)))
-		(line (pt 16 24)(pt 64 24))
-		(line (pt 16 40)(pt 64 40))
-		(line (pt 64 40)(pt 64 24))
-		(line (pt 16 40)(pt 16 24))
-	)
-	(annotation_block (parameter)(rect 5704 -40 5841 17))
-)
-(symbol
 	(rect -96 320 88 528)
 	(text "tdm_8ch_rx" (rect 5 0 62 12)(font "Arial" ))
 	(text "inst7" (rect 8 192 30 209)(font "Intel Clear" ))
@@ -5296,6 +5265,37 @@ https://fpgasoftware.intel.com/eula.
 	(drawing
 		(rectangle (rect 16 16 160 192))
 	)
+)
+(symbol
+	(rect 5720 40 5832 88)
+	(text "LPM_CONSTANT" (rect 4 0 125 16)(font "Arial" (font_size 10)))
+	(text "inst30" (rect 3 37 31 54)(font "Intel Clear" ))
+	(port
+		(pt 112 32)
+		(output)
+		(text "result[LPM_WIDTH-1..0]" (rect 75 19 208 33)(font "Arial" (font_size 8)))
+		(text "result[]" (rect 75 19 113 33)(font "Arial" (font_size 8)))
+		(line (pt 64 32)(pt 112 32)(line_width 3))
+	)
+	(parameter
+		"LPM_CVALUE"
+		"200"
+		"Unsigned value to which outputs will be set"
+	)
+	(parameter
+		"LPM_WIDTH"
+		"8"
+		"Width of output, any integer > 0"
+		" 1" " 2" " 3" " 4" " 5" " 6" " 7" " 8" " 9" "10" "11" "12" "13" "14" "15" "16" "20" "24" "28" "32" 
+	)
+	(drawing
+		(text "(cvalue)" (rect 21 26 68 40)(font "Arial" (font_size 8)))
+		(line (pt 16 24)(pt 64 24))
+		(line (pt 16 40)(pt 64 40))
+		(line (pt 64 40)(pt 64 24))
+		(line (pt 16 40)(pt 16 24))
+	)
+	(annotation_block (parameter)(rect 5704 -40 5841 17))
 )
 (connector
 	(text "clk_48MHz" (rect -1326 1360 -1273 1377)(font "Intel Clear" ))
@@ -7812,10 +7812,6 @@ https://fpgasoftware.intel.com/eula.
 	(pt 5904 -16)
 )
 (connector
-	(pt -136 384)
-	(pt -96 384)
-)
-(connector
 	(text "tdm_fsync" (rect -198 352 -149 369)(font "Intel Clear" ))
 	(pt -96 368)
 	(pt -208 368)
@@ -8178,10 +8174,6 @@ https://fpgasoftware.intel.com/eula.
 	(pt 5968 344)
 )
 (connector
-	(pt 6144 344)
-	(pt 6160 344)
-)
-(connector
 	(text "tdm_fsync" (rect 5898 560 5947 577)(font "Intel Clear" ))
 	(pt 5888 576)
 	(pt 5968 576)
@@ -8222,6 +8214,14 @@ https://fpgasoftware.intel.com/eula.
 	(text "tdm_bitclk" (rect 5898 976 5948 993)(font "Intel Clear" ))
 	(pt 5888 992)
 	(pt 5968 992)
+)
+(connector
+	(pt -136 384)
+	(pt -96 384)
+)
+(connector
+	(pt 6144 344)
+	(pt 6160 344)
 )
 (text "Read I2S-Data into std_logic_vectors" (rect -48 1272 171 1291)(font "Intel Clear" (font_size 8)))
 (text "Clock-Generations derived from 48MHz main-clock" (rect -968 208 -534 231)(font "Intel Clear" (color 255 0 0)(font_size 12)))

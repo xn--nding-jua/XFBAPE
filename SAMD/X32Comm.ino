@@ -231,11 +231,11 @@ String x32ExecCmd(String command) {
       }
     }else if (command.indexOf("*9N")==0) {
       // N for german "NOCH" = remaining?
-      // X32 requests available space on SD-card
+      // X32 requests size of SD-card
       uint8_t cardNumber = command[3] - 48; // either 0 or 1
-      uint32_t cardSpaceAvailable = 0.85f * x32CardSize[cardNumber]; // pretend to have 85% of maximum space
+      uint32_t cardSize = x32CardSize[cardNumber];
 
-      Answer = "*9N" + String(cardNumber) + "0" + intToHex(cardSpaceAvailable, 8) + intToHex(0, 8) + "#";
+      Answer = "*9N" + String(cardNumber) + "0" + intToHex(cardSize, 8) + intToHex(0, 8) + "#";
     }else if (command.indexOf("*9G")==0) {
       // G for german "GESAMT" = total?
       uint32_t totalSize = x32CardSize[0] + x32CardSize[1];// "03B70600" for a 32GB card!? TODO: check the calculation. seems to be 2*32GB

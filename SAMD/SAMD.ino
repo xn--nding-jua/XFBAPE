@@ -213,8 +213,8 @@ void loop() {
     }
 
     // handle ethernet clients
-    HandleHTTPClients();
-    HandleCMDClients();
+    handleHTTPClients();
+    handleCMDClients();
 
     // handle serial communication
     handleUSBCommunication(); // communication through Serial (USB) with connected computer

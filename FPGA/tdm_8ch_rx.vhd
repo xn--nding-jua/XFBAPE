@@ -36,7 +36,6 @@ end tdm_8ch_rx;
 
 architecture rtl of tdm_8ch_rx is
 	signal sample_data	: std_logic_vector(32 * 8 - 1 downto 0) := (others=>'0');
-	signal bit_cnt			: integer range 0 to (32 * 8) := 0;
 	signal zfsync			: std_logic;
 	signal copy_data		: std_logic;
 begin
@@ -52,17 +51,16 @@ begin
 			end if;
 			zfsync <= fsync;
 			
-			-- we reach the first bit of the first channel, so copy the 
+			-- we reach the first bit of the first channel, so copy the audio-samples
 			if copy_data = '1' then
-				--
-				ch1_out <= sample_data(sample_data'high - 1 downto sample_data'high - 1 - 23); -- first 24 bits
-				ch2_out <= sample_data(sample_data'high - 1 - (32 * 1) downto sample_data'high - 1 - 23 - (32 * 1)); -- first 24 bits
-				ch3_out <= sample_data(sample_data'high - 1 - (32 * 2) downto sample_data'high - 1 - 23 - (32 * 2)); -- next 24 bits with ignoring 8 zero-bits
-				ch4_out <= sample_data(sample_data'high - 1 - (32 * 3) downto sample_data'high - 1 - 23 - (32 * 3)); -- next 24 bits with ignoring 8 zero-bits
-				ch5_out <= sample_data(sample_data'high - 1 - (32 * 4) downto sample_data'high - 1 - 23 - (32 * 4)); -- next 24 bits with ignoring 8 zero-bits
-				ch6_out <= sample_data(sample_data'high - 1 - (32 * 5) downto sample_data'high - 1 - 23 - (32 * 5)); -- next 24 bits with ignoring 8 zero-bits
-				ch7_out <= sample_data(sample_data'high - 1 - (32 * 6) downto sample_data'high - 1 - 23 - (32 * 6)); -- next 24 bits with ignoring 8 zero-bits
-				ch8_out <= sample_data(sample_data'high - 1 - (32 * 7) downto sample_data'high - 1 - 23 - (32 * 7)); -- next 24 bits with ignoring 8 zero-bits
+				ch1_out <= sample_data(sample_data'high - (32 * 0) downto sample_data'high - (32 * 0) - 23); -- first 24 bits
+				ch2_out <= sample_data(sample_data'high - (32 * 1) downto sample_data'high - (32 * 1) - 23); -- next 24 bits with ignoring 8 zero-bits
+				ch3_out <= sample_data(sample_data'high - (32 * 2) downto sample_data'high - (32 * 2) - 23); -- next 24 bits with ignoring 8 zero-bits
+				ch4_out <= sample_data(sample_data'high - (32 * 3) downto sample_data'high - (32 * 3) - 23); -- next 24 bits with ignoring 8 zero-bits
+				ch5_out <= sample_data(sample_data'high - (32 * 4) downto sample_data'high - (32 * 4) - 23); -- next 24 bits with ignoring 8 zero-bits
+				ch6_out <= sample_data(sample_data'high - (32 * 5) downto sample_data'high - (32 * 5) - 23); -- next 24 bits with ignoring 8 zero-bits
+				ch7_out <= sample_data(sample_data'high - (32 * 6) downto sample_data'high - (32 * 6) - 23); -- next 24 bits with ignoring 8 zero-bits
+				ch8_out <= sample_data(sample_data'high - (32 * 7) downto sample_data'high - (32 * 7) - 23); -- next 24 bits with ignoring 8 zero-bits
 				
 				copy_data <= '0'; -- reset copy-data-flag
 				sync_out <= '1'; -- set data-ready-output

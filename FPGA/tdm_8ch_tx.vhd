@@ -35,10 +35,12 @@ end tdm_8ch_tx;
 
 architecture rtl of tdm_8ch_tx is
 	signal sample_data	: std_logic_vector(32 * 8 - 1 downto 0) := (others=>'0');
-	signal bit_cnt			: integer range 0 to (32 * 8) := 0;
 	signal zfsync			: std_logic;
+	signal sdata_tmp		: std_logic;
 begin
 	process(clk)
+	variable
+		bit_cnt				: integer range 0 to (32 * 8) := 0;
 	begin
 		if rising_edge(clk) then
 			-- check for positive edge of frame-sync
@@ -47,26 +49,27 @@ begin
 				-- on next falling clock we will start sending with the the MSB of first channel
 
 				-- copy channel-data to output-register
-				sample_data(sample_data'high - 1 downto sample_data'high - 1 - 23 - (32 * 1)) <= ch1_in;
-				sample_data(sample_data'high - 1 - (32 * 1) downto sample_data'high - 1 - 23 - (32 * 1)) <= ch2_in;
-				sample_data(sample_data'high - 1 - (32 * 2) downto sample_data'high - 1 - 23 - (32 * 2)) <= ch3_in;
-				sample_data(sample_data'high - 1 - (32 * 3) downto sample_data'high - 1 - 23 - (32 * 3)) <= ch4_in;
-				sample_data(sample_data'high - 1 - (32 * 4) downto sample_data'high - 1 - 23 - (32 * 4)) <= ch5_in;
-				sample_data(sample_data'high - 1 - (32 * 5) downto sample_data'high - 1 - 23 - (32 * 5)) <= ch6_in;
-				sample_data(sample_data'high - 1 - (32 * 6) downto sample_data'high - 1 - 23 - (32 * 6)) <= ch7_in;
-				sample_data(sample_data'high - 1 - (32 * 7) downto sample_data'high - 1 - 23 - (32 * 7)) <= ch8_in;
+				sample_data(sample_data'high - (32 * 0) downto sample_data'high - 23 - (32 * 0)) <= ch1_in;
+				sample_data(sample_data'high - (32 * 1) downto sample_data'high - 23 - (32 * 1)) <= ch2_in;
+				sample_data(sample_data'high - (32 * 2) downto sample_data'high - 23 - (32 * 2)) <= ch3_in;
+				sample_data(sample_data'high - (32 * 3) downto sample_data'high - 23 - (32 * 3)) <= ch4_in;
+				sample_data(sample_data'high - (32 * 4) downto sample_data'high - 23 - (32 * 4)) <= ch5_in;
+				sample_data(sample_data'high - (32 * 5) downto sample_data'high - 23 - (32 * 5)) <= ch6_in;
+				sample_data(sample_data'high - (32 * 6) downto sample_data'high - 23 - (32 * 6)) <= ch7_in;
+				sample_data(sample_data'high - (32 * 7) downto sample_data'high - 23 - (32 * 7)) <= ch8_in;
 				
-				bit_cnt <= 0;
+				bit_cnt := 0; -- set bit-counter to MSB-1 as we already output MSB with next falling edge
+				sdata_tmp <= ch1_in(ch1_in'high); -- set MSB of channel 1
+			else
+				bit_cnt := bit_cnt + 1; -- increment bit-counter
+				sdata_tmp <= sample_data(sample_data'high - bit_cnt);
 			end if;
 			zfsync <= fsync;
 		end if;
 
 		if falling_edge(clk) then
-			-- continuously outputing data from output-register
-			sdata <= sample_data(sample_data'high - 1 - bit_cnt);
-
-			-- increment bit-counter
-			bit_cnt <= bit_cnt + 1;
+			-- continuously outputing data from output-register on falling edge
+			sdata <= sdata_tmp;
 		end if;
 	end process;
 end rtl;
