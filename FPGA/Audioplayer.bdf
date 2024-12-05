@@ -637,7 +637,7 @@ https://fpgasoftware.intel.com/eula.
 )
 (pin
 	(output)
-	(rect -1264 1040 -1088 1056)
+	(rect -1192 912 -1016 928)
 	(text "OUTPUT" (rect 1 0 39 10)(font "Arial" (font_size 6)))
 	(text "bPCI_RST" (rect 90 0 137 17)(font "Intel Clear" ))
 	(pt 0 8)
@@ -650,7 +650,7 @@ https://fpgasoftware.intel.com/eula.
 		(line (pt 82 8)(pt 78 12))
 		(line (pt 78 12)(pt 82 8))
 	)
-	(annotation_block (location)(rect -1232 1056 -1176 1080))
+	(annotation_block (location)(rect -1160 928 -1104 952))
 )
 (pin
 	(output)
@@ -5297,6 +5297,87 @@ https://fpgasoftware.intel.com/eula.
 	)
 	(annotation_block (parameter)(rect 5704 -40 5841 17))
 )
+(symbol
+	(rect -1432 888 -1208 1000)
+	(text "dmx512_tx" (rect 5 0 59 12)(font "Arial" ))
+	(text "inst32" (rect 8 96 36 113)(font "Intel Clear" ))
+	(port
+		(pt 0 32)
+		(input)
+		(text "clk" (rect 0 0 14 12)(font "Arial" ))
+		(text "clk" (rect 21 27 35 39)(font "Arial" ))
+		(line (pt 0 32)(pt 16 32))
+	)
+	(port
+		(pt 0 48)
+		(input)
+		(text "byte_in[7..0]" (rect 0 0 62 12)(font "Arial" ))
+		(text "byte_in[7..0]" (rect 21 43 83 55)(font "Arial" ))
+		(line (pt 0 48)(pt 16 48)(line_width 3))
+	)
+	(port
+		(pt 0 64)
+		(input)
+		(text "byte_rdy" (rect 0 0 44 12)(font "Arial" ))
+		(text "byte_rdy" (rect 21 59 65 71)(font "Arial" ))
+		(line (pt 0 64)(pt 16 64))
+	)
+	(port
+		(pt 224 32)
+		(output)
+		(text "serial_out" (rect 0 0 47 12)(font "Arial" ))
+		(text "serial_out" (rect 164 27 211 39)(font "Arial" ))
+		(line (pt 224 32)(pt 208 32))
+	)
+	(port
+		(pt 224 48)
+		(output)
+		(text "byteAddr_out[9..0]" (rect 0 0 92 12)(font "Arial" ))
+		(text "byteAddr_out[9..0]" (rect 126 43 218 55)(font "Arial" ))
+		(line (pt 224 48)(pt 208 48)(line_width 3))
+	)
+	(port
+		(pt 224 64)
+		(output)
+		(text "byte_done" (rect 0 0 51 12)(font "Arial" ))
+		(text "byte_done" (rect 160 59 211 71)(font "Arial" ))
+		(line (pt 224 64)(pt 208 64))
+	)
+	(parameter
+		"clk_rate"
+		"10000000"
+		""
+		(type "PARAMETER_SIGNED_DEC")	)
+	(parameter
+		"baud_rate"
+		"250000"
+		""
+		(type "PARAMETER_SIGNED_DEC")	)
+	(parameter
+		"breakTime_us"
+		"88"
+		""
+		(type "PARAMETER_SIGNED_DEC")	)
+	(parameter
+		"markTime_us"
+		"8"
+		""
+		(type "PARAMETER_SIGNED_DEC")	)
+	(parameter
+		"interByteTime_us"
+		"8"
+		""
+		(type "PARAMETER_SIGNED_DEC")	)
+	(parameter
+		"markBeforeBreakTime_us"
+		"8"
+		""
+		(type "PARAMETER_SIGNED_DEC")	)
+	(drawing
+		(rectangle (rect 16 16 208 96))
+	)
+	(annotation_block (parameter)(rect -1456 744 -1180 877))
+)
 (connector
 	(text "clk_48MHz" (rect -1326 1360 -1273 1377)(font "Intel Clear" ))
 	(pt -1336 1376)
@@ -7731,10 +7812,6 @@ https://fpgasoftware.intel.com/eula.
 	(bus)
 )
 (connector
-	(pt -1288 1048)
-	(pt -1264 1048)
-)
-(connector
 	(text "sync_select[7..0]" (rect -486 3552 -407 3569)(font "Intel Clear" ))
 	(pt -496 3568)
 	(pt -392 3568)
@@ -8223,6 +8300,57 @@ https://fpgasoftware.intel.com/eula.
 	(pt 6144 344)
 	(pt 6160 344)
 )
+(connector
+	(pt -1208 920)
+	(pt -1192 920)
+)
+(connector
+	(text "clk_10MHz" (rect -1502 904 -1449 921)(font "Intel Clear" ))
+	(pt -1536 920)
+	(pt -1432 920)
+)
+(connector
+	(pt -1208 952)
+	(pt -1184 952)
+)
+(connector
+	(pt -1184 1016)
+	(pt -1184 952)
+)
+(connector
+	(pt -1456 1016)
+	(pt -1184 1016)
+)
+(connector
+	(pt -1456 952)
+	(pt -1456 1016)
+)
+(connector
+	(pt -1456 952)
+	(pt -1432 952)
+)
+(connector
+	(pt -1208 936)
+	(pt -1168 936)
+	(bus)
+)
+(connector
+	(pt -1168 1016)
+	(pt -1168 936)
+	(bus)
+)
+(connector
+	(text "dmxAddressPointer[9..0]" (rect -1158 1000 -1043 1017)(font "Intel Clear" ))
+	(pt -1168 1016)
+	(pt -1048 1016)
+	(bus)
+)
+(connector
+	(text "dmxAddressPointer[7..0]" (rect -1542 920 -1427 937)(font "Intel Clear" ))
+	(pt -1544 936)
+	(pt -1432 936)
+	(bus)
+)
 (text "Read I2S-Data into std_logic_vectors" (rect -48 1272 171 1291)(font "Intel Clear" (font_size 8)))
 (text "Clock-Generations derived from 48MHz main-clock" (rect -968 208 -534 231)(font "Intel Clear" (color 255 0 0)(font_size 12)))
 (text "Mainfader-section" (rect 4032 208 4185 231)(font "Intel Clear" (color 255 0 0)(font_size 12)))
@@ -8261,8 +8389,8 @@ https://fpgasoftware.intel.com/eula.
 (text "SPI-MOSI / CMD" (rect -456 1072 -360 1091)(font "Intel Clear" (font_size 8)))
 (text "SPI-SCK / CLK" (rect -456 1096 -372 1115)(font "Intel Clear" (font_size 8)))
 (text "SPI-CS / CD/DAT3" (rect -456 1120 -347 1139)(font "Intel Clear" (font_size 8)))
-(text "DMX512" (rect -1080 1040 -1027 1059)(font "Intel Clear" (font_size 8)))
-(text "DMX512- and UART-Signal-Passthrough" (rect -1568 936 -1225 959)(font "Intel Clear" (color 255 0 0)(font_size 12)))
+(text "DMX512" (rect -1080 928 -1027 947)(font "Intel Clear" (font_size 8)))
+(text "DMX512- and UART-Signal-Passthrough" (rect -1568 712 -1225 735)(font "Intel Clear" (color 255 0 0)(font_size 12)))
 (text "Audio Output back to X32" (rect 5848 200 6071 223)(font "Intel Clear" (color 255 0 0)(font_size 12)))
 (text "CD/DAT3" (rect -864 1152 -808 1171)(font "Intel Clear" (font_size 8)))
 (text "CMD" (rect -864 1200 -836 1219)(font "Intel Clear" (font_size 8)))
@@ -8286,5 +8414,5 @@ https://fpgasoftware.intel.com/eula.
 (rectangle (rect -312 1520 280 1784)(color 0 0 255)(line_width 3))
 (rectangle (rect -984 928 -336 1216)(color 0 0 255)(line_width 3))
 (rectangle (rect -1584 1240 -336 3656)(color 0 0 255)(line_width 3))
-(rectangle (rect -1584 928 -1008 1216)(color 0 0 255)(line_width 3))
+(rectangle (rect -1584 704 -1008 1216)(color 0 0 255)(line_width 3))
 (rectangle (rect 5832 200 6352 1184)(color 0 0 255)(line_width 3))
