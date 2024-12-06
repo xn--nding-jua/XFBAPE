@@ -4,7 +4,7 @@ editor if you plan to continue editing the block that represents it in
 the Block Editor! File corruption is VERY likely to occur.
 */
 /*
-Copyright (C) 2022  Intel Corporation. All rights reserved.
+Copyright (C) 2024  Intel Corporation. All rights reserved.
 Your use of Intel Corporation's design tools, logic functions 
 and other software and tools, and any partner logic 
 functions, and any output files from any of the foregoing 
@@ -21,9 +21,9 @@ https://fpgasoftware.intel.com/eula.
 */
 (header "symbol" (version "1.1"))
 (symbol
-	(rect 16 16 280 2304)
+	(rect 16 16 280 2368)
 	(text "rs232_decoder" (rect 5 0 65 12)(font "Arial" ))
-	(text "inst" (rect 8 2272 20 2284)(font "Arial" ))
+	(text "inst" (rect 8 2336 20 2348)(font "Arial" ))
 	(port
 		(pt 0 32)
 		(input)
@@ -1025,7 +1025,28 @@ https://fpgasoftware.intel.com/eula.
 		(text "fsclk_select[7..0]" (rect 176 2251 243 2263)(font "Arial" ))
 		(line (pt 264 2256)(pt 248 2256)(line_width 3))
 	)
+	(port
+		(pt 264 2272)
+		(output)
+		(text "dmx512Address[9..0]" (rect 0 0 86 12)(font "Arial" ))
+		(text "dmx512Address[9..0]" (rect 157 2267 243 2279)(font "Arial" ))
+		(line (pt 264 2272)(pt 248 2272)(line_width 3))
+	)
+	(port
+		(pt 264 2288)
+		(output)
+		(text "dmx512Data[7..0]" (rect 0 0 69 12)(font "Arial" ))
+		(text "dmx512Data[7..0]" (rect 174 2283 243 2295)(font "Arial" ))
+		(line (pt 264 2288)(pt 248 2288)(line_width 3))
+	)
+	(port
+		(pt 264 2304)
+		(output)
+		(text "dmx512RamWrite" (rect 0 0 74 12)(font "Arial" ))
+		(text "dmx512RamWrite" (rect 169 2299 243 2311)(font "Arial" ))
+		(line (pt 264 2304)(pt 248 2304)(line_width 1))
+	)
 	(drawing
-		(rectangle (rect 16 16 248 2272)(line_width 1))
+		(rectangle (rect 16 16 248 2336)(line_width 1))
 	)
 )

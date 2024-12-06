@@ -42,7 +42,7 @@
 # ========================
 set_global_assignment -name ORIGINAL_QUARTUS_VERSION 22.1STD.0
 set_global_assignment -name PROJECT_CREATION_TIME_DATE "17:06:41  FEBRUARY 28, 2023"
-set_global_assignment -name LAST_QUARTUS_VERSION "22.1std.0 Lite Edition"
+set_global_assignment -name LAST_QUARTUS_VERSION "23.1std.1 Lite Edition"
 set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
 
 # Pin & Location Assignments
@@ -247,4 +247,5 @@ set_global_assignment -name VHDL_FILE tdm_tx.vhd
 set_global_assignment -name VHDL_FILE tdm_rx2.vhd
 set_global_assignment -name VHDL_FILE tdm_8ch_tx.vhd
 set_global_assignment -name VHDL_FILE dmx512_tx.vhd
+set_global_assignment -name VHDL_FILE dmx512_ram.vhd
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

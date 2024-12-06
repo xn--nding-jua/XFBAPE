@@ -182,10 +182,13 @@ entity rs232_decoder is
 		adc1_gain	: out std_logic_vector(7 downto 0);
 
 		-- some auxiliary stuff
-		filter_rst	: out std_logic;
-		x32_enable	: out std_logic;
-		sync_select	: out std_logic_vector(7 downto 0);
-		fsclk_select	: out std_logic_vector(7 downto 0)
+		filter_rst		: out std_logic;
+		x32_enable		: out std_logic;
+		sync_select		: out std_logic_vector(7 downto 0);
+		fsclk_select	: out std_logic_vector(7 downto 0);
+		dmx512Address	: out std_logic_vector(9 downto 0);
+		dmx512Data		: out std_logic_vector(7 downto 0);
+		dmx512RamWrite	: out std_logic
 	);
 end entity;
 
@@ -213,6 +216,8 @@ begin
 	begin
 		if (rising_edge(clk)) then
 			if (RX_DataReady = '1' and s_SM_Decoder = s_Idle) then
+				dmx512RamWrite <= '0';
+			
 				-- state 0 -> collect data
 			
 				-- move all bytes forward by one byte and put recent byte at b11
@@ -742,6 +747,15 @@ begin
 						fsclk_select(7 downto 0) <= b4;
 					when 204 =>
 						x32_enable <= b4(0);
+					when 205 =>
+						-- (31 downto 24) <= b3; -- unused for now
+						-- (23 downto 16) <= b4; -- DMX512 Data
+						-- (15 downto 8) <= b5; -- MSB of DMX512 Address
+						-- (7 downto 0) <= b6; -- LSB DMX512 Address
+						
+						dmx512Address <= b5(1 downto 0) & b6; -- copy 10 bits from address
+						dmx512Data <= b4; -- take full data
+						dmx512RamWrite <= '1'; -- will be resetted on s_Idle
 
 					when 220 =>
 						--adc1_gain(15 downto 8) <= b3;

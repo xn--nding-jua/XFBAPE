@@ -762,6 +762,14 @@ String executeCommand(String Command) {
             Answer = "ERROR";
           }
       #endif
+    #else
+    }else if (Command.indexOf("dmx512:output:ch") > -1) {
+      // received command "dmx512:output:ch1@value"
+      uint16_t channel = Command.substring(16, Command.indexOf("@")).toInt() - 1;
+	  uint8_t value = Command.substring(Command.indexOf("@")+1).toInt();
+
+      setDmx512(channel, value); // send values to FPGA
+      Answer = "OK";
     #endif
     }else if (Command.indexOf("ver?") > -1){
       // return version of controller
@@ -904,10 +912,19 @@ void setX32state(bool state) {
   data_16b fpga_data;
   if (state) {
     // enable X32
-    fpga_data.u16 = 1; // we are allowing only 6dB-steps, so we have to round to optimize the user-input
+    fpga_data.u16 = 1;
   }else{
     // disable X32
-    fpga_data.u16 = 0; // we are allowing only 6dB-steps, so we have to round to optimize the user-input
+    fpga_data.u16 = 0;
   }
   sendDataToFPGA(FPGA_IDX_AUX_CMD+4, &fpga_data);
+}
+
+
+void setDmx512(uint16_t address, uint8_t data) {
+  data_32b fpga_data;
+  fpga_data.u16[0] = address; // dmx Address
+  fpga_data.u8[2] = data; // dmx Data
+  fpga_data.u8[3] = 0; // unused for now
+  sendDataToFPGA(FPGA_IDX_AUX_CMD+5, &fpga_data);
 }

@@ -3,7 +3,7 @@
 ----------------------------------------------------------------------
 -- This file contains the UART Transmitter.  This transmitter is able
 -- to transmit 8 bits of serial data, one start bit, one stop bit,
--- and no parity bit.  When transmit is complete byte_done will be
+-- and no parity bit.  When transmit is complete tx_done will be
 -- driven high for one clock cycle.
 --
 -- Set Generic g_CLKS_PER_BIT as follows:
@@ -56,7 +56,8 @@ entity dmx512_tx is
 
     serial_out 	: out std_logic;
 	 byteAddr_out	: out unsigned(9 downto 0); -- 0..512 = 513 -> 10-bit
-    byte_done   	: out std_logic
+	 readNewByte	: out std_logic;
+    tx_done   		: out std_logic
     );
 end dmx512_tx;
  
@@ -74,13 +75,12 @@ architecture RTL of dmx512_tx is
 
 	type t_SM_Main is (s_Break, s_Mark,
 							 s_Idle, s_TX_Start_Bit, s_TX_Data_Bits, s_TX_Stop_Bit1, s_TX_Stop_Bit2, s_Cleanup,
-							 s_interBytePause, s_MarkBeforeBreak);
+							 s_interBytePause, s_MarkBeforeBreak, s_readNewData);
 	signal r_SM_Main : t_SM_Main := s_Break;
 
 	signal r_Clk_Count : integer range 0 to g_CLKS_PER_BIT-1 := 0;
 	signal r_Bit_Index : integer range 0 to 7 := 0;  -- 8 Bits Total
 	signal r_TX_Data   : std_logic_vector(7 downto 0) := (others => '0');
-	signal r_TX_Done   : std_logic := '0';
 begin
  
    
@@ -91,12 +91,14 @@ begin
       case r_SM_Main is
 		   when s_Break =>
 				serial_out <= '0';         -- Drive Line Low for Break
+				readNewByte <= '0';			-- reset readNewByte signal
 
 				-- stay here for at least 88us
 				if (breakCounter > 0) then
 					breakCounter <= breakCounter - 1;
 				else
 					breakCounter <= breakTime_us * (clk_rate/1000000); -- reset breakCounter
+					
 					r_SM_Main <= s_Mark;
 				end if;
 			
@@ -108,20 +110,20 @@ begin
 					markCounter <= markCounter - 1;
 				else
 					markCounter <= markTime_us * (clk_rate/1000000); -- reset markCounter
+					
 					r_SM_Main <= s_Idle;
 				end if;
 			
          when s_Idle =>
           serial_out <= '1';         -- Keep/Drive Line High for Idle
-          r_TX_Done   <= '0';
+          tx_done   <= '0';
           r_Clk_Count <= 0;
           r_Bit_Index <= 0;
  
           if byte_rdy = '1' then
             r_TX_Data <= byte_in;
+				
             r_SM_Main <= s_TX_Start_Bit;
-          else
-            r_SM_Main <= s_Idle;
           end if;
  
         -- Send out Start Bit. Start bit = 0
@@ -131,9 +133,9 @@ begin
           -- Wait g_CLKS_PER_BIT-1 clock cycles for start bit to finish
           if r_Clk_Count < g_CLKS_PER_BIT-1 then
             r_Clk_Count <= r_Clk_Count + 1;
-            r_SM_Main   <= s_TX_Start_Bit;
           else
             r_Clk_Count <= 0;
+				
             r_SM_Main   <= s_TX_Data_Bits;
           end if;
  
@@ -143,16 +145,17 @@ begin
            
           if r_Clk_Count < g_CLKS_PER_BIT-1 then
             r_Clk_Count <= r_Clk_Count + 1;
-            r_SM_Main   <= s_TX_Data_Bits;
           else
             r_Clk_Count <= 0;
              
             -- Check if we have sent out all bits
             if r_Bit_Index < 7 then
               r_Bit_Index <= r_Bit_Index + 1;
-              r_SM_Main   <= s_TX_Data_Bits;
+				  
+              r_SM_Main   <= s_TX_Data_Bits; -- remain in this step
             else
               r_Bit_Index <= 0;
+				  
               r_SM_Main   <= s_TX_Stop_Bit1;
             end if;
           end if;
@@ -164,9 +167,9 @@ begin
           -- Wait g_CLKS_PER_BIT-1 clock cycles for Stop bit to finish
           if r_Clk_Count < g_CLKS_PER_BIT-1 then
             r_Clk_Count <= r_Clk_Count + 1;
-            r_SM_Main   <= s_TX_Stop_Bit1;
           else
             r_Clk_Count <= 0;
+				
             r_SM_Main   <= s_TX_Stop_Bit2;
           end if;
          
@@ -175,20 +178,20 @@ begin
           -- Wait g_CLKS_PER_BIT-1 clock cycles for Stop bit to finish
           if r_Clk_Count < g_CLKS_PER_BIT-1 then
             r_Clk_Count <= r_Clk_Count + 1;
-            r_SM_Main   <= s_TX_Stop_Bit2;
           else
-            r_TX_Done   <= '1';
             r_Clk_Count <= 0;
+				
             r_SM_Main   <= s_Cleanup;
           end if;
          
-        -- Stay here 1 clock
+        -- Stay here only 1 clock
         when s_Cleanup =>
-          r_TX_Done   <= '1';
+          tx_done   <= '1';
+			 
 			 r_SM_Main <= s_interBytePause;
 			 
 		  when s_interBytePause =>
-			 r_TX_Done <= '0';
+			 tx_done <= '0';
 			 
 		    -- wait between bytes
 			 if (interByteCounter > 0) then
@@ -196,14 +199,14 @@ begin
 			 else
 				interByteCounter <= interByteTime_us * (clk_rate/1000000); -- reset interByteCounter
 			 
-				 -- increment byteCounter
-				 if byteCounter < 513 then
-					r_SM_Main   <= s_Idle;
+				-- increment byteCounter
+				if byteCounter < 513 then
 					byteCounter <= byteCounter + 1;
-				 else
-					r_SM_Main   <= s_MarkBeforeBreak;
+				else
 					byteCounter <= 0;
-				 end if;
+				end if;
+
+				r_SM_Main   <= s_MarkBeforeBreak;
 			 end if;
  
  		   when s_MarkBeforeBreak =>
@@ -211,17 +214,22 @@ begin
 					markBeforeBreakCounter <= markBeforeBreakCounter - 1;
 				else
 					markBeforeBreakCounter <= markBeforeBreakTime_us * (clk_rate/1000000); -- reset markBeforeBreakCounter
-					r_SM_Main <= s_Break;
+				
+					-- set address for RAM
+					byteAddr_out <= to_unsigned(byteCounter, 10);
+					
+					r_SM_Main <= s_readNewData;
 				end if;
+				
+			when s_readNewData =>
+				readNewByte <= '1';
+				
+				r_SM_Main <= s_Break;
 			
         when others =>
-          r_SM_Main <= s_Idle;
+          r_SM_Main <= s_Break;
  
       end case;
     end if;
   end process p_UART_TX;
- 
-  byteAddr_out <= to_unsigned(byteCounter, 10);
-  byte_done <= r_TX_Done;
-   
 end RTL;
