@@ -559,15 +559,17 @@ String executeCommand(String Command) {
       }
     }else if (Command.indexOf("mixer:volume:sd") > -1){
       // received command "mixer:volume:sd@value"
+      float value = Command.substring(Command.indexOf("@")+1).toFloat();
 
       // we are setting volume for SD and bluetooth as stereo-pair at commands 
-	  audiomixer.cardVolume = value;
+	    audiomixer.cardVolume = value;
       sendStereoVolumeToFPGA(0, Command.substring(Command.indexOf("@")+1).toFloat());
       Answer = "OK";
     }else if (Command.indexOf("mixer:volume:bt") > -1){
       // received command "mixer:volume:bt@value"
+      float value = Command.substring(Command.indexOf("@")+1).toFloat();
 
-	  audiomixer.btVolume = value;
+	    audiomixer.btVolume = value;
       sendStereoVolumeToFPGA(1, Command.substring(Command.indexOf("@")+1).toFloat());
       Answer = "OK";
     }else if (Command.indexOf("mixer:balance:ch") > -1){
@@ -765,8 +767,8 @@ String executeCommand(String Command) {
     #else
     }else if (Command.indexOf("dmx512:output:ch") > -1) {
       // received command "dmx512:output:ch1@value"
-      uint16_t channel = Command.substring(16, Command.indexOf("@")).toInt() - 1;
-	  uint8_t value = Command.substring(Command.indexOf("@")+1).toInt();
+      uint16_t channel = Command.substring(16, Command.indexOf("@")).toInt();
+      uint8_t value = Command.substring(Command.indexOf("@")+1).toInt();
 
       setDmx512(channel, value); // send values to FPGA
       Answer = "OK";

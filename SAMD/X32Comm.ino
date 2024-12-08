@@ -205,8 +205,8 @@ String x32ExecCmd(String command) {
 
       Answer = "*9C00" + intToHex(markerIndex, 2) + intToHex(timeIndex, 8) + "#";
     }else if (command.indexOf("*9R")==0) {
-      // read SD-Card
-      uint8_t cardNumber = command[3] - 48; // either 0 or 1
+      // select SD-Card
+      x32currentCardSelection = command[3] - 48; // either 0 or 1
 
       Answer = "*9R00#";
     }else if (command.indexOf("*9AF#")==0) {
@@ -235,12 +235,15 @@ String x32ExecCmd(String command) {
       uint8_t cardNumber = command[3] - 48; // either 0 or 1
       uint32_t cardSize = x32CardSize[cardNumber];
 
-      Answer = "*9N" + String(cardNumber) + "0" + intToHex(cardSize, 8) + intToHex(0, 8) + "#";
+      uint32_t usedSpace = 2097152; // 2GB
+
+      Answer = "*9N" + String(cardNumber) + "0" + intToHex((cardSize-usedSpace)*2, 8) + intToHex(usedSpace*2, 8) + "#";
     }else if (command.indexOf("*9G")==0) {
       // G for german "GESAMT" = total?
-      uint32_t totalSize = x32CardSize[0] + x32CardSize[1];// "03B70600" for a 32GB card!? TODO: check the calculation. seems to be 2*32GB
+      uint8_t cardNumber = command[3] - 48; // either 0 or 1
+      uint32_t cardSize = x32CardSize[cardNumber];// "03B70600" for a 32GB card!? TODO: check the calculation. seems to be 2*32GB
 
-      Answer = "*9G00" + intToHex(totalSize, 8) + "#";
+      Answer = "*9G" + String(cardNumber) + "0" + intToHex(cardSize*2, 8) + "#";
     }else if (command.indexOf("G")==2) {
       // received one of the initialization-commands *0G00000# ... *3G70000#
       // the usage is unclear so far

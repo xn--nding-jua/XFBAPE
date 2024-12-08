@@ -61,7 +61,8 @@ bool x32Playback = false;
 uint32_t x32PlaybackPosition = 0;
 bool x32Debug = false;
 uint8_t x32NumberOfCards = 2;
-uint32_t x32CardSize[2] = {31086720, 15543360}; // one 32GB and one 16GB
+uint8_t x32currentCardSelection = 0;
+uint32_t x32CardSize[2] = {31163136, 15581568}; // one 32GB and one 16GB
 
 struct{ // don't change order of struct! Just add variables or replace with same size!!!
   uint16_t Version = 0;

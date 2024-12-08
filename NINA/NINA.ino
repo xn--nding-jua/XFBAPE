@@ -132,7 +132,7 @@ void loop() {
     handleFPGACommunication(); // communication through software-serial
 
     // handle webserver
-    //webserver.handleClient(); // DEBUG: WITHOUT SDCARD
+    webserver.handleClient();
 
     #if USE_TCPSERVER == 1
       handleTCPCommunication();
@@ -169,10 +169,10 @@ void initSystem() {
   Serial.println("X-f/bape MainCtrl " + String(versionstring) + " built on " + String(compile_date));
 
   // init SD-Card
-  //initStorage(); // DEBUG: WITHOUT SDCARD
+  initStorage();
 
   // initWifi
-  //configRead("/wifi.cfg", 10); // read WiFi-settings with maximum of 10 lines (if file is available) // DEBUG: WITHOUT SDCARD
+  //configRead("/wifi.cfg", 10); // read WiFi-settings with maximum of 10 lines (if file is available)
   initWifi(); // initialize WiFi
 
   /*
@@ -192,7 +192,7 @@ void initSystem() {
   #endif
 
   // init Webserver
-  //initWebserver(); // starting regular HTTP-server // DEBUG: WITHOUT SDCARD
+  initWebserver(); // starting regular HTTP-server
 
   // init command-server
   #if USE_TCPSERVER == 1
@@ -223,7 +223,7 @@ void initSystem() {
   #endif
 
   // initialize the Audiomixer. Try to read configuration from SD
-  //if (!configRead("/fbape.cfg", 100)) { // read config-file with maxmimum of 100 lines - uncomment if you like to load configuration-file on startup
+  //if (!configRead("/xfbape.cfg", 100)) { // read config-file with maxmimum of 100 lines - uncomment if you like to load configuration-file on startup
     // reading config-file failed -> load defaults
     initAudiomixer();
   //}

@@ -29,10 +29,10 @@
 --
 -- DMX512 Timings: Current settings
 -- =================================
--- Breaktime: t_min: 		88us
--- Mark after Break: 		8us
--- Inter Byte Time: 			8us
--- Mark before break time: 8us
+-- Breaktime: t_min: 		96us
+-- Mark after Break: 		9us
+-- Inter Byte Time: 			0us
+-- Mark before break time: 21us
 -- Refresh-Rate: 				44Hz
 --
 
@@ -56,7 +56,6 @@ entity dmx512_tx is
 
     serial_out 	: out std_logic;
 	 byteAddr_out	: out unsigned(9 downto 0); -- 0..512 = 513 -> 10-bit
-	 readNewByte	: out std_logic;
     tx_done   		: out std_logic
     );
 end dmx512_tx;
@@ -91,7 +90,6 @@ begin
       case r_SM_Main is
 		   when s_Break =>
 				serial_out <= '0';         -- Drive Line Low for Break
-				readNewByte <= '0';			-- reset readNewByte signal
 
 				-- stay here for at least 88us
 				if (breakCounter > 0) then
@@ -115,117 +113,121 @@ begin
 				end if;
 			
          when s_Idle =>
-          serial_out <= '1';         -- Keep/Drive Line High for Idle
-          tx_done   <= '0';
-          r_Clk_Count <= 0;
-          r_Bit_Index <= 0;
- 
-          if byte_rdy = '1' then
-            r_TX_Data <= byte_in;
-				
-            r_SM_Main <= s_TX_Start_Bit;
-          end if;
- 
-        -- Send out Start Bit. Start bit = 0
-        when s_TX_Start_Bit =>
-          serial_out <= '0';
- 
-          -- Wait g_CLKS_PER_BIT-1 clock cycles for start bit to finish
-          if r_Clk_Count < g_CLKS_PER_BIT-1 then
-            r_Clk_Count <= r_Clk_Count + 1;
-          else
-            r_Clk_Count <= 0;
-				
-            r_SM_Main   <= s_TX_Data_Bits;
-          end if;
- 
-        -- Wait g_CLKS_PER_BIT-1 clock cycles for data bits to finish
-        when s_TX_Data_Bits =>
-          serial_out <= r_TX_Data(r_Bit_Index);
-           
-          if r_Clk_Count < g_CLKS_PER_BIT-1 then
-            r_Clk_Count <= r_Clk_Count + 1;
-          else
-            r_Clk_Count <= 0;
-             
-            -- Check if we have sent out all bits
-            if r_Bit_Index < 7 then
-              r_Bit_Index <= r_Bit_Index + 1;
-				  
-              r_SM_Main   <= s_TX_Data_Bits; -- remain in this step
-            else
-              r_Bit_Index <= 0;
-				  
-              r_SM_Main   <= s_TX_Stop_Bit1;
-            end if;
-          end if;
- 
-        -- Send out Stop bit. Stop bit = 2
-        when s_TX_Stop_Bit1 =>
-          serial_out <= '1';
- 
-          -- Wait g_CLKS_PER_BIT-1 clock cycles for Stop bit to finish
-          if r_Clk_Count < g_CLKS_PER_BIT-1 then
-            r_Clk_Count <= r_Clk_Count + 1;
-          else
-            r_Clk_Count <= 0;
-				
-            r_SM_Main   <= s_TX_Stop_Bit2;
-          end if;
-         
-        -- Send out Stop bit. Stop bit = 2 
-        when s_TX_Stop_Bit2 =>
-          -- Wait g_CLKS_PER_BIT-1 clock cycles for Stop bit to finish
-          if r_Clk_Count < g_CLKS_PER_BIT-1 then
-            r_Clk_Count <= r_Clk_Count + 1;
-          else
-            r_Clk_Count <= 0;
-				
-            r_SM_Main   <= s_Cleanup;
-          end if;
-         
-        -- Stay here only 1 clock
-        when s_Cleanup =>
-          tx_done   <= '1';
-			 
-			 r_SM_Main <= s_interBytePause;
-			 
-		  when s_interBytePause =>
-			 tx_done <= '0';
-			 
-		    -- wait between bytes
-			 if (interByteCounter > 0) then
-				interByteCounter <= interByteCounter - 1;
-			 else
-				interByteCounter <= interByteTime_us * (clk_rate/1000000); -- reset interByteCounter
-			 
-				-- increment byteCounter
-				if byteCounter < 513 then
-					byteCounter <= byteCounter + 1;
-				else
-					byteCounter <= 0;
+				serial_out <= '1';         -- Keep/Drive Line High for Idle
+				tx_done   <= '0';
+				r_Clk_Count <= 0;
+				r_Bit_Index <= 0;
+
+				if byte_rdy = '1' then
+					r_TX_Data <= byte_in;
+
+					r_SM_Main <= s_TX_Start_Bit;
 				end if;
 
-				r_SM_Main   <= s_MarkBeforeBreak;
-			 end if;
+			-- Send out Start Bit. Start bit = 0
+			when s_TX_Start_Bit =>
+				serial_out <= '0';
+
+				-- Wait g_CLKS_PER_BIT-1 clock cycles for start bit to finish
+				if r_Clk_Count < g_CLKS_PER_BIT-1 then
+					r_Clk_Count <= r_Clk_Count + 1;
+				else
+					r_Clk_Count <= 0;
+
+					r_SM_Main   <= s_TX_Data_Bits;
+				end if;
+
+			-- Wait g_CLKS_PER_BIT-1 clock cycles for data bits to finish
+			when s_TX_Data_Bits =>
+				serial_out <= r_TX_Data(r_Bit_Index);
+
+				if r_Clk_Count < g_CLKS_PER_BIT-1 then
+					r_Clk_Count <= r_Clk_Count + 1;
+				else
+					r_Clk_Count <= 0;
+
+					-- Check if we have sent out all bits
+					if r_Bit_Index < 7 then
+						r_Bit_Index <= r_Bit_Index + 1;
+
+						r_SM_Main   <= s_TX_Data_Bits; -- remain in this step
+					else
+						r_Bit_Index <= 0;
+
+						r_SM_Main   <= s_TX_Stop_Bit1;
+					end if;
+				end if;
+
+			-- Send out Stop bit. Stop bit = 2
+			when s_TX_Stop_Bit1 =>
+				serial_out <= '1';
+
+				-- Wait g_CLKS_PER_BIT-1 clock cycles for Stop bit to finish
+				if r_Clk_Count < g_CLKS_PER_BIT-1 then
+					r_Clk_Count <= r_Clk_Count + 1;
+				else
+					r_Clk_Count <= 0;
+
+					r_SM_Main   <= s_TX_Stop_Bit2;
+				end if;
+		
+			-- Send out Stop bit. Stop bit = 2 
+			when s_TX_Stop_Bit2 =>
+				-- Wait g_CLKS_PER_BIT-1 clock cycles for Stop bit to finish
+				if r_Clk_Count < g_CLKS_PER_BIT-1 then
+					r_Clk_Count <= r_Clk_Count + 1;
+				else
+					r_Clk_Count <= 0;
+
+					r_SM_Main   <= s_Cleanup;
+				end if;
+
+			-- Stay here only 1 clock
+			when s_Cleanup =>
+				tx_done   <= '1';
+
+				r_SM_Main <= s_interBytePause;
+
+			when s_interBytePause =>
+				tx_done <= '0';
+
+				-- wait between bytes
+				if (interByteCounter > 0) then
+					interByteCounter <= interByteCounter - 1;
+				else
+					interByteCounter <= interByteTime_us * (clk_rate/1000000); -- reset interByteCounter
+
+					-- increment byteCounter
+					if byteCounter < 512 then
+						byteCounter <= byteCounter + 1;
+					else
+						byteCounter <= 0;
+					end if;
+
+					r_SM_Main   <= s_readNewData;
+				end if;
  
- 		   when s_MarkBeforeBreak =>
+			when s_readNewData =>
+				-- set address for RAM
+				byteAddr_out <= to_unsigned(byteCounter, 10);
+				
+				if (byteCounter>0) then
+					-- send next byte
+					r_SM_Main <= s_Idle;
+				else
+					-- end of sequence
+					r_SM_Main <= s_MarkBeforeBreak;
+				end if;
+
+			when s_MarkBeforeBreak =>
 				if (markBeforeBreakCounter > 0) then
 					markBeforeBreakCounter <= markBeforeBreakCounter - 1;
 				else
 					markBeforeBreakCounter <= markBeforeBreakTime_us * (clk_rate/1000000); -- reset markBeforeBreakCounter
 				
-					-- set address for RAM
-					byteAddr_out <= to_unsigned(byteCounter, 10);
-					
-					r_SM_Main <= s_readNewData;
+					r_SM_Main <= s_Break;
 				end if;
 				
-			when s_readNewData =>
-				readNewByte <= '1';
-				
-				r_SM_Main <= s_Break;
-			
         when others =>
           r_SM_Main <= s_Break;
  

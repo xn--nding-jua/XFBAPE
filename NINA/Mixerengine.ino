@@ -10,24 +10,16 @@ void initAudiomixer() {
   // set individual channels to 100% and left/right
   uint8_t i;
   for (i=0; i<MAX_AUDIO_CHANNELS; i++) {
-    audiomixer.chVolume[i] = 0; // set channel to 100% = 0dBfs
+    audiomixer.chVolume[i] = -48; // set channel to 0% = -48dBfs
 	
-	if (i==0 || i==2 | i==4) {
-      // channel 1-6 are stereo-channels, so pan to left and right
-	  audiomixer.chBalance[i] = 0; // set to left
-	} else if (i==1 || i==3 | i==5) {
-      // channel 1-6 are stereo-channels, so pan to left and right
-	  audiomixer.chBalance[i] = 100; // set to right
-	}else{
-      // channels 7 to 22 are UltraNet-Channels, so pan to center
-	  audiomixer.chBalance[i] = 50; // set to center
-	}
+    // pan channels 1..32 to center
+    audiomixer.chBalance[i] = 50; // set to center
 	
     sendVolumeToFPGA(i+1); // send values to FPGA
   }
   
   sendStereoVolumeToFPGA(0, 0); // set SD-Card to 0dBfs
-  sendStereoVolumeToFPGA(1, -140); // set Bluetooth to -140dBfs
+  sendStereoVolumeToFPGA(1, -48); // set Bluetooth to -48dBfs
 
   for (int i=0; i<MAX_ADCS; i++) {
     setADCgain(i, 0);
