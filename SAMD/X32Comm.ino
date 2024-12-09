@@ -119,13 +119,114 @@ String x32ExecCmd(String command) {
   String Answer = "";
 
   if (command.length()>2) {
-    if (command.indexOf("*8I#")==0) {
+    // ================================== PLAYBACK COMMANDS ==================================
+    if (command.indexOf("*9B")==0) {
+      // select session
+      String sessionname = command.substring(3, command.indexOf("#")-3);
+
+      // decode desired TrackNumber from Timecode (we are using minutes as storage)
+      uint8_t tracknumber = x32TimecodeToTracknumber(sessionname);
+      // now get the fileName from TOC
+      String filename = split(TOC, '|', tracknumber); // name of title0
+      // play the file
+      Serial2.println("player:file@" + filename);
+
+      // prepare Answer
+      uint32_t markerCount = 0; // X32 will request markers even when this is set to 0
+      uint32_t channelCount = 32;
+      // *9B0000232000F4E900000000000#
+      // *9B000 MARKERCOUNT CHANNELCOUNT NUMBEROFTOTALSAMPLES(?)
+
+      // TODO: do something with this command/information
+
+      Answer = "*9B000" + intToHex(markerCount, 2) + String(channelCount) + "000000000000000000#";
+    }else if (command.indexOf("*9D#")==0) {
+      // play/pause session
+      Serial2.println("player:pause");
+      Answer = "*9D00#";
+
+      // during playback, the card should send current position as samples every 85ms:
+      //SerialX32.print("*9N22xxxxxxxx#");
+      // this is done via the 85ms-timer in the SAMD.ino
+    }else if (command.indexOf("*9M")==0) {
+      // seek to specific sample based on 48kHz
+      uint32_t sampleIndex = hexToInt(command.substring(3, command.indexOf("#")));
+
+      float position = ((sampleIndex / 48000.0f) / (float)playerinfo.duration) * 100.0f;
+      Serial2.println("player:position@" + String(position, 0));
+
+      Answer = "*9M00#";
+    }else if (command.indexOf("*9AF#")==0) {
+      // request first entry of TOC
+      tocCounter = 0; // reset tocCounter as we are requesting first entry
+
+      //String title = split(TOC, '|', tocCounter); // name of title0
+      String title = x32DateToTimecode(1, 1, 2024, 0, tocCounter, 0); // X32 does not support real names. So we put the Track-Number in the Minutes. 60 Tracks are possible with this.
+      Answer = "*9ASF" + title + "#";
+    }else if (command.indexOf("*9AN#")==0) {
+      // request followup-titles of TOC
+      tocCounter++;
+      if (tocCounter<tocEntries) {
+        //String title = split(TOC, '|', tocCounter); // name of titleX
+        String title = x32DateToTimecode(1, 1, 2024, 0, tocCounter, 0); // X32 does not support real names. So we put the Track-Number in the Minutes. 60 Tracks are possible with this.
+
+        Answer = "*9ASN" + title + "#";
+      }else{
+        // no more entries available
+        Answer = "*9AEN00#";
+      }
+
+
+
+
+    // ================================== VITAL COMMANDS ==================================
+    }else if (command.indexOf("*8I#")==0) {
       // I = IDENTIFY
       // X32 wants to know who we are
+      /*
+        Possible options:
+        X-UREC (tested)
+        X-ADAT (untested)
+        X-MADI (untested)
+        X-UF   (untested)
+        X-USB  (untested)
+      */
       Answer = "*8X-UREC:A:12#"; // we pretend to be an X-LIVE card with firmware-version A12 :)
     }else if (command.indexOf("*8R#")==0) {
       // X32 wants to know who we are - dont ask me, whats the difference between *8I# and *8R#
       Answer = "*8X-UREC:A:12#"; // we pretend to be an X-LIVE card with firmware-version A12 :)
+    }else if (command.indexOf("*9N")==0) {
+      // N for german "NOCH" = remaining?
+      // X32 requests size of SD-card
+      uint8_t cardNumber = command[3] - 48; // either 0 or 1
+      uint32_t cardSize = x32CardSize[cardNumber];
+
+      uint32_t usedSpace = 2097152; // 2GB
+
+      Answer = "*9N" + String(cardNumber) + "0" + intToHex((cardSize-usedSpace)*2, 8) + intToHex(usedSpace*2, 8) + "#";
+    }else if (command.indexOf("*9G")==0) {
+      // G for german "GESAMT" = total?
+      uint8_t cardNumber = command[3] - 48; // either 0 or 1
+      uint32_t cardSize = x32CardSize[cardNumber];// "03B70600" for a 32GB card!? TODO: check the calculation. seems to be 2*32GB
+
+      Answer = "*9G" + String(cardNumber) + "0" + intToHex(cardSize*2, 8) + "#";
+    }else if (command.indexOf("*9C")==0) {
+      // request marker
+      uint32_t markerIndex = hexToInt(command.substring(3, command.indexOf("#")));
+
+      // here we can look up desired marker, return timeIndex and wait for the next command
+      // maybe MP3-TOC can be used for this if file-handling is not working well
+      uint32_t timeIndex = 0; // if timeIndex == 0 X32 will handle this as "no marker"
+
+      // TODO: do something with this command/information
+
+      Answer = "*9C00" + intToHex(markerIndex, 2) + intToHex(timeIndex, 8) + "#";
+
+
+
+
+
+    // ================================== ADDITIONAL COMMANDS ==================================
     }else if (command.indexOf("*8C8")==0) {
       // switch between card and USB: *8C8od#
       uint8_t channelOption = command[4] - 48; // options between 0 and 5
@@ -135,18 +236,29 @@ String x32ExecCmd(String command) {
       }else{
         deviceOption = 1; // SDCARD
       }
+      
+      // TODO: do something with this command/information
+
       Answer = "*8Y#";
     }else if (command.indexOf("*9X")==0) {
-      // delete file
-      String filename = command.substring(3, command.indexOf("#"));
+      // delete session
+      String sessionname = command.substring(3, command.indexOf("#"));
+      
+      // TODO: do something with this command/information
+
       Answer = "*9Y00#";
     }else if (command.indexOf("*9H")==0) {
-      // start recording
-      String filename = command.substring(3, command.indexOf("#")-3);
+      // start recording session
+      String sessionname = command.substring(3, command.indexOf("#")-3);
       uint8_t channelCount = command.substring(command.indexOf("#")-3, command.indexOf("#")-1).toInt();
+      
+      // TODO: do something with this command/information
+
       Answer = "*9Y00#";
     }else if (command.indexOf("*9F#")==0) {
       // stop recording
+
+      // TODO: do something with this command/information
 
       Answer = "*9Y00#";
 
@@ -164,18 +276,6 @@ String x32ExecCmd(String command) {
 
         *9N24003F56D0#
       */
-    }else if (command.indexOf("*9D#")==0) {
-      // play file
-      Answer = "*9D00#";
-
-      // during playback, the card should send current position as samples every 85ms:
-      //SerialX32.print("*9N22xxxxxxxx#");
-      // this is done via the 85ms-timer in the SAMD.ino
-    }else if (command.indexOf("*9M")==0) {
-      // seek to specific sample based on 48kHz
-      uint32_t sampleIndex = hexToInt(command.substring(3, command.indexOf("#")));
-
-      Answer = "*9M00#";
     }else if (command.indexOf("*9Q~#")==0) { // TODO: check command. Maybe it is *9Q0# for card1 and *9Q1# for card2?
       // format SD-Card
 
@@ -184,66 +284,16 @@ String x32ExecCmd(String command) {
       // create new Marker
       uint32_t sampleIndex = hexToInt(command.substring(3, command.indexOf("#")));
 
+      // TODO: do something with this command/information
+
       Answer = "*9Y00#";
-    }else if (command.indexOf("*9B")==0) {
-      // select file
-      String filename = command.substring(3, command.indexOf("#")-3);
-
-      // prepare Answer
-      uint32_t markerCount = 0; // X32 will request markers even when this is set to 0
-      uint32_t channelCount = 32;
-      // *9B0000232000F4E900000000000#
-      // *9B000 MARKERCOUNT CHANNELCOUNT NUMBEROFTOTALSAMPLES(?)
-      Answer = "*9B000" + intToHex(markerCount, 2) + String(channelCount) + "000000000000000000#";
-    }else if (command.indexOf("*9C")==0) {
-      // request marker
-      uint32_t markerIndex = hexToInt(command.substring(3, command.indexOf("#")));
-
-      // here we can look up desired marker, return timeIndex and wait for the next command
-      // maybe MP3-TOC can be used for this if file-handling is not working well
-      uint32_t timeIndex = 0; // if timeIndex == 0 X32 will handle this as "no marker"
-
-      Answer = "*9C00" + intToHex(markerIndex, 2) + intToHex(timeIndex, 8) + "#";
     }else if (command.indexOf("*9R")==0) {
       // select SD-Card
       x32currentCardSelection = command[3] - 48; // either 0 or 1
 
+      // TODO: do something with this command/information
+
       Answer = "*9R00#";
-    }else if (command.indexOf("*9AF#")==0) {
-      // request first entry of TOC
-      tocCounter = 0; // reset tocCounter as we are requesting first entry
-
-      String TOCtest = "5977A2A0|5977A2A4|5977A52B Part 1|Test|";
-      String title = split(TOCtest, '|', tocCounter); // name of title0
-
-      Answer = "*9ASF" + title + "#";
-    }else if (command.indexOf("*9AN#")==0) {
-      // request followup-titles of TOC
-      tocCounter++;
-      if (tocCounter<tocEntries) {
-        String TOCtest = "5977A2A0|5977A2A4|5977A52B Part 1|Test|";
-        String title = split(TOCtest, '|', tocCounter); // name of titleX
-
-        Answer = "*9ASN" + title + "#";
-      }else{
-        // no more entries available
-        Answer = "*9AEN00#";
-      }
-    }else if (command.indexOf("*9N")==0) {
-      // N for german "NOCH" = remaining?
-      // X32 requests size of SD-card
-      uint8_t cardNumber = command[3] - 48; // either 0 or 1
-      uint32_t cardSize = x32CardSize[cardNumber];
-
-      uint32_t usedSpace = 2097152; // 2GB
-
-      Answer = "*9N" + String(cardNumber) + "0" + intToHex((cardSize-usedSpace)*2, 8) + intToHex(usedSpace*2, 8) + "#";
-    }else if (command.indexOf("*9G")==0) {
-      // G for german "GESAMT" = total?
-      uint8_t cardNumber = command[3] - 48; // either 0 or 1
-      uint32_t cardSize = x32CardSize[cardNumber];// "03B70600" for a 32GB card!? TODO: check the calculation. seems to be 2*32GB
-
-      Answer = "*9G" + String(cardNumber) + "0" + intToHex(cardSize*2, 8) + "#";
     }else if (command.indexOf("G")==2) {
       // received one of the initialization-commands *0G00000# ... *3G70000#
       // the usage is unclear so far
@@ -252,7 +302,7 @@ String x32ExecCmd(String command) {
 
       // the X-LIVE is not responding to these commands so we either
 
-      Answer = ""; // TODO: check if we have to Answer this command
+      Answer = ""; // X-LIVE is not answering on this commands - so we stay quite :)
     }else{
       // Error: unknown command -> help!
     }
@@ -274,4 +324,44 @@ void x32Init() {
 
 void x32NewCard(uint8_t cardIndex) {
   SerialX32.print("*9N" + String(cardIndex) + "000007F4000000000#"); // 32576 could be MegaBytes?
+}
+
+String x32TimecodeToString(String timecodeHex) {
+  uint32_t timecode = hexToInt(timecodeHex);
+
+  uint16_t year = (timecode >> 25) + 1980;
+  uint8_t month =  (timecode & 0x1FFFFFF) >> 21;
+  uint8_t day = (timecode & 0x1FFFFF) >> 16;
+  uint8_t hour = (timecode & 0xFFFF) >> 11;
+  uint8_t minute =  (timecode & 0x7FF) >> 5;
+  uint8_t second =  (timecode & 0x1F) << 1;
+
+  return String(day) + "." + String(month) + "." + String(year) + " " + String(hour) + ":" + String(minute) + ":" + String(second);
+}
+
+uint8_t x32TimecodeToTracknumber(String timecodeHex) {
+  uint32_t timecode = hexToInt(timecodeHex);
+  uint8_t minute =  (timecode & 0x7FF) >> 5;
+  return minute;
+}
+
+String x32DateToTimecode(uint8_t day, uint8_t month, uint16_t year, uint8_t hour, uint8_t minute, uint8_t second) {
+  uint32_t timecode = (uint32_t)((year - 1980)) << 25;
+  timecode += (uint32_t)month << 21;
+  timecode += (uint32_t)day << 16;
+  timecode += (uint32_t)hour << 11;
+  timecode += (uint32_t)minute << 5;
+  timecode += (uint32_t)second << 1;
+
+  return intToHex(timecode, 8);
+}
+
+String x32CreateDummyTOC() {
+  String toc;
+
+  for (uint8_t i=0; i<tocEntries; i++) {
+    toc = toc + x32DateToTimecode(1, 1, 2024, 0, i, 0) + "|";
+  }
+
+  return toc;
 }

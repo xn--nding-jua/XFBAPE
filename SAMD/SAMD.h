@@ -58,7 +58,6 @@ uint16_t x32RingBufferPointer = 0;
 uint8_t x32AliveCounter = 59; // preload to 5 seconds (for ticker with 85ms)
 String x32AliveCommand = "*8BE#";
 bool x32Playback = false;
-uint32_t x32PlaybackPosition = 0;
 bool x32Debug = false;
 uint8_t x32NumberOfCards = 2;
 uint8_t x32currentCardSelection = 0;

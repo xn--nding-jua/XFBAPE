@@ -122,7 +122,8 @@ void ticker85msFcn() {
 
   if (x32Playback) {
     // send current sample-position every 85ms if playing
-    SerialX32.print("*9N22" + intToHex(x32PlaybackPosition * 48000, 8) + "#");
+    uint32_t x32PlaybackPosition = playerinfo.duration * playerinfo.progress * (48000.0f/100.0f); // calculate sample-position based on 48kHz, duration and current process
+    SerialX32.print("*9N22" + intToHex(x32PlaybackPosition, 8) + "#");
   }
 }
 Ticker ticker85ms(ticker85msFcn, 85, 0, MILLIS);
