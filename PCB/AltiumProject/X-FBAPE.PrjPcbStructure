@@ -1,0 +1,3 @@
+Record=TopLevelDocument|FileName=Top.SchDoc|SheetNumber=1
+Record=SheetSymbol|SourceDocument=Top.SchDoc|Designator=S001|SchDesignator=S001|FileName=FPGA.SchDoc|SheetNumber=2|SymbolType=Normal|RawFileName=FPGA.SchDoc|DesignItemId= |SourceLibraryName= |ObjectKind=Sheet Symbol|RevisionGUID= |ItemGUID= |VaultGUID= 
+Record=SheetSymbol|SourceDocument=Top.SchDoc|Designator=S002|SchDesignator=S002|FileName=Connector.SchDoc|SheetNumber=3|SymbolType=Normal|RawFileName=Connector.SchDoc|DesignItemId= |SourceLibraryName= |ObjectKind=Sheet Symbol|RevisionGUID= |ItemGUID= |VaultGUID= 
