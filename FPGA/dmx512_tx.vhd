@@ -1,39 +1,39 @@
-----------------------------------------------------------------------
--- File Downloaded from http://www.nandland.com
-----------------------------------------------------------------------
--- This file contains the UART Transmitter.  This transmitter is able
--- to transmit 8 bits of serial data, one start bit, one stop bit,
--- and no parity bit.  When transmit is complete tx_done will be
--- driven high for one clock cycle.
+-- Sender for DMX512 universe with adjustable timings
+-- (c) 2024 Dr.-Ing. Christian Noeding
+-- christian@noeding-online.de
+-- Released under GNU General Public License v3
+-- Source: https://www.github.com/xn--nding-jua/X-FBAPE
+-- Serial transmission based on UART-code from http://www.nandland.com
 --
--- Set Generic g_CLKS_PER_BIT as follows:
--- g_CLKS_PER_BIT = (Frequency of clk)/(Frequency of UART)
--- Example: 10 MHz Clock, 115200 baud UART
--- (10000000)/(115200) = 87
+-- This file contains an UART Transmitter for DMX512. This transmitter is able
+-- to transmit 8 bits of serial data, one start bit, two stop bit,
+-- and no parity bit. When transmit of a single byte is complete tx_done will be
+-- driven high for one clock cycle. Afterwards the byte-counter will be increased
+-- and new data will be read from a RAM-block.
 --
 -- DMX512 Timings: Standard
 -- =================================
 -- Breaktime: t_min: 		88us
 -- Mark after Break: 		8us
--- Inter Byte Time: 			0us
--- Mark before break time: 0us
--- Refresh-Rate: 				44Hz
+-- Inter Byte Time: 		0us
+-- Mark before break time: 	0us
+-- Refresh-Rate: 			44Hz
 --
 -- DMX512 Timings: Compatible
 -- =================================
--- Breaktime: 					242us
+-- Breaktime: 				242us
 -- Mark after Break: 		100us
--- Inter Byte Time: 			40us
--- Mark before break time: 12us
--- Refresh-Rate: 				23Hz
+-- Inter Byte Time: 		40us
+-- Mark before break time: 	12us
+-- Refresh-Rate: 			23Hz
 --
 -- DMX512 Timings: Current settings
 -- =================================
 -- Breaktime: t_min: 		96us
 -- Mark after Break: 		9us
--- Inter Byte Time: 			0us
--- Mark before break time: 21us
--- Refresh-Rate: 				44Hz
+-- Inter Byte Time: 		0us
+-- Mark before break time: 	21us
+-- Refresh-Rate: 			44Hz
 --
 
 library ieee;
@@ -42,20 +42,20 @@ use ieee.numeric_std.all;
  
 entity dmx512_tx is
   generic(
-    clk_rate    : integer := 4000000;
-    baud_rate   : integer := 250000;
-	 breakTime_us : integer := 88;
-	 markTime_us : integer := 8;
-	 interByteTime_us : integer := 8;
-	 markBeforeBreakTime_us : integer := 8
+    clk_rate				: integer := 4000000;
+    baud_rate				: integer := 250000;
+	breakTime_us			: integer := 88;
+	markTime_us				: integer := 8;
+	interByteTime_us		: integer := 8;
+	markBeforeBreakTime_us	: integer := 8
     );
   port (
     clk				: in std_logic;
     byte_in			: in std_logic_vector(7 downto 0);
     byte_rdy		: in std_logic;
 
-    serial_out 	: out std_logic;
-	 byteAddr_out	: out unsigned(9 downto 0); -- 0..512 = 513 -> 10-bit
+    serial_out 		: out std_logic;
+	byteAddr_out	: out unsigned(9 downto 0); -- 0..512 = 513 -> 10-bit
     tx_done   		: out std_logic
     );
 end dmx512_tx;

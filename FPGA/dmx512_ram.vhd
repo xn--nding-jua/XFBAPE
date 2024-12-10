@@ -1,3 +1,12 @@
+-- Data-storage for DMX512 universe
+-- (c) 2024 Dr.-Ing. Christian Noeding
+-- christian@noeding-online.de
+-- Released under GNU General Public License v3
+-- Source: https://www.github.com/xn--nding-jua/X-FBAPE
+--
+-- This file contains a RAM-module with asynchronuous read/write
+-- from/to the DMX512-data. It stores 512 bytes plus start-byte.
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
