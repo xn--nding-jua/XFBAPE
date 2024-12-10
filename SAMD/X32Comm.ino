@@ -121,39 +121,69 @@ String x32ExecCmd(String command) {
   if (command.length()>2) {
     // ================================== PLAYBACK COMMANDS ==================================
     if (command.indexOf("*9B")==0) {
-      // select session
-      String sessionname = command.substring(3, command.indexOf("#")-3);
+      // select session: *9B582100A0#Q#
+      String sessionname = command.substring(3, 3+8); // 8 hex-characters after *9B are the session-name. ignore #Q# at the end
 
       // decode desired TrackNumber from Timecode (we are using minutes as storage)
       uint8_t tracknumber = x32TimecodeToTracknumber(sessionname);
       // now get the fileName from TOC
       String filename = split(TOC, '|', tracknumber); // name of title0
       // play the file
-      Serial2.println("player:file@" + filename);
+      Serial2.println("player:file@" + filename); // load file (and file will be played immediatyl)
+      Serial2.println("player:pause"); // stop file
 
       // prepare Answer
       uint32_t markerCount = 0; // X32 will request markers even when this is set to 0
       uint32_t channelCount = 32;
-      // *9B0000232000F4E900000000000#
-      // *9B000 MARKERCOUNT CHANNELCOUNT NUMBEROFTOTALSAMPLES(?)
+      // *9B000003200BD1A30020ED80900# // zero markers
+      // *9B0000232000F4E900000000000# // two markers
+      // *9B000 MARKERCOUNT CHANNELCOUNT 0 NUMBEROFTOTALSAMPLES 0 ???
 
-      // TODO: do something with this command/information
-
-      Answer = "*9B000" + intToHex(markerCount, 2) + String(channelCount) + "000000000000000000#";
+      Answer = "*9B000" + intToHex(markerCount, 2) + String(channelCount) + "0" + intToHex(3*60 * 48000, 8) + "0" + intToHex(0, 8) + "#";
     }else if (command.indexOf("*9D#")==0) {
-      // play/pause session
+      // play session
       Serial2.println("player:pause");
       Answer = "*9D00#";
 
       // during playback, the card should send current position as samples every 85ms:
       //SerialX32.print("*9N22xxxxxxxx#");
       // this is done via the 85ms-timer in the SAMD.ino
+    }else if (command.indexOf("*9E#")==0) {
+      // pause session
+      Serial2.println("player:pause");
+      Answer = "*9E00#";
+
+      // during playback, the card should send current position as samples every 85ms:
+      //SerialX32.print("*9N22xxxxxxxx#");
+      // this is done via the 85ms-timer in the SAMD.ino
+    }else if (command.indexOf("*9F#")==0) {
+      // stop playing/recording
+
+      Serial2.println("player:stop");
+
+      Answer = "*9F00#";
+
+      /*
+        Card answers with a bunch of results if recording is stopped
+        *9N24003F38D0# -> probably info-command for new entries?
+
+        *9N0003A6DD80#
+        *9N0003A6D300#
+
+        *9N24003F47D0#
+
+        *9N0003A6D300#
+        *9N24003F50A0#
+
+        *9N24003F56D0#
+      */
     }else if (command.indexOf("*9M")==0) {
       // seek to specific sample based on 48kHz
-      uint32_t sampleIndex = hexToInt(command.substring(3, command.indexOf("#")));
+      uint32_t sampleIndex = hexToInt(command.substring(3, 3+8)); // *9M0009EDC0#Q#
 
-      float position = ((sampleIndex / 48000.0f) / (float)playerinfo.duration) * 100.0f;
-      Serial2.println("player:position@" + String(position, 0));
+      //float percent = ((sampleIndex / 48000.0f) / (float)playerinfo.duration) * 100.0f;
+      uint32_t position = sampleIndex / 48000;
+      Serial2.println("player:position@" + String(position));
 
       Answer = "*9M00#";
     }else if (command.indexOf("*9AF#")==0) {
@@ -220,7 +250,13 @@ String x32ExecCmd(String command) {
 
       // TODO: do something with this command/information
 
-      Answer = "*9C00" + intToHex(markerIndex, 2) + intToHex(timeIndex, 8) + "#";
+      if (markerIndex == 0) {
+        // send duration to X32
+        Answer = "*9C00" + intToHex(markerIndex, 2) + intToHex(playerinfo.duration * 48000, 8) + "#";
+      }else{
+        // send marker-position to X32
+        Answer = "*9C00" + intToHex(markerIndex, 2) + intToHex(timeIndex, 8) + "#";
+      }
 
 
 
@@ -255,27 +291,6 @@ String x32ExecCmd(String command) {
       // TODO: do something with this command/information
 
       Answer = "*9Y00#";
-    }else if (command.indexOf("*9F#")==0) {
-      // stop recording
-
-      // TODO: do something with this command/information
-
-      Answer = "*9Y00#";
-
-      /*
-        Card now Answers with a bunch of results
-        *9N24003F38D0# -> probably info-command for new entries?
-
-        *9N0003A6DD80#
-        *9N0003A6D300#
-
-        *9N24003F47D0#
-
-        *9N0003A6D300#
-        *9N24003F50A0#
-
-        *9N24003F56D0#
-      */
     }else if (command.indexOf("*9Q~#")==0) { // TODO: check command. Maybe it is *9Q0# for card1 and *9Q1# for card2?
       // format SD-Card
 

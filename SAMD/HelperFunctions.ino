@@ -50,10 +50,10 @@ String split(String s, char parser, int index) {
   return rs;
 }
 
-uint8_t getNumberOfTocEntries() {
+uint8_t getNumberOfTocEntries(char separator) {
   uint8_t entries = 0;
   for (uint8_t i=0; i<TOC.length(); i++) {
-    if (TOC[i] == ',') entries++;
+    if (TOC[i] == separator) entries++;
   }
   return entries;
 }

@@ -475,12 +475,24 @@ String executeCommand(String Command) {
         // received command "player:position?"
         Answer = String(audio.getAudioCurrentTime());
       }else if (Command.indexOf("player:position") > -1){
-        // received command "player:position@0...100"
+        // received command "player:position@"
+        if (currentAudioFile.indexOf("http") > -1){
+          Answer = "ERROR: Cannot set position for stream!";
+        }else{
+          uint32_t position = Command.substring(Command.indexOf("@")+1).toInt();
+          if (audio.setAudioPlayPosition(position)) {
+            Answer = "OK";
+          }else{
+            Answer = "ERROR";
+          }
+        }
+      }else if (Command.indexOf("player:percent") > -1){
+        // received command "player:percent@0...100"
         if (currentAudioFile.indexOf("http") > -1){
           Answer = "ERROR: Cannot set position for stream!";
         }else{
           uint32_t position = (audio.getAudioFileDuration() * Command.substring(Command.indexOf("@")+1).toInt()) / 100;
-          if (audio.connecttoFS(SD, currentAudioFile.c_str(), position)) {
+          if (audio.setAudioPlayPosition(position)) {
             Answer = "OK";
           }else{
             Answer = "ERROR";

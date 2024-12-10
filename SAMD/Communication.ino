@@ -74,6 +74,7 @@ String executeCommand(String Command) {
       playerinfo.gateThreshold = split(ParameterString, ',', 12).toFloat();
       playerinfo.audioStatusInfo = split(ParameterString, ',', 13).toInt(); // contains infos about noisegate, clip (L/R/S) and compression (LR/S)
       TOC = split(ParameterString, ',', 14);
+      tocEntries = getNumberOfTocEntries('|');
 
       // send time to X32 when progress is above 0
       x32Playback = (playerinfo.progress > 0);
