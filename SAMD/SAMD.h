@@ -10,7 +10,7 @@ const char compile_date[] = __DATE__ " " __TIME__;
 //#define PIN_I2S_FS 03 // pin for FrameSelect / Wordclock (= D3)
 
 #define USE_DISPLAY       1      // enables a SSD1308 display connected to I2C
-#define USE_XTOUCH        1      // support for XTouch via Ethernet
+#define USE_XTOUCH        0      // support for XTouch via Ethernet (currently in Alpha-state and needs more work!)
 
 // includes for FPGA
 #include <wiring_private.h>

@@ -222,13 +222,11 @@
     // every 2 seconds XTouch sends 00 20 32 58 54 00
     // we have to send 00 00 66 14 00
 
-    uint8_t rxData[18]; //buffer to hold incoming packet,
-    int packetSize = XCtlUdp.parsePacket();
-    uint8_t channel = 0;
-    int16_t value = 0;
-
-    if (packetSize) {
+    if (XCtlUdp.parsePacket() > 0) {
+      uint8_t rxData[18]; //buffer to hold incoming packet,
       uint8_t len = XCtlUdp.read(rxData, 18);
+      uint8_t channel = 0;
+      int16_t value = 0;
 
       // check if packet is valid
       if ((len>0) && (rxData[0] == 0xF0) && (rxData[len-1] == 0xF7)) {

@@ -116,10 +116,11 @@ void ticker100msFcn() {
       XCtlWatchdogCounter = 50;
 
       XCtl_sendWatchDogMessage();
+      XCtlPrepareData(); // prepare values to send to device
+      XCtl_sendGeneralData(); // update buttons and displays
+      XCtl_sendFaderData(); // update fader
     }
-    XCtlPrepareData(); // prepare values to send to device
-    XCtl_sendGeneralData(); // update buttons and displays
-    XCtl_sendFaderData(); // update fader
+    handleXCtlMessages();
   #endif
 }
 Ticker ticker100ms(ticker100msFcn, 100, 0, MILLIS);
@@ -235,9 +236,6 @@ void loop() {
     handleUSBCommunication(); // communication through Serial (USB) with connected computer
     handleX32Communication(); // communication through Serial1 with Behringer X32 MainControl
     handleNINACommunication(); // communication through Serial2 with NINA W102
-    #if USE_XTOUCH == 1
-      handleXCtlMessages();
-    #endif
 
     ticker100ms.update();
     ticker85ms.update();
