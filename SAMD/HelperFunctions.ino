@@ -58,29 +58,61 @@ uint8_t getNumberOfTocEntries(char separator) {
   return entries;
 }
 
-#if USE_DISPLAY == 1
-  // convert seconds to string of hour, minute and seconds
-  String secondsToHMS(uint32_t seconds){
-    unsigned int tme=0;
-    tme = seconds;
+// convert seconds to string of hour, minute and seconds
+String secondsToHMS(uint32_t seconds){
+  unsigned int tme=0;
+  tme = seconds;
 
-    int hr = tme/3600;                        //Number of seconds in an hour
-    int mins = (tme-hr*3600)/60;              //Remove the number of hours and calculate the minutes.
-    int sec = tme-hr*3600-mins*60;            //Remove the number of hours and minutes, leaving only seconds.
-    sec %= 60;
-    mins %= 60;
-    hr %= 24;
+  int hr = tme/3600;                        //Number of seconds in an hour
+  int mins = (tme-hr*3600)/60;              //Remove the number of hours and calculate the minutes.
+  int sec = tme-hr*3600-mins*60;            //Remove the number of hours and minutes, leaving only seconds.
+  sec %= 60;
+  mins %= 60;
+  hr %= 24;
 
-    if (seconds < 60) {
-      // show only seconds
-      return String(sec) + "s";
-    }else if (seconds < 3600){
-      return (String(mins) + "min " + String(sec) + "s");
-    }else{
-      return (String(hr) + "h " + String(mins) + "min " + String(sec) + "s");
-    }
+  if (seconds < 60) {
+    // show only seconds
+    return String(sec) + "s";
+  }else if (seconds < 3600){
+    return (String(mins) + "min " + String(sec) + "s");
+  }else{
+    return (String(hr) + "h " + String(mins) + "min " + String(sec) + "s");
+  }
+}
+
+String secondsToHMS_B(uint32_t seconds){
+  unsigned int tme=0;
+  tme = seconds;
+
+  int hr = tme/3600;                        //Number of seconds in an hour
+  int mins = (tme-hr*3600)/60;              //Remove the number of hours and calculate the minutes.
+  int sec = tme-hr*3600-mins*60;            //Remove the number of hours and minutes, leaving only seconds.
+  sec %= 60;
+  mins %= 60;
+  hr %= 24;
+
+  String s_hr;
+  String s_min;
+  String s_sec;
+  if (hr<10) {
+    s_hr = "0" + String(hr);
+  }else{
+    s_hr = String(hr);
+  }
+  if (mins<10) {
+    s_min = "0" + String(mins);
+  }else{
+    s_min = String(mins);
+  }
+  if (sec<10) {
+    s_sec = "0" + String(sec);
+  }else{
+    s_sec = String(sec);
   }
 
+  return (s_hr + ":" + s_min + ":" + s_sec);
+}
+#if USE_DISPLAY == 1
   String formatSize(uint32_t size) {
     if (size < 1024) {
       return String(size) + " B";

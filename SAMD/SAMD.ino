@@ -104,13 +104,25 @@
 
 #include "SAMD.h"
 
-#if USE_DISPLAY == 1
-  void ticker100msFcn() {
+void ticker100msFcn() {
+  #if USE_DISPLAY == 1
     // do menu/GUI-relevant stuff
     displayDrawMenu();
-  }
-  Ticker ticker100ms(ticker100msFcn, 100, 0, MILLIS);
-#endif
+  #endif
+
+  #if USE_XTOUCH == 1
+    XCtlWatchdogCounter -= 1;
+    if (XCtlWatchdogCounter == 0) {
+      XCtlWatchdogCounter = 50;
+
+      XCtl_sendWatchDogMessage();
+    }
+    XCtlPrepareData(); // prepare values to send to device
+    XCtl_sendGeneralData(); // update buttons and displays
+    XCtl_sendFaderData(); // update fader
+  #endif
+}
+Ticker ticker100ms(ticker100msFcn, 100, 0, MILLIS);
 
 void ticker85msFcn() {
   x32AliveCounter--;
@@ -186,12 +198,10 @@ void setup() {
   #if USE_DISPLAY == 1
     // show main-menu
     displayDrawMenu();
-
-    // start ticker
-    ticker100ms.start();
   #endif
 
   // start ticker
+  ticker100ms.start();
   ticker85ms.start();
 }
 
@@ -221,10 +231,11 @@ void loop() {
     handleUSBCommunication(); // communication through Serial (USB) with connected computer
     handleX32Communication(); // communication through Serial1 with Behringer X32 MainControl
     handleNINACommunication(); // communication through Serial2 with NINA W102
-
-    #if USE_DISPLAY == 1
-      ticker100ms.update();
+    #if USE_XTOUCH == 1
+      handleXCtlMessages();
     #endif
+
+    ticker100ms.update();
     ticker85ms.update();
   }
 }

@@ -10,12 +10,16 @@ const char compile_date[] = __DATE__ " " __TIME__;
 //#define PIN_I2S_FS 03 // pin for FrameSelect / Wordclock (= D3)
 
 #define USE_DISPLAY       1      // enables a SSD1308 display connected to I2C
+#define USE_XTOUCH        1      // support for XTouch via Ethernet
 
 // includes for FPGA
 #include <wiring_private.h>
 #include "jtag.h"
 #include "fpga.h"
 #include <Ethernet.h>
+#if USE_XTOUCH == 1
+  #include <EthernetUdp.h>
+#endif
 #include <SPI.h>
 #include "Ticker.h"
 
@@ -90,6 +94,10 @@ EthernetServer cmdserver(5025);
   #define SCREEN_ADDRESS 0x3C // this address does not fit to the address on the PCB!!!
   Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
   uint8_t currentDisplayLine = 0;
+#endif
+
+#if USE_XTOUCH == 1
+  uint16_t XCtlWatchdogCounter = 50; // preload to 5 seconds
 #endif
 
 String TOC;
