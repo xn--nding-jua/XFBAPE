@@ -1,45 +1,4 @@
 #if USE_XTOUCH == 1
-  EthernetUDP XCtlUdp;
-
-  uint8_t XCtl_Probe[8] = {0xF0, 0x00, 0x20, 0x32, 0x58, 0x54, 0x00, 0xF7};
-  uint8_t XCtl_ProbeResponse[8] = {0xF0, 0x00, 0x20, 0x32, 0x58, 0x54, 0x01, 0xF7};
-  uint8_t XCtl_ProbeB[18] = {0xF0, 0x00, 0x00, 0x66, 0x58, 0x01, 0x30, 0x31, 0x35, 0x36, 0x34, 0x30, 0x36, 0x36, 0x37, 0x34, 0x30, 0xF7};
-  uint8_t XCtl_ProbeC[18] = {0xF0, 0x00, 0x00, 0x66, 0x58, 0x01, 0x30, 0x31, 0x35, 0x36, 0x34, 0x30, 0x36, 0x33, 0x44, 0x35, 0x36, 0xF7};
-  uint8_t XCtl_IdlePacket[7] = {0xF0, 0x00, 0x00, 0x66, 0x14, 0x00, 0xF7};
-
-  struct sXctlScribblePad{
-    String topText = "TopText";
-    String botText = "BotText";
-    uint8_t color = 7; // 0=BLACK, 1=RED, 2=GREEN, 3=YELLOW, 4=BLUE, 5=PINK, 6=CYAN, 7=WHITE
-    bool inverted = false;
-  };
-
-  struct sXCtlChannel{
-    bool channelNeedsUpdate = true;
-    uint16_t faderPosition = 0; // 0...16383
-    uint16_t faderPositionHW = 0; // 0...16383
-    uint8_t meterLevel = 0; // 0...8
-    uint8_t dialLevel = 0; // 0..255 ->0..12
-
-    uint8_t rec = 0; // 0=OFF, 1=ON, 2=FLASHING
-    uint8_t solo = 0; // 0=OFF, 1=ON, 2=FLASHING
-    uint8_t mute = 0; // 0=OFF, 1=ON, 2=FLASHING
-    uint8_t select = 0; // 0=OFF, 1=ON, 2=FLASHING
-  };
-
-  struct sXCtl{
-    IPAddress ip;
-    uint8_t channelOffset = 0;
-    sXctlScribblePad scribblePad[8];
-    sXCtlChannel channel[8];
-    bool faderNeedsUpdate = true;
-    uint16_t masterFader = 0;
-    uint16_t masterFaderHW = 0;
-    uint8_t jogDialValue = 0;
-    char segmentDisplay[12];
-    uint8_t buttonLightOn[103];
-  }XCtl;
-
   uint8_t XCtl_getSegmentBitmap(char c) {
     switch (c) {
       case '1': return 0x06; break;
@@ -57,9 +16,12 @@
     }
   }
 
-  void XCtl_sendUdpPacket(const uint8_t *buffer, uint16_t size) {
+  void XCtl_init() {
     XCtlUdp.begin(10111);
-    XCtlUdp.beginPacket(XCtl.ip, 10111);
+  }
+
+  void XCtl_sendUdpPacket(const uint8_t *buffer, uint16_t size) {
+    XCtlUdp.beginPacket(eeprom_config.xtouchip, 10111);
     XCtlUdp.write(buffer, size);
     XCtlUdp.endPacket();
   }
@@ -136,16 +98,16 @@
     XCtl_TxMessage[0] = 0x90;
     for (uint8_t i_ch=0; i_ch<8; i_ch++) {
       XCtl_TxMessage[1+i_ch*2] = i_ch; // rec buttons 0...7
-      XCtl_TxMessage[2+i_ch*2] = XCtl.channel[i_ch].rec;
+      XCtl_TxMessage[2+i_ch*2] = XCtl.channel[i_ch + XCtl.channelOffset].rec;
 
       XCtl_TxMessage[8*2+1+i_ch*2] = 8+i_ch; // solo buttons 8...15
-      XCtl_TxMessage[8*2+2+i_ch*2] = XCtl.channel[i_ch].solo;
+      XCtl_TxMessage[8*2+2+i_ch*2] = XCtl.channel[i_ch + XCtl.channelOffset].solo;
 
       XCtl_TxMessage[16*2+1+i_ch*2] = 16+i_ch; // mute buttons 16..23
-      XCtl_TxMessage[16*2+2+i_ch*2] = XCtl.channel[i_ch].mute;
+      XCtl_TxMessage[16*2+2+i_ch*2] = XCtl.channel[i_ch + XCtl.channelOffset].mute;
 
       XCtl_TxMessage[24*2+1+i_ch*2] = 24+i_ch; // select buttons 24..31
-      XCtl_TxMessage[24*2+2+i_ch*2] = XCtl.channel[i_ch].select;
+      XCtl_TxMessage[24*2+2+i_ch*2] = XCtl.channel[i_ch + XCtl.channelOffset].select;
     }
 
     // 40 to 45 - encoder assign buttons (track, send, pan,  plugin, eq, inst)
@@ -191,7 +153,7 @@
     uint16_t dialLevelRaw = 0;
     for (uint8_t i_ch=0; i_ch<8; i_ch++) {
       dialLevelRaw = 0;
-      for (uint16_t i=0; i<=(uint16_t)(XCtl.channel[i_ch].dialLevel/21.25f); i++){
+      for (uint16_t i=0; i<=(uint16_t)(XCtl.channel[i_ch + XCtl.channelOffset].dialLevel/21.25f); i++){
         dialLevelRaw += (1 << i);
       }
       XCtl_TxMessage[1 + i_ch*4] = 0x30 + i_ch;
@@ -226,11 +188,11 @@
 
     // update channel-faders
     for (uint8_t i_ch=0; i_ch<8; i_ch++) {
-      if (XCtl.channel[i_ch].channelNeedsUpdate) {
-        XCtl.channel[i_ch].channelNeedsUpdate = false;
+      if (XCtl.channel[i_ch + XCtl.channelOffset].faderNeedsUpdate) {
+        XCtl.channel[i_ch + XCtl.channelOffset].faderNeedsUpdate = false;
         XCtl_TxMessage[0] = 0xE0 + i_ch;
-        XCtl_TxMessage[1] = XCtl.channel[i_ch].faderPosition & 0x7F; // MIDI-Values between 0 and 127
-        XCtl_TxMessage[2] = (XCtl.channel[i_ch].faderPosition >> 7) & 0x7F;
+        XCtl_TxMessage[1] = XCtl.channel[i_ch + XCtl.channelOffset].faderPosition & 0x7F; // MIDI-Values between 0 and 127
+        XCtl_TxMessage[2] = (XCtl.channel[i_ch + XCtl.channelOffset].faderPosition >> 7) & 0x7F;
         XCtl_sendUdpPacket(XCtl_TxMessage, 3); //send 3 bytes (Ctl_TxMessage[0..2]) to port 10111
       }
     }
@@ -238,16 +200,16 @@
     // update meter-levels
     XCtl_TxMessage[0] = 0xD0;
     for (uint8_t i_ch=0; i_ch<8; i_ch++) {
-      XCtl_TxMessage[1 + i_ch] = (i_ch << 4) + XCtl.channel[i_ch].meterLevel;
+      XCtl_TxMessage[1 + i_ch] = (i_ch << 4) + XCtl.channel[i_ch + XCtl.channelOffset].meterLevel;
     }
     XCtl_sendUdpPacket(XCtl_TxMessage, 9); //send 9 bytes (Ctl_TxMessage[0..8]) to port 10111
     
     // update masterfader
-    if (XCtl.faderNeedsUpdate) {
-      XCtl.faderNeedsUpdate = false;
+    if (XCtl.channel[32].faderNeedsUpdate) {
+      XCtl.channel[32].faderNeedsUpdate = false;
       XCtl_TxMessage[0] = 0xE8; // E8=Masterfader
-      XCtl_TxMessage[1] = XCtl.masterFader & 0x7F; // MIDI-Values between 0 and 127
-      XCtl_TxMessage[2] = (XCtl.masterFader >> 7) & 0x7F;
+      XCtl_TxMessage[1] = XCtl.channel[32].faderPosition & 0x7F; // MIDI-Values between 0 and 127
+      XCtl_TxMessage[2] = (XCtl.channel[32].faderPosition >> 7) & 0x7F;
       XCtl_sendUdpPacket(XCtl_TxMessage, 3); //send 3 bytes (Ctl_TxMessage[0..2]) to port 10111
     }
   }
@@ -261,7 +223,7 @@
 
     uint8_t rxData[18]; //buffer to hold incoming packet,
     int packetSize = XCtlUdp.parsePacket();
-    uint8_t fader = 0;
+    uint8_t channel = 0;
     int16_t value = 0;
 
     if (packetSize) {
@@ -289,8 +251,8 @@
         if (len == 3) {
           // check for touched fader
           if ((rxData[0] == 0x90) && (rxData[1] >= 0x68) && (rxData[1] <= 0x70)) {
-            // fader = rxData[1] - 0x68;
-            // touched = rxData[2] != 0;
+            channel = (rxData[1] - 0x68) + XCtl.channelOffset;
+            XCtl.channel[channel].faderTouched = rxData[2] != 0;
           }
 
           // read faderlevel
@@ -300,14 +262,27 @@
 
             if ((rxData[0] & 0x0F) <= 7) {
               // values of faders 1 to 8
-              fader = rxData[0] & 0x0F;
+              channel = (rxData[0] & 0x0F) + XCtl.channelOffset;
               value = rxData[1] + (rxData[2] << 7); // 0...16383
 
-              XCtl.channel[fader].faderPositionHW = value;
+              XCtl.channel[channel].faderPositionHW = value;
+              if (XCtl.channel[channel].faderTouched) {
+                // send new channel-volume
+                float newVolume = ((value/16585.0f) * 54.0f) - 48.0f;
+                playerinfo.volumeCh[channel] = newVolume;
+                Serial2.println("mixer:volume:ch" + String(channel + 1) + "@" + String(newVolume, 2));
+              }
             }else if ((rxData[0] & 0x0F) == 8){
               // masterfader = fader 9
               value = rxData[1] + (rxData[2] << 7); // 0...16383
-              XCtl.masterFaderHW = value;
+              
+              XCtl.channel[32].faderPositionHW = value;
+              if (XCtl.channel[32].faderTouched) {
+                // send new main-volume
+                float newVolume = ((value/16585.0f) * 54.0f) - 48.0f;
+                playerinfo.volumeCh[channel] = newVolume;
+                Serial2.println("mixer:volume:main@" + String(newVolume, 2));
+              }
             }
           }
 
@@ -323,19 +298,31 @@
               // channelDials
               if (value>0) {
                 // turn right
-
-                // TODO: do something with this information
+                channel = rxData[1] - 16 + XCtl.channelOffset;
+                if (XCtl.channel[channel].dialLevel + value > 255) {
+                  XCtl.channel[channel].dialLevel = 255;
+                }else{
+                  XCtl.channel[channel].dialLevel += value;
+                }
+                // set balance
+                Serial2.println("mixer:balance:ch" + String(channel + 1) + "@" + String(XCtl.channel[channel].dialLevel / 2.55f));
               }else{
                 // turn left
-
-                // TODO: do something with this information
+                channel = rxData[1] - 16 + XCtl.channelOffset;
+                if ((int16_t)XCtl.channel[channel].dialLevel - (int16_t)value < 0) {
+                  XCtl.channel[channel].dialLevel = 0;
+                }else{
+                  XCtl.channel[channel].dialLevel -= value;
+                }
+                // set balance
+                Serial2.println("mixer:balance:ch" + String(channel + 1) + "@" + String(XCtl.channel[channel].dialLevel / 2.55f));
               }
             }else if (rxData[1] == 60) {
               // large jog-dial
               if (value>0) {
                 // turn right
 
-                if ((int16_t)XCtl.jogDialValue + (int16_t)value > 255) {
+                if (XCtl.jogDialValue + value > 255) {
                   XCtl.jogDialValue = 255;
                 }else{
                   XCtl.jogDialValue += value;
@@ -384,15 +371,13 @@
             // turn on LED for the common buttons on button-press
             if (((button >= 32) && (button<102)) && !((button>=40) && (button<=45))) { // 40 to 45 - encoder assign buttons (track, send, pan,  plugin, eq, inst)
               if (buttonState) {
-                XCtl.buttonLightOn[button] = 255;
+                XCtl.buttonLightOn[button] = 255; // on
               }else{
-                XCtl.buttonLightOn[button] = 1;
+                XCtl.buttonLightOn[button] = 1; // one step before off
               }
             }
 
-
-            // TODO: do something with this information
-
+            // individual buttons
             if ((button >= 0) && (button<=7)) {
               // rec-buttons
               if (buttonState) {
@@ -498,24 +483,23 @@
       XCtl.segmentDisplay[11] = valueString[0];
     }
 
+    // update all faders and buttons for the current channel-selection
+    uint32_t newFaderValue;
+    for (uint8_t i_ch=XCtl.channelOffset; i_ch<(8+XCtl.channelOffset); i_ch++) {
+      newFaderValue = ((playerinfo.volumeCh[i_ch] + 48.0f)/54.0f) * 16383.0f;
+      XCtl.channel[i_ch].faderNeedsUpdate = newFaderValue != XCtl.channel[i_ch].faderPosition;
+      XCtl.channel[i_ch].faderPosition = newFaderValue; // 0..16383
+
+      XCtl.channel[i_ch].meterLevel = 0; // not used at the moment
+      XCtl.scribblePad[i_ch].topText = "Ch" + String(i_ch + 1) + "      ";
+      XCtl.scribblePad[i_ch].botText = String(playerinfo.volumeCh[i_ch], 2) + "dB    ";
+      XCtl.scribblePad[i_ch].color = 7; // 0=BLACK, 1=RED, 2=GREEN, 3=YELLOW, 4=BLUE, 5=PINK, 6=CYAN, 7=WHITE // fixed to white at the moment
+      XCtl.scribblePad[i_ch].inverted = false; // not used at the moment
+    }
+
     // update Masterfader
-    XCtl.faderNeedsUpdate = false; // TODO: check if we have to update
-    XCtl.masterFader = 0; // TODO: set new value. convert playerinfo.volumeMain from dBfs to 0...16388
-
-    // update channel dial-Levels
-    for (uint8_t i_ch=0; i_ch<8; i_ch++) {
-      XCtl.channel[i_ch].dialLevel = 0; // 0..255
-    }
-
-    // update all other faders and buttons
-    for (uint8_t i_ch=0; i_ch<8; i_ch++) {
-      XCtl.channel[i_ch].channelNeedsUpdate = false;
-      XCtl.channel[i_ch].faderPosition = 0; // 0..16383
-      XCtl.channel[i_ch].meterLevel = 0; // 0..8
-      XCtl.scribblePad[i_ch].topText = "Ch" + String(i_ch) + "      ";
-      XCtl.scribblePad[i_ch].botText = String(XCtl.channel[i_ch].faderPosition/64) + "      ";
-      XCtl.scribblePad[i_ch].color = i_ch - 1; // 0=BLACK, 1=RED, 2=GREEN, 3=YELLOW, 4=BLUE, 5=PINK, 6=CYAN, 7=WHITE
-      XCtl.scribblePad[i_ch].inverted = false;
-    }
+    newFaderValue = ((playerinfo.volumeMain + 48.0f)/54.0f) * 16383.0f;
+    XCtl.channel[32].faderNeedsUpdate = newFaderValue != XCtl.channel[32].faderPosition;
+    XCtl.channel[32].faderPosition = newFaderValue; // convert volumeMain from dBfs to 0...16388 but keep logarithmic scale
   }
 #endif

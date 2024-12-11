@@ -162,12 +162,16 @@ void initEeprom() {
 
   // now load setup from eeprom
   eeprom.readBlock(0, (uint8_t *) &eeprom_config, sizeof(eeprom_config));
-  eeprom.readBlock(0xFA, (uint8_t *) &config.mac, sizeof(config.mac));
+  eeprom.readBlock(0xFA, (uint8_t *) &config.mac, sizeof(config.mac)); // MAC address is in a non-writable ROM-part of this EEPROM
 
   // check if we have a valid IP-Address
   if ((eeprom_config.ip[0]==0) && (eeprom_config.ip[1]==0) && (eeprom_config.ip[2]==0) && (eeprom_config.ip[3]==0)) {
     // IP-Address is zero. So the configuration seems to be bad
     eeprom_config.ip = IPAddress(192, 168, 0, 42);
+  }
+  if ((eeprom_config.xtouchip[0]==0) && (eeprom_config.xtouchip[1]==0) && (eeprom_config.xtouchip[2]==0) && (eeprom_config.xtouchip[3]==0)) {
+    // IP-Address is zero. So the configuration seems to be bad
+    eeprom_config.xtouchip = IPAddress(192, 168, 0, 43);
   }
 }
 

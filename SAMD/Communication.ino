@@ -123,7 +123,7 @@ String executeCommand(String Command) {
       Answer = IpAddress2String(eeprom_config.ip);
     }else if (Command.indexOf("samd:config:set:ip") > -1){
       //samd:config:set:ip@000.000.000.000
-	  String ipString = Command.substring(Command.indexOf("@")+1) + '.'; // adding leading dot at the end to ensure function of split()
+	    String ipString = Command.substring(Command.indexOf("@")+1) + '.'; // adding leading dot at the end to ensure function of split()
       uint8_t ip0 = split(ipString, '.', 0).toInt();
       uint8_t ip1 = split(ipString, '.', 1).toInt();
       uint8_t ip2 = split(ipString, '.', 2).toInt();
@@ -132,6 +132,21 @@ String executeCommand(String Command) {
       eeprom_config.ip = IPAddress(ip0, ip1, ip2, ip3);
       initEthernet();
       Answer = "SAMD: OK";
+    #if USE_XTOUCH == 1
+      }else if (Command.indexOf("samd:config:set:xtouchip") > -1){
+        //samd:config:set:xtouchip@000.000.000.000
+        String ipString = Command.substring(Command.indexOf("@")+1) + '.'; // adding leading dot at the end to ensure function of split()
+        uint8_t ip0 = split(ipString, '.', 0).toInt();
+        uint8_t ip1 = split(ipString, '.', 1).toInt();
+        uint8_t ip2 = split(ipString, '.', 2).toInt();
+        uint8_t ip3 = split(ipString, '.', 3).toInt();
+
+        eeprom_config.xtouchip = IPAddress(ip0, ip1, ip2, ip3);
+        XCtlUdp.stop();
+        delay(10);
+        XCtl_init();
+        Answer = "SAMD: OK";
+    #endif
     }else if (Command.indexOf("samd:config:save") > -1){
       saveConfig();
       Answer = "SAMD: OK";

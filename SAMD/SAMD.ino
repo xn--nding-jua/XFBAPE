@@ -200,6 +200,10 @@ void setup() {
     displayDrawMenu();
   #endif
 
+  #if USE_XTOUCH == 1
+    XCtl_init();
+  #endif
+
   // start ticker
   ticker100ms.start();
   ticker85ms.start();

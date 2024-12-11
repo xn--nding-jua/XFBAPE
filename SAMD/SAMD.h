@@ -70,6 +70,7 @@ uint32_t x32CardSize[2] = {31163136, 15581568}; // one 32GB and one 16GB
 struct{ // don't change order of struct! Just add variables or replace with same size!!!
   uint16_t Version = 0;
   IPAddress ip;
+  IPAddress xtouchip;
 } eeprom_config;
 
 struct{
@@ -112,6 +113,7 @@ struct {
   float volumeMain;
   uint8_t balanceMain;
   float volumeSub;
+  float volumeCh[32]; // currently there is no communication between NINA and SAMD for this value
   float volumeAnalog;
   float volumeCard;
   float frequencyLowPass;
@@ -135,3 +137,43 @@ bool firmwareUpdateMode = false;
 
 // general variables
 uint32_t refreshCounter = 0;
+
+#if USE_XTOUCH == 1
+  EthernetUDP XCtlUdp;
+
+  uint8_t XCtl_Probe[8] = {0xF0, 0x00, 0x20, 0x32, 0x58, 0x54, 0x00, 0xF7};
+  uint8_t XCtl_ProbeResponse[8] = {0xF0, 0x00, 0x20, 0x32, 0x58, 0x54, 0x01, 0xF7};
+  uint8_t XCtl_ProbeB[18] = {0xF0, 0x00, 0x00, 0x66, 0x58, 0x01, 0x30, 0x31, 0x35, 0x36, 0x34, 0x30, 0x36, 0x36, 0x37, 0x34, 0x30, 0xF7};
+  uint8_t XCtl_ProbeC[18] = {0xF0, 0x00, 0x00, 0x66, 0x58, 0x01, 0x30, 0x31, 0x35, 0x36, 0x34, 0x30, 0x36, 0x33, 0x44, 0x35, 0x36, 0xF7};
+  uint8_t XCtl_IdlePacket[7] = {0xF0, 0x00, 0x00, 0x66, 0x14, 0x00, 0xF7};
+
+  struct sXctlScribblePad{
+    String topText = "TopText";
+    String botText = "BotText";
+    uint8_t color = 7; // 0=BLACK, 1=RED, 2=GREEN, 3=YELLOW, 4=BLUE, 5=PINK, 6=CYAN, 7=WHITE
+    bool inverted = false;
+  };
+
+  struct sXCtlChannel{
+    bool faderNeedsUpdate = true;
+    bool faderTouched = false;
+    uint16_t faderPosition = 0; // 0...16383
+    uint16_t faderPositionHW = 0; // 0...16383
+    uint8_t meterLevel = 0; // 0...8
+    uint8_t dialLevel = 128; // 0..255 ->0..12
+
+    uint8_t rec = 0; // 0=OFF, 1=ON, 2=FLASHING
+    uint8_t solo = 0; // 0=OFF, 1=ON, 2=FLASHING
+    uint8_t mute = 0; // 0=OFF, 1=ON, 2=FLASHING
+    uint8_t select = 0; // 0=OFF, 1=ON, 2=FLASHING
+  };
+
+  struct sXCtl{
+    uint8_t channelOffset = 0;
+    sXctlScribblePad scribblePad[8];
+    sXCtlChannel channel[33]; // 33=masterFader
+    uint8_t jogDialValue = 0;
+    char segmentDisplay[12];
+    uint8_t buttonLightOn[103];
+  }XCtl;
+#endif
