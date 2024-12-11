@@ -1,6 +1,8 @@
 #if USE_XTOUCH == 1
   uint8_t XCtl_getSegmentBitmap(char c) {
     switch (c) {
+      case ' ': return 0x00; break;
+      case '0': return 0x3f; break;
       case '1': return 0x06; break;
       case '2': return 0x5b; break;
       case '3': return 0x4f; break;
@@ -10,9 +12,8 @@
       case '7': return 0x07; break;
       case '8': return 0x7f; break;
       case '9': return 0x6f; break;
-      case '0': return 0x3f; break;
       case '-': return 0x40; break;
-      case 'a': return 0x77; break;
+      default: return 0x00; break;
     }
   }
 
