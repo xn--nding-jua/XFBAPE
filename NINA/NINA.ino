@@ -1,7 +1,7 @@
 /*
   X-f/bape MainCtrl for Arduino MKR Vidor4000 Device
   v3.0.0 built on 29.11.2024
-  Infos: https://www.github.com/xn--nding-jua/Audioplayer
+  Infos: https://www.github.com/xn--nding-jua/xfbape
   Copyright (c) 2023-2024 Dr.-Ing. Christian Nöding
 
   Target-Board: uBlox NINA W10-series (ESP32)

@@ -2,7 +2,7 @@
 -- (c) 2024 Dr.-Ing. Christian Noeding
 -- christian@noeding-online.de
 -- Released under GNU General Public License v3
--- Source: https://www.github.com/xn--nding-jua/X-FBAPE
+-- Source: https://www.github.com/xn--nding-jua/xfbape
 -- Serial transmission based on UART-code from http://www.nandland.com
 --
 -- This file contains an UART Transmitter for DMX512. This transmitter is able

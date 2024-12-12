@@ -1,8 +1,8 @@
 -- Coeff-Constant-Block for Linkwitz-Riley Filter with 24dB/oct
--- (c) 2023 Dr.-Ing. Christian Noeding
+-- (c) 2023-2024 Dr.-Ing. Christian Noeding
 -- christian@noeding-online.de
 -- Released under GNU General Public License v3
--- Source: https://www.github.com/xn--nding-jua/Audioplayer
+-- Source: https://www.github.com/xn--nding-jua/xfbape
 --
 -- This file contains coefficients for 24dB/oct Linkwitz-Riley-Filter
 -- It will output a sync-signal with duration of one single main-clk based

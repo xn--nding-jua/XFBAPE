@@ -1,8 +1,8 @@
--- 22-channel Audiomixer
--- (c) 2023 Dr.-Ing. Christian Noeding
+-- 36-channel Audiomixer
+-- (c) 2023-2024 Dr.-Ing. Christian Noeding
 -- christian@noeding-online.de
 -- Released under GNU General Public License v3
--- Source: https://www.github.com/xn--nding-jua/Audioplayer
+-- Source: https://www.github.com/xn--nding-jua/xfbape
 --
 -- This file contains a multi-channel audiomixer
 

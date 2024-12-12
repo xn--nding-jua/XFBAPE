@@ -2,7 +2,7 @@
 -- (c) 2024 Dr.-Ing. Christian Noeding
 -- christian@noeding-online.de
 -- Released under GNU General Public License v3
--- Source: https://www.github.com/xn--nding-jua/X-FBAPE
+-- Source: https://www.github.com/xn--nding-jua/xfbape
 --
 -- This file contains a TDM-receiver for the Behringer Expansion Cards
 -- TDM (Time Division Multiplexed Audio Interface) sends 8 24-bit audio-samples

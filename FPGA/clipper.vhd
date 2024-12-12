@@ -1,8 +1,8 @@
 -- Audio-clipper
--- (c) 2023 Dr.-Ing. Christian Noeding
+-- (c) 2023-2024 Dr.-Ing. Christian Noeding
 -- christian@noeding-online.de
 -- Released under GNU General Public License v3
--- Source: https://www.github.com/xn--nding-jua/Audioplayer
+-- Source: https://www.github.com/xn--nding-jua/xfbape
 --
 -- This file contains an audio-clipper, that will prevent the audio-signal to flip all bits on exceeding the maximum audio-bits
 -- Furthermore, it will indicate which channel is clipping. You can use an external OR-gate to combine all clip-signals

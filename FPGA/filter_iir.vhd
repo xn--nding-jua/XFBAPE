@@ -1,16 +1,16 @@
 -- Mono IIR audio-filter
--- (c) 2023 Dr.-Ing. Christian Noeding
+-- (c) 2023-2024 Dr.-Ing. Christian Noeding
 -- christian@noeding-online.de
 -- Released under GNU General Public License v3
--- Source: https://www.github.com/xn--nding-jua/Audioplayer
+-- Source: https://www.github.com/xn--nding-jua/xfbape
+-- Original Source: https://github.com/YetAnotherElectronicsChannel/FPGA-Audio-IIR
 --
 -- This file contains a stereo IIR audio-filter for low-/high-pass-filter,
 -- peak-filter (PEQ), low-/high-shelf-, bandpass- and notch-filter
 -- The type of filter can be adjusted by the filter-coefficients
 -- It uses Fixed-Point-Multiplication for the coefficients in Qx-format.
 -- The audio-bit-depth can be adjusted using generic setup
-
--- Original Source: https://github.com/YetAnotherElectronicsChannel/FPGA-Audio-IIR
+--
 -- Online-Calculation of Filter-Coefficients: https://www.earlevel.com/main/2021/09/02/biquad-calculator-v3
 
 library IEEE;

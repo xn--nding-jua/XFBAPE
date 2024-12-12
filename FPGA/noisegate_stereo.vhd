@@ -1,8 +1,8 @@
 -- Noisegate Filter
--- (c) 2023 Dr.-Ing. Christian Noeding
+-- (c) 2023-2024 Dr.-Ing. Christian Noeding
 -- christian@noeding-online.de
 -- Released under GNU General Public License v3
--- Source: https://www.github.com/xn--nding-jua/Audioplayer
+-- Source: https://www.github.com/xn--nding-jua/xfbape
 --
 -- This file contains a noisegate that will set the output to a specific
 -- gain-value when the input-signal falls below a specific threshold.

@@ -1,8 +1,8 @@
 -- Compressor/Limiter Filter
--- (c) 2023 Dr.-Ing. Christian Noeding
+-- (c) 2023-2024 Dr.-Ing. Christian Noeding
 -- christian@noeding-online.de
 -- Released under GNU General Public License v3
--- Source: https://www.github.com/xn--nding-jua/Audioplayer
+-- Source: https://www.github.com/xn--nding-jua/xfbape
 --
 -- This file contains a compressor/limiter that will set the output to a specific
 -- maximum gain-value depending on a specific maximum threshold.
@@ -11,9 +11,6 @@
 --
 -- It is same as compressor_stereo.vhd but with additional subwoofer-channel. The
 -- combined version saves some logic-elements as we are using a single divider
-
--- Original Source: https://github.com/YetAnotherElectronicsChannel/FPGA-Audio-IIR
--- Online-Calculation of Filter-Coefficients: https://www.earlevel.com/main/2021/09/02/biquad-calculator-v3
 
 library ieee;
 use ieee.std_logic_1164.all;

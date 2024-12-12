@@ -2,7 +2,7 @@
 -- (c) 2024 Dr.-Ing. Christian Noeding
 -- christian@noeding-online.de
 -- Released under GNU General Public License v3
--- Source: https://www.github.com/xn--nding-jua/Audioplayer
+-- Source: https://www.github.com/xn--nding-jua/xfbape
 -- General information about delta-sigma-converters can be found here: https://www.beis.de/Elektronik/DeltaSigma/DeltaSigma.html
 
 library IEEE;

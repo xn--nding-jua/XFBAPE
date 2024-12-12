@@ -1,16 +1,13 @@
 -- Noisegate Filter
--- (c) 2023 Dr.-Ing. Christian Noeding
+-- (c) 2023-2024 Dr.-Ing. Christian Noeding
 -- christian@noeding-online.de
 -- Released under GNU General Public License v3
--- Source: https://www.github.com/xn--nding-jua/Audioplayer
+-- Source: https://www.github.com/xn--nding-jua/xfbape
 --
 -- This file contains a noisegate that will set the output to a specific
 -- gain-value when the input-signal falls below a specific threshold.
 -- The gain-change will be filtered by a first-order low-pass filter
 -- for which two coefficients (for attack and release) have to be set
-
--- Original Source: https://github.com/YetAnotherElectronicsChannel/FPGA-Audio-IIR
--- Online-Calculation of Filter-Coefficients: https://www.earlevel.com/main/2021/09/02/biquad-calculator-v3
 
 library ieee;
 use ieee.std_logic_1164.all;

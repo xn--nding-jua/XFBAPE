@@ -2,7 +2,7 @@
 -- (c) 2024 Dr.-Ing. Christian Noeding
 -- christian@noeding-online.de
 -- Released under GNU General Public License v3
--- Source: https://www.github.com/xn--nding-jua/Audioplayer
+-- Source: https://www.github.com/xn--nding-jua/xfbape
 --
 -- This file contains an I2S-receiver
 -- I2S sends two 16-, 24- or 32-bit audio-samples (left and right) right after each other

@@ -1,8 +1,8 @@
 -- Three-way Linkwitz-Riley-Crossover with 12dB/oct
--- (c) 2023 Dr.-Ing. Christian Noeding
+-- (c) 2023-2024 Dr.-Ing. Christian Noeding
 -- christian@noeding-online.de
 -- Released under GNU General Public License v3
--- Source: https://www.github.com/xn--nding-jua/Audioplayer
+-- Source: https://www.github.com/xn--nding-jua/xfbape
 --
 -- This file contains a stereo high-pass and a mono low-pass filter for audio
 -- It consists of a 2nd-order IIR Butterworth-Filter (Linkwitz-Riley)

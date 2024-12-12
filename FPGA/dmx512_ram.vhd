@@ -2,7 +2,7 @@
 -- (c) 2024 Dr.-Ing. Christian Noeding
 -- christian@noeding-online.de
 -- Released under GNU General Public License v3
--- Source: https://www.github.com/xn--nding-jua/X-FBAPE
+-- Source: https://www.github.com/xn--nding-jua/xfbape
 --
 -- This file contains a RAM-module with asynchronuous read/write
 -- from/to the DMX512-data. It stores 512 bytes plus start-byte.
