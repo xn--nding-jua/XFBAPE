@@ -134,17 +134,20 @@ String executeCommand(String Command) {
       Answer = "SAMD: OK";
     #if USE_XTOUCH == 1
       }else if (Command.indexOf("samd:config:set:xtouchip") > -1){
-        //samd:config:set:xtouchip@000.000.000.000
+        //samd:config:set:xtouchip1@000.000.000.000
+        uint8_t i_xtouch = Command.substring(24, Command.indexOf("@")).toInt() - 1;
         String ipString = Command.substring(Command.indexOf("@")+1) + '.'; // adding leading dot at the end to ensure function of split()
         uint8_t ip0 = split(ipString, '.', 0).toInt();
         uint8_t ip1 = split(ipString, '.', 1).toInt();
         uint8_t ip2 = split(ipString, '.', 2).toInt();
         uint8_t ip3 = split(ipString, '.', 3).toInt();
+        IPAddress newIp = IPAddress(ip0, ip1, ip2, ip3);
 
-        eeprom_config.xtouchip = IPAddress(ip0, ip1, ip2, ip3);
-        XCtlUdp.stop();
+        eeprom_config.xtouchip[i_xtouch] = newIp;
+        XCtlUdp[i_xtouch].stop();
         delay(10);
-        XCtl_init();
+        XCtl[i_xtouch].ip = newIp;
+        XCtl_init(i_xtouch);
         Answer = "SAMD: OK";
     #endif
     }else if (Command.indexOf("samd:config:save") > -1){

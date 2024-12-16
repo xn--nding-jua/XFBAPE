@@ -113,14 +113,18 @@ void ticker100msFcn() {
   #if USE_XTOUCH == 1
     XCtlWatchdogCounter -= 1;
     if (XCtlWatchdogCounter == 0) {
-      XCtlWatchdogCounter = 50;
+      XCtlWatchdogCounter = 20;
 
-      XCtl_sendWatchDogMessage();
-      XCtlPrepareData(); // prepare values to send to device
-      XCtl_sendGeneralData(); // update buttons and displays
-      XCtl_sendFaderData(); // update fader
+      for (uint8_t i_xtouch=0; i_xtouch<XTOUCH_COUNT; i_xtouch++) {
+        XCtl_sendWatchDogMessage(i_xtouch);
+      }
     }
-    handleXCtlMessages();
+
+    for (uint8_t i_xtouch=0; i_xtouch<XTOUCH_COUNT; i_xtouch++) {
+      XCtl_prepareData(i_xtouch); // prepare values to send to device
+      XCtl_sendGeneralData(i_xtouch); // update buttons and displays
+      XCtl_sendFaderData(i_xtouch); // update fader
+    }
   #endif
 }
 Ticker ticker100ms(ticker100msFcn, 100, 0, MILLIS);
@@ -202,7 +206,10 @@ void setup() {
   #endif
 
   #if USE_XTOUCH == 1
-    XCtl_init();
+    for (uint8_t i_xtouch=0; i_xtouch<XTOUCH_COUNT; i_xtouch++) {
+      XCtl[i_xtouch].ip = eeprom_config.xtouchip[i_xtouch];
+      XCtl_init(i_xtouch);
+    }
   #endif
 
   // start ticker
@@ -235,6 +242,11 @@ void loop() {
     // handle serial communication
     handleUSBCommunication(); // communication through Serial (USB) with connected computer
     handleX32Communication(); // communication through Serial1 with Behringer X32 MainControl
+    #if USE_XTOUCH == 1
+      for (uint8_t i_xtouch=0; i_xtouch<XTOUCH_COUNT; i_xtouch++) {
+        handleXCtlMessages(i_xtouch);
+      }
+    #endif
     handleNINACommunication(); // communication through Serial2 with NINA W102
 
     ticker100ms.update();

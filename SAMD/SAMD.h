@@ -11,6 +11,7 @@ const char compile_date[] = __DATE__ " " __TIME__;
 
 #define USE_DISPLAY       1      // enables a SSD1308 display connected to I2C
 #define USE_XTOUCH        0      // support for XTouch via Ethernet (currently in Alpha-state and needs more work!)
+#define XTOUCH_COUNT      1      // number of XTouch-Devices
 
 // includes for FPGA
 #include <wiring_private.h>
@@ -70,7 +71,7 @@ uint32_t x32CardSize[2] = {31163136, 15581568}; // one 32GB and one 16GB
 struct{ // don't change order of struct! Just add variables or replace with same size!!!
   uint16_t Version = 0;
   IPAddress ip;
-  IPAddress xtouchip;
+  IPAddress xtouchip[XTOUCH_COUNT];
 } eeprom_config;
 
 struct{
@@ -98,7 +99,7 @@ EthernetServer cmdserver(5025);
 #endif
 
 #if USE_XTOUCH == 1
-  uint16_t XCtlWatchdogCounter = 50; // preload to 5 seconds
+  uint16_t XCtlWatchdogCounter = 20; // preload to 2 seconds
 #endif
 
 String TOC;
@@ -139,7 +140,7 @@ bool firmwareUpdateMode = false;
 uint32_t refreshCounter = 0;
 
 #if USE_XTOUCH == 1
-  EthernetUDP XCtlUdp;
+  EthernetUDP XCtlUdp[XTOUCH_COUNT];
 
   uint8_t XCtl_Probe[8] = {0xF0, 0x00, 0x20, 0x32, 0x58, 0x54, 0x00, 0xF7};
   uint8_t XCtl_ProbeResponse[8] = {0xF0, 0x00, 0x20, 0x32, 0x58, 0x54, 0x01, 0xF7};
@@ -168,12 +169,20 @@ uint32_t refreshCounter = 0;
     uint8_t select = 0; // 0=OFF, 1=ON, 2=FLASHING
   };
 
+  struct sXCtlOptions{
+    bool showValues = true;
+  };
+
   struct sXCtl{
+    IPAddress ip;
     uint8_t channelOffset = 0;
-    sXctlScribblePad scribblePad[8];
+    bool forceUpdate = false;
+
+    sXCtlOptions options;
+    sXctlScribblePad scribblePad[33];
     sXCtlChannel channel[33]; // 33=masterFader
     uint8_t jogDialValue = 0;
     char segmentDisplay[12];
     uint8_t buttonLightOn[103];
-  }XCtl;
+  }XCtl[XTOUCH_COUNT];
 #endif
