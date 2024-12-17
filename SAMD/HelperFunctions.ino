@@ -80,7 +80,7 @@ String secondsToHMS(uint32_t seconds){
   }
 }
 
-String secondsToHMS_B(uint32_t seconds){
+String secondsToHMS_B(uint32_t seconds, bool withDots = true){
   unsigned int tme=0;
   tme = seconds;
 
@@ -110,7 +110,11 @@ String secondsToHMS_B(uint32_t seconds){
     s_sec = String(sec);
   }
 
-  return (s_hr + ":" + s_min + ":" + s_sec);
+  if (withDots) {
+    return (s_hr + ":" + s_min + ":" + s_sec);
+  }else{
+    return (s_hr + s_min + s_sec);
+  }
 }
 #if USE_DISPLAY == 1
   String formatSize(uint32_t size) {

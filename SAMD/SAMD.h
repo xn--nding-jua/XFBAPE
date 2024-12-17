@@ -12,6 +12,7 @@ const char compile_date[] = __DATE__ " " __TIME__;
 #define USE_DISPLAY       1      // enables a SSD1308 display connected to I2C
 #define USE_XTOUCH        0      // support for XTouch via Ethernet (currently in Alpha-state and needs more work!)
 #define XTOUCH_COUNT      1      // number of XTouch-Devices
+#define USE_MACKIE_MCU    0      // support for MackieMCU via MIDI
 
 // includes for FPGA
 #include <wiring_private.h>
@@ -23,6 +24,10 @@ const char compile_date[] = __DATE__ " " __TIME__;
 #endif
 #include <SPI.h>
 #include "Ticker.h"
+
+#if USE_MACKIE_MCU == 1
+  #include <MIDI.h>
+#endif
 
 // definitions for I2C EEPROM
 #include "Wire.h"
@@ -48,6 +53,15 @@ SERCOM5: Serial   <- USB
 #define PAD_SERIAL2_RX       (SERCOM_RX_PAD_1)    // SERCOM pad 1 RX
 Uart Serial2(&sercom3, PIN_SERIAL2_RX, PIN_SERIAL2_TX, PAD_SERIAL2_RX, PAD_SERIAL2_TX);
 
+#if USE_MACKIE_MCU == 1
+  // includes for Serial3 to communicate with MIDI. As Serial3 is not within the scope of Arduino,
+  // we have to create it using the SERCOM-system of the SAMD21
+  #define PIN_SERIAL3_TX       (?ul)                // Pin description number for PIO_SERCOM on D0 // TODO
+  #define PIN_SERIAL3_RX       (?ul)                // Pin description number for PIO_SERCOM on D1 // TODO
+  #define PAD_SERIAL3_TX       (UART_TX_PAD_?)      // SERCOM pad 0 TX // TODO
+  #define PAD_SERIAL3_RX       (SERCOM_RX_PAD_?)    // SERCOM pad 1 RX // TODO
+  Uart Serial3(&sercom3, PIN_SERIAL3_RX, PIN_SERIAL3_TX, PAD_SERIAL3_RX, PAD_SERIAL3_TX);
+#endif
 
 /*
 #define PIN_SERIAL3_TX       (4ul)                // Pin description number for PIO_SERCOM on D0
@@ -161,7 +175,7 @@ uint32_t refreshCounter = 0;
     uint16_t faderPosition = 0; // 0...16383
     uint16_t faderPositionHW = 0; // 0...16383
     uint8_t meterLevel = 0; // 0...8
-    uint8_t dialLevel = 128; // 0..255 ->0..12
+    uint8_t encoderValue = 128; // 0..255 ->0..12
 
     uint8_t rec = 0; // 0=OFF, 1=ON, 2=FLASHING
     uint8_t solo = 0; // 0=OFF, 1=ON, 2=FLASHING
@@ -185,4 +199,32 @@ uint32_t refreshCounter = 0;
     char segmentDisplay[12];
     uint8_t buttonLightOn[103];
   }XCtl[XTOUCH_COUNT];
+#endif
+
+#if USE_MACKIE_MCU == 1
+  uint8_t mackieUpdateCounter = 3; // 300ms update-rate
+
+  struct sMackieMCU_Channel{
+    bool faderNeedsUpdate = true;
+    bool faderTouched;
+    uint16_t faderPosition;
+    uint16_t faderPositionHW;
+    uint8_t meterLevel = 0; // 0...11
+    uint8_t encoderValue;
+
+    uint8_t rec = 0; // 0=OFF, 127=ON, 1=FLASHING
+    uint8_t solo = 0; // 0=OFF, 127=ON, 1=FLASHING
+    uint8_t mute = 0; // 0=OFF, 127=ON, 1=FLASHING
+    uint8_t select = 0; // 0=OFF, 127=ON, 1=FLASHING
+  };
+
+  struct {
+    uint8_t channelOffset = 0;
+    bool forceUpdate = false;
+
+    sMackieMCU_Channel channel[33];
+    uint8_t jogDialValue;
+  }MackieMCU;
+
+  MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, MIDI);
 #endif

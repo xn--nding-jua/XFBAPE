@@ -149,25 +149,25 @@
     }
     XCtl_sendUdpPacket(i_xtouch, XCtl_TxMessage, 77+(buttonCounter*2)); //send 77+(buttonCounter*2) bytes (Ctl_TxMessage[0..77+(buttonCounter*2)]) to port 10111
 
-    // Update DialLevels around PanKnob
+    // Update encoderLevels around PanKnob
     XCtl_TxMessage[0] = 0xB0;
-    uint16_t dialLevelRaw = 0;
+    uint16_t encoderLevelRaw = 0;
     for (uint8_t i_ch=0; i_ch<8; i_ch++) {
   /*
       // render as volume-level = growing bar-level
-      dialLevelRaw = 0;
-      for (uint16_t i=0; i<=(uint16_t)(XCtl[i_xtouch].channel[i_ch + XCtl[i_xtouch].channelOffset].dialLevel/21.25f); i++){
-        dialLevelRaw += (1 << i);
+      encoderLevelRaw = 0;
+      for (uint16_t i=0; i<=(uint16_t)(XCtl[i_xtouch].channel[i_ch + XCtl[i_xtouch].channelOffset].encoderValue/21.25f); i++){
+        encoderLevelRaw += (1 << i);
       }
   */
       // render as pan-level = single-mark
-      dialLevelRaw = (uint8_t)(XCtl[i_xtouch].channel[i_ch + XCtl[i_xtouch].channelOffset].dialLevel/21.25f);
-      dialLevelRaw = (1 << dialLevelRaw);
+      encoderLevelRaw = (uint8_t)(XCtl[i_xtouch].channel[i_ch + XCtl[i_xtouch].channelOffset].encoderValue/21.25f);
+      encoderLevelRaw = (1 << encoderLevelRaw);
 
       XCtl_TxMessage[1 + i_ch*4] = 0x30 + i_ch;
-      XCtl_TxMessage[2 + i_ch*4] = dialLevelRaw & 0x7F;
+      XCtl_TxMessage[2 + i_ch*4] = encoderLevelRaw & 0x7F;
       XCtl_TxMessage[3 + i_ch*4] = 0x38 + i_ch;
-      XCtl_TxMessage[4 + i_ch*4] = (dialLevelRaw >> 7) & 0x7F;
+      XCtl_TxMessage[4 + i_ch*4] = (encoderLevelRaw >> 7) & 0x7F;
     }
     XCtl_sendUdpPacket(i_xtouch, XCtl_TxMessage, 34); //send 34 bytes (Ctl_TxMessage[0..33]) to port 10111
 
@@ -227,7 +227,7 @@
     // message start: F0
     // message terminator: F7
 
-    // every 2 seconds XTouch sends 00 20 32 58 54 00
+    // every 2 seconds XTouch sends 00 20 32 58 54 00
     // we have to send 00 00 66 14 00
 
     if (XCtlUdp[i_xtouch].parsePacket() > 0) {
@@ -306,23 +306,23 @@
               if (value>0) {
                 // turn right
                 channel = rxData[1] - 16 + XCtl[i_xtouch].channelOffset;
-                if (XCtl[i_xtouch].channel[channel].dialLevel + value > 255) {
-                  XCtl[i_xtouch].channel[channel].dialLevel = 255;
+                if (XCtl[i_xtouch].channel[channel].encoderValue + value > 255) {
+                  XCtl[i_xtouch].channel[channel].encoderValue = 255;
                 }else{
-                  XCtl[i_xtouch].channel[channel].dialLevel += value;
+                  XCtl[i_xtouch].channel[channel].encoderValue += value;
                 }
                 // set balance
-                //Serial2.println("mixer:balance:ch" + String(channel + 1) + "@" + String(XCtl[i_xtouch].channel[channel].dialLevel / 2.55f));
+                //Serial2.println("mixer:balance:ch" + String(channel + 1) + "@" + String(XCtl[i_xtouch].channel[channel].encoderValue / 2.55f));
               }else{
                 // turn left
                 channel = rxData[1] - 16 + XCtl[i_xtouch].channelOffset;
-                if ((int16_t)XCtl[i_xtouch].channel[channel].dialLevel + value < 0) {
-                  XCtl[i_xtouch].channel[channel].dialLevel = 0;
+                if ((int16_t)XCtl[i_xtouch].channel[channel].encoderValue + value < 0) {
+                  XCtl[i_xtouch].channel[channel].encoderValue = 0;
                 }else{
-                  XCtl[i_xtouch].channel[channel].dialLevel += value;
+                  XCtl[i_xtouch].channel[channel].encoderValue += value;
                 }
                 // set balance
-                //Serial2.println("mixer:balance:ch" + String(channel + 1) + "@" + String(XCtl[i_xtouch].channel[channel].dialLevel / 2.55f));
+                //Serial2.println("mixer:balance:ch" + String(channel + 1) + "@" + String(XCtl[i_xtouch].channel[channel].encoderValue / 2.55f));
               }
             }else if (rxData[1] == 60) {
               // large jog-dial
@@ -457,7 +457,7 @@
               if (buttonState) {
                 // pressed
                 // reset panning to 50%
-                XCtl[i_xtouch].channel[(button-32) + XCtl[i_xtouch].channelOffset].dialLevel = 128;
+                XCtl[i_xtouch].channel[(button-32) + XCtl[i_xtouch].channelOffset].encoderValue = 128;
               }else{
                 // released
               }
@@ -558,7 +558,7 @@
       XCtl[i_xtouch].channel[i_ch].faderPosition = newFaderValue; // 0..16383
 
       XCtl[i_xtouch].channel[i_ch].meterLevel = random(0, 8); // not used at the moment
-      XCtl[i_xtouch].scribblePad[i_ch].topText = "Ch" + String(i_ch + 1) + " " + XCtl_panString(XCtl[i_xtouch].channel[i_ch].dialLevel);
+      XCtl[i_xtouch].scribblePad[i_ch].topText = "Ch" + String(i_ch + 1) + " " + XCtl_panString(XCtl[i_xtouch].channel[i_ch].encoderValue);
       XCtl[i_xtouch].scribblePad[i_ch].botText = String(playerinfo.volumeCh[i_ch], 2) + "dB    ";
       XCtl[i_xtouch].scribblePad[i_ch].color = 7; // 0=BLACK, 1=RED, 2=GREEN, 3=YELLOW, 4=BLUE, 5=PINK, 6=CYAN, 7=WHITE // fixed to white at the moment
       XCtl[i_xtouch].scribblePad[i_ch].inverted = false; // not used at the moment

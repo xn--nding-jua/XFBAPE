@@ -126,6 +126,14 @@ void ticker100msFcn() {
       XCtl_sendFaderData(i_xtouch); // update fader
     }
   #endif
+  
+  #if USE_MACKIE_MCU == 1
+    mackieUpdateCounter -= 1;
+    if (mackieUpdateCounter == 0) {
+      mackieUpdateCounter = 3; // 300ms update-rate
+      MackieMCU_sendData();
+    }
+  #endif
 }
 Ticker ticker100ms(ticker100msFcn, 100, 0, MILLIS);
 
@@ -212,6 +220,10 @@ void setup() {
     }
   #endif
 
+  #if USE_MACKIE_MCU == 1
+    MackieMCU_init();
+  #endif
+
   // start ticker
   ticker100ms.start();
   ticker85ms.start();
@@ -242,12 +254,15 @@ void loop() {
     // handle serial communication
     handleUSBCommunication(); // communication through Serial (USB) with connected computer
     handleX32Communication(); // communication through Serial1 with Behringer X32 MainControl
+    handleNINACommunication(); // communication through Serial2 with NINA W102
     #if USE_XTOUCH == 1
       for (uint8_t i_xtouch=0; i_xtouch<XTOUCH_COUNT; i_xtouch++) {
-        handleXCtlMessages(i_xtouch);
+        handleXCtlMessages(i_xtouch); // communication via ethernet-jack (UDP)
       }
     #endif
-    handleNINACommunication(); // communication through Serial2 with NINA W102
+    #if USE_MACKIE_MCU == 1
+      handleMackieMCUCommunication(); // communication via Serial/MIDI
+    #endif
 
     ticker100ms.update();
     ticker85ms.update();
