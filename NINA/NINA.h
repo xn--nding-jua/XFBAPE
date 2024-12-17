@@ -33,6 +33,7 @@ String password = "YourVerySafeWiFiPassword"; // password can be changed via USB
 #define USE_DISPLAY         1   // enable functions for I2C display connected to SAMD21 (takes ~ 384 bytes)
 #define USE_DMX512          0   // enable outputting DMX512 via UART2
 #define USE_DMX512_RX       0   // enable DMX512-receiver via UART2
+#define USE_MACKIEMCU       0   // enable MackieMCU via MIDI Rx/Tx
 
 #define AUDIO_INIT_VOLUME   21          // 0...21, so set to max on initialization
 #define AUDIO_SAMPLERATE    48000       // if using X32 this is fixed to 48kHz
@@ -190,6 +191,10 @@ File configFile;
   TaskHandle_t Dmx512ReceiverTask;
 #endif
 
+#if USE_MACKIE_MCU == 1
+  #include <MIDI.h>
+#endif
+
 // includes for Ticker
 #include <Ticker.h>
 Ticker TimerSeconds;
@@ -340,3 +345,49 @@ struct {
   sNoisegate gates[MAX_NOISEGATES];
   sCompressor compressors[MAX_COMPRESSORS]; // left/right, sub
 }audiomixer;
+
+#if USE_MACKIE_MCU == 1
+  uint8_t mackieUpdateCounter = 3; // 300ms update-rate
+
+  struct sMackieMCU_Channel{
+    bool faderNeedsUpdate = true;
+    bool faderTouched;
+    uint16_t faderPosition;
+    uint16_t faderPositionHW;
+    uint8_t meterLevel = 0; // 0...11
+    uint8_t encoderValue;
+
+    uint8_t rec = 0; // 0=OFF, 127=ON, 1=FLASHING
+    uint8_t solo = 0; // 0=OFF, 127=ON, 1=FLASHING
+    uint8_t mute = 0; // 0=OFF, 127=ON, 1=FLASHING
+    uint8_t select = 0; // 0=OFF, 127=ON, 1=FLASHING
+  };
+
+  struct {
+    uint8_t channelOffset = 0;
+    bool forceUpdate = false;
+
+    sMackieMCU_Channel channel[33];
+    uint8_t jogDialValue;
+  }MackieMCU;
+
+  MIDI_CREATE_INSTANCE(HardwareSerial, Serial2, MIDI)
+  // above macro does the following thing
+  //MIDI_NAMESPACE::SerialMIDI<HardwareSerial> serial##MIDI(Serial2);\
+  //MIDI_NAMESPACE::MidiInterface<MIDI_NAMESPACE::SerialMIDI<HardwareSerial>> MIDI((MIDI_NAMESPACE::SerialMIDI<HardwareSerial>&)serial##MIDI);  
+  
+  // could also be written as:
+  //using Transport = MIDI_NAMESPACE::SerialMIDI<HardwareSerial>;
+  //Transport serialMIDI(Serial2);
+  //MIDI_NAMESPACE::MidiInterface<Transport> MIDI((Transport&)serialMIDI);  
+  
+/*
+  struct Serial2MIDISettings : public midi::DefaultSettings
+  {
+    static const long BaudRate = 31250;
+    static const int8_t TxPin = NINA_PIO24; // not yet supported
+    static const int8_t RxPin = NINA_PIO25; // not yet supported
+  };
+  MIDI_CREATE_CUSTOM_INSTANCE(HardwareSerial, Serial2, MIDI, Serial2MIDISettings);
+*/
+#endif
