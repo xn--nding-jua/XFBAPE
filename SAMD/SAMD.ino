@@ -198,8 +198,8 @@ void setup() {
   // Serial4
   Serial4.begin(115200);
   Serial4.setTimeout(1000); // Timeout for commands
-  pinPeripheral(16, PIO_SERCOM); //Assign TX function to pin 16
-  pinPeripheral(17, PIO_SERCOM); //Assign RX function to pin 17
+  pinPeripheral(16, PIO_SERCOM_ALT); //Assign TX function to pin 16
+  pinPeripheral(17, PIO_SERCOM_ALT); //Assign RX function to pin 17
 */
 
   // initialize eeprom and ethernet via W5500

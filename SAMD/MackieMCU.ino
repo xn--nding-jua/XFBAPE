@@ -228,8 +228,8 @@
     MIDI.setHandleSystemExclusive(MackieMCU_handleSysEx);
     MIDI.begin(MIDI_CHANNEL_OMNI);  // Listen to all incoming messages
 
-    pinPeripheral(4, PIO_SERCOM); //Assign TX function to pin 4
-    pinPeripheral(5, PIO_SERCOM); //Assign RX function to pin 5
+    pinPeripheral(4, PIO_SERCOM_ALT); //Assign TX function to pin 4
+    pinPeripheral(5, PIO_SERCOM_ALT); //Assign RX function to pin 5
   }
 
   void handleMackieMCUCommunication() {
