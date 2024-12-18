@@ -145,6 +145,43 @@ String secondsToHMS(uint32_t seconds){
   }
 }
 
+String secondsToHMS_B(uint32_t seconds, bool withDots = true){
+  unsigned int tme=0;
+  tme = seconds;
+
+  int hr = tme/3600;                        //Number of seconds in an hour
+  int mins = (tme-hr*3600)/60;              //Remove the number of hours and calculate the minutes.
+  int sec = tme-hr*3600-mins*60;            //Remove the number of hours and minutes, leaving only seconds.
+  sec %= 60;
+  mins %= 60;
+  hr %= 24;
+
+  String s_hr;
+  String s_min;
+  String s_sec;
+  if (hr<10) {
+    s_hr = "0" + String(hr);
+  }else{
+    s_hr = String(hr);
+  }
+  if (mins<10) {
+    s_min = "0" + String(mins);
+  }else{
+    s_min = String(mins);
+  }
+  if (sec<10) {
+    s_sec = "0" + String(sec);
+  }else{
+    s_sec = String(sec);
+  }
+
+  if (withDots) {
+    return (s_hr + ":" + s_min + ":" + s_sec);
+  }else{
+    return (s_hr + s_min + s_sec);
+  }
+}
+
 uint32_t wrapAround(uint32_t value, uint32_t max) {
   if (value>max) {
     return value-max;

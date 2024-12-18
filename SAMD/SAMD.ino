@@ -52,8 +52,8 @@
   | 01         | D1               |  PA23  |  N3    |                 |  *07   |     |     | X11 |     |   3/01  |   5/01  |* TC4/1 | TCC0/5 | USB/SOF  | GCLK_IO7 | <- Serial2 RxD <- FPGA N3 <- VHDL <- FPGA E15 <- NINA TxD |
   | 02         | D2               |  PA10  |  P3    |                 |   10   | *18 |     | X02 |     |   0/02  |   2/02  |*TCC1/0 | TCC0/2 | I2S/SCK0 | GCLK_IO4 | -> Expansion Header X202.3                                |
   | 03         | D3               |  PA11  |  R3    |                 |   11   | *19 |     | X03 |     |   0/03  |   2/03  |*TCC1/1 | TCC0/3 | I2S/FS0  | GCLK_IO5 | -> Expansion Header X205.4                                |
-  | 04         | D4               |  PB10  |  T3    |                 |  *10   |     |     |     |     |         |   4/02  |* TC5/0 | TCC0/4 | I2S/MCK1 | GCLK_IO4 | -> Expansion Header X205.3                                |
-  | 05         | D5               |  PB11  |  T2    |                 |  *11   |     |     |     |     |         |   4/03  |* TC5/1 | TCC0/5 | I2S/SCK1 | GCLK_IO5 | -> Expansion Header X205.2                                |
+  | 04         | D4               |  PB10  |  T3    |                 |  *10   |     |     |     |     |         |   4/02  |* TC5/0 | TCC0/4 | I2S/MCK1 | GCLK_IO4 | -> Expansion Header X205.3 (MIDI Tx)                      |
+  | 05         | D5               |  PB11  |  T2    |                 |  *11   |     |     |     |     |         |   4/03  |* TC5/1 | TCC0/5 | I2S/SCK1 | GCLK_IO5 | -> Expansion Header X205.2 (MIDI Rx)                      |
   | 06         | D6               |  PA20  |  G16   |                 |  *04   |     |     | X08 |     |   5/02  |   3/02  |        |*TCC0/6 | I2S/SCK0 | GCLK_IO4 | -> n/a                                                    |
   | 07         | D7               |  PA21  |  G15   |                 |  *05   |     |     | X09 |     |   5/03  |   3/03  |        |*TCC0/7 | I2S/FS0  | GCLK_IO5 | -> SPI-CS W5500 EthernetShield                            |
   +------------+------------------+--------+--------+-----------------+--------+-----+-----+-----+-----+---------+---------+--------+--------+----------+----------+-----------------------------------------------------------+
@@ -193,6 +193,14 @@ void setup() {
   pinPeripheral(1, PIO_SERCOM); //Assign RX function to pin 1
   Serial2.flush();
   delay(1000); // give NINA some time to startup
+
+/*
+  // Serial4
+  Serial4.begin(115200);
+  Serial4.setTimeout(1000); // Timeout for commands
+  pinPeripheral(16, PIO_SERCOM); //Assign TX function to pin 16
+  pinPeripheral(17, PIO_SERCOM); //Assign RX function to pin 17
+*/
 
   // initialize eeprom and ethernet via W5500
   initEeprom();

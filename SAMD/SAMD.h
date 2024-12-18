@@ -36,12 +36,15 @@ const char compile_date[] = __DATE__ " " __TIME__;
 
 /*
 Arduino SAMD21 SERCOM usage:
-SERCOM0: Serial1  <- X32
-SERCOM1: Unused   <- 
-SERCOM2: Unused   <- 
-SERCOM3: I2C      <- Display
-SERCOM4: SPI      <- W5500 Ethernet
-SERCOM5: Serial   <- USB
+SERCOM0: I2C      <- Display
+SERCOM1: SPI      <- W5500 Ethernet
+SERCOM2: SPI1     <- unused
+SERCOM3: Serial2  <- NINA
+SERCOM4: unused (Pins 4/5)
+SERCOM5: unused (Pins 16/17)
+
+SerialUSB: USB
+Serial1:   X32
 */
 #define SerialX32 Serial1
 
@@ -56,20 +59,21 @@ Uart Serial2(&sercom3, PIN_SERIAL2_RX, PIN_SERIAL2_TX, PAD_SERIAL2_RX, PAD_SERIA
 #if USE_MACKIE_MCU == 1
   // includes for Serial3 to communicate with MIDI. As Serial3 is not within the scope of Arduino,
   // we have to create it using the SERCOM-system of the SAMD21
-  #define PIN_SERIAL3_TX       (?ul)                // Pin description number for PIO_SERCOM on D0 // TODO
-  #define PIN_SERIAL3_RX       (?ul)                // Pin description number for PIO_SERCOM on D1 // TODO
-  #define PAD_SERIAL3_TX       (UART_TX_PAD_?)      // SERCOM pad 0 TX // TODO
-  #define PAD_SERIAL3_RX       (SERCOM_RX_PAD_?)    // SERCOM pad 1 RX // TODO
-  Uart Serial3(&sercom3, PIN_SERIAL3_RX, PIN_SERIAL3_TX, PAD_SERIAL3_RX, PAD_SERIAL3_TX);
+  #define PIN_SERIAL3_TX       (4ul)                // Pin description number for PIO_SERCOM
+  #define PIN_SERIAL3_RX       (5ul)                // Pin description number for PIO_SERCOM
+  #define PAD_SERIAL3_TX       (UART_TX_PAD_2)      // SERCOM pad 2 TX
+  #define PAD_SERIAL3_RX       (SERCOM_RX_PAD_3)    // SERCOM pad 3 RX
+  Uart Serial3(&sercom4, PIN_SERIAL3_RX, PIN_SERIAL3_TX, PAD_SERIAL3_RX, PAD_SERIAL3_TX);
 #endif
 
 /*
-#define PIN_SERIAL3_TX       (4ul)                // Pin description number for PIO_SERCOM on D0
-#define PIN_SERIAL3_RX       (5ul)                // Pin description number for PIO_SERCOM on D1
-#define PAD_SERIAL3_TX       (UART_TX_PAD_2)      // SERCOM pad 0 TX
-#define PAD_SERIAL3_RX       (SERCOM_RX_PAD_3)    // SERCOM pad 1 RX
-Uart Serial3(&sercom4, PIN_SERIAL3_RX, PIN_SERIAL3_TX, PAD_SERIAL3_RX, PAD_SERIAL3_TX);
+#define PIN_SERIAL4_TX       (16ul)                // Pin description number for PIO_SERCOM
+#define PIN_SERIAL4_RX       (17ul)                // Pin description number for PIO_SERCOM
+#define PAD_SERIAL4_TX       (UART_TX_PAD_0)      // SERCOM pad 0 TX
+#define PAD_SERIAL4_RX       (SERCOM_RX_PAD_1)    // SERCOM pad 1 RX
+Uart Serial4(&sercom5, PIN_SERIAL4_RX, PIN_SERIAL4_TX, PAD_SERIAL4_RX, PAD_SERIAL4_TX);
 */
+
 bool passthroughNINA = false;
 #define X32_RINGBUF_LEN 32 //longest command seems to be 22 chars
 uint8_t x32RingBuffer[X32_RINGBUF_LEN];

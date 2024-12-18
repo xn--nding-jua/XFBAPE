@@ -116,6 +116,7 @@ String secondsToHMS_B(uint32_t seconds, bool withDots = true){
     return (s_hr + s_min + s_sec);
   }
 }
+
 #if USE_DISPLAY == 1
   String formatSize(uint32_t size) {
     if (size < 1024) {

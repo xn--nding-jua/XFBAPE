@@ -170,6 +170,14 @@ void SERCOM3_Handler()
   Serial2.IrqHandler();
 }
 
+/*
+// Interrupt handler for SERCOM3
+void SERCOM5_Handler()
+{
+  Serial4.IrqHandler();
+}
+*/
+
 void resetNina() {
   pinMode(NINA_RESET_N, OUTPUT);
 

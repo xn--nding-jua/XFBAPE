@@ -56,8 +56,8 @@
   |             |                |          |    GPIO    |               |                        |                                        |
   |             |                | RESET_N  | RESET      | R1            | Reset-Pin              | RESET for NINA/ESP32                   |
   | D12         |                | PIO1     | 23         | T11           | SPI-MOSI               | SPI-MOSI (SD-Card)                     |
-  | D19         | A6             | PIO2     | 34         | R10           |                        | free                      (X204 Pin 3) |
-  | D21         | A3             | PIO3     | 39         | P11           |                        | free                      (X204 Pin 4) |
+  | D19         | A6             | PIO2     | 34         | R10           |                        | -> UART2 TxD (MIDI)       (X204 Pin 3) |
+  | D21         | A3             | PIO3     | 39         | P11           |                        | <- UART2 RxD (MIDI)       (X204 Pin 4) |
   | D20         | A0             | PIO4     | 36         | R11           |                        | free                      (X204 Pin 5) |
   | D16         | A4             | PIO5     | 32         | N6            |                        | SD I2S SerialClock                     |
   | D17         | A5             | PIO7     | 33         | P6            |                        | SD I2S WordClock                       |
@@ -69,12 +69,12 @@
   | D11         |                | PIO21    | 19         | R6            | SPI-MISO               | SPI-MISO (SD-Card)                     |
   | D1          |                | PIO22    | 01         | E15           | SCI-TxD                | -> UART0 TxD to SAMD21                 |
   | D0          |                | PIO23    | 03         | T6            | SCI-RxD                | <- UART0 RxD from SAMD21               |
-  |             | A10            | PIO24    | 04         |               |                        | -> UART2 TxD (MIDI)       (X204 Pin 8) |
-  |             | A12            | PIO25    | 02         |               |                        | <- UART2 RxD (MIDI)       (X204 Pin 9) |
+  |             | A10            | PIO24    | 04         |               |                        |                           (X204 Pin 8) |
+  |             | A12            | PIO25    | 02         |               |                        |                           (X204 Pin 9) |
   | D7          | A11            | PIO27    | 00         | N9            |                        | BOOT-Pin to select Bootloader-Mode     |
   | D10         |                | PIO28    | 05         | N11           | SPI-SS                 | SPI-CS (SD-Card)                       |
   | D13         |                | PIO29    | 18         | T10           | SPI-SCK                | SPI-SCK (SD-Card)                      | 
-  | D9          | A16            | PIO31    | 14         | T4            |                        | -> UART2 TxD MIDI                      |
+  | D9          | A16            | PIO31    | 14         | T4            |                        |                                        |
   | D8          | A13            | PIO32    | 15         | J13           |                        | BT I2S SerialClock                     | ! pin controls Uart0 TxD Debug during boot
   | D4          | A7             | PIO34    | 35         | M6            |                        | BT I2S MClk                            |
   | D14         | A14            | PIO35    | 13         | R4            | I2C-SCL                | BT I2S WordClock                       |
@@ -131,7 +131,7 @@ void setup() {
   Serial1.begin(4000000, SERIAL_8N1, 22, 27, false, 1000); // BaudRate, Config, RxPin, TxPin, Invert, TimeoutMs, rxfifo_full_thrhd
 
   #if USE_MACKIE_MCU == 1
-	Serial2.begin(31250, SERIAL_8N1, NINA_PIO25, NINA_PIO24, false, 1000); // BaudRate, Config, RxPin, TxPin, Invert, TimeoutMs, rxfifo_full_thrhd
+	  Serial2.begin(31250, SERIAL_8N1, NINA_PIO3, NINA_PIO2, false, 1000); // BaudRate, Config, RxPin, TxPin, Invert, TimeoutMs, rxfifo_full_thrhd
     MackieMCU_init();
   #endif
 

@@ -33,7 +33,7 @@ String password = "YourVerySafeWiFiPassword"; // password can be changed via USB
 #define USE_DISPLAY         1   // enable functions for I2C display connected to SAMD21 (takes ~ 384 bytes)
 #define USE_DMX512          0   // enable outputting DMX512 via UART2
 #define USE_DMX512_RX       0   // enable DMX512-receiver via UART2
-#define USE_MACKIEMCU       0   // enable MackieMCU via MIDI Rx/Tx
+#define USE_MACKIE_MCU      0   // enable MackieMCU via MIDI Rx/Tx
 
 #define AUDIO_INIT_VOLUME   21          // 0...21, so set to max on initialization
 #define AUDIO_SAMPLERATE    48000       // if using X32 this is fixed to 48kHz
@@ -177,9 +177,9 @@ File configFile;
 
 #if USE_DMX512 == 1
   #include <esp_dmx.h>
-  #define DMX512_TX_PIN NINA_PIO31
-  #define DMX512_RX_PIN NINA_PIO24
-  #define DMX512_EN_PIN NINA_PIO25
+  #define DMX512_TX_PIN NINA_PIO2
+  #define DMX512_RX_PIN NINA_PIO3
+  #define DMX512_EN_PIN NINA_PIO4
   #define DMX_PACKET_SIZE 513
   dmx_port_t dmxPort = 2; // Serial0 = Comm with SAMD21, Serial1 = Comm with FPGA, Serial2 = DMX512 output
   uint8_t dmxData[DMX_PACKET_SIZE];
