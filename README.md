@@ -18,10 +18,12 @@ Three individual devices are part of this repository:
 ## Main-Features of the system
 - [x] Card receives, mix and sends 32 audio-channels with 48kHz and 24bit
 - [x] MP3-Playback via SD-Card
-- [x] Card can be controlled via original X32-interface
-- [x] Control via Webinterface (WiFi)
-- [x] Control via ASCII-based commands via USB, WiFi and Ethernet
-- [x] DMX512-output
+- [x] Card-playback can be controlled via original X32-Card-interface
+- [x] Control via Webinterface (only WiFi and only Audio yet)
+- [x] Control via ASCII-based commands via USB, WiFi and Ethernet (Audio and DMX512)
+- [x] Control via multiple X-Touch-controls via ethernet (Audio and DMX512)
+- [x] Control via X32 using MackieMCU via Card-MIDI (Audio and DMX512)
+- [x] DMX512-output (adjustable DMX-timings via VHDL)
 - [x] Parametric-Equalizers
 - [x] Dynamic Audio-Compression (Stereo)
 - [x] Optional: control card via MQTT
@@ -29,16 +31,14 @@ Three individual devices are part of this repository:
 - [x] Optional: Noise-Gates
 - [x] Optional: Bluetooth-A2DP-Sink
 - [x] Optional: 24dB/oct Linkwitz-Riley Crossover for tweeter and subwoofer
-- [x] Prepared: Support for the XTouch-Control
 
 ## Current status of the project
 So far, the project is more of a "proof of concept". The audio-volume settings, the EQs and the dynamic compressor work well. But there are still a few small bugs in the system that don't make it easy to use at a live-event at the moment:
 
-- [ ] EQs crackle on adjusting the frequency -> problem is solved when using a steep low-pass-filter with a cutoff frequency <=24kHz
-- [ ] Audio sent back to the X32 has different volumes on different channels -> probably a bit-shift-error
-- [ ] MP3s with 44,1kHz have a slight noise -> implement sample-rate conversion to 48kHz (already prepared, but FPGA is a bit small)
-- [ ] Support for the XTouch is working in general, but the performance is not good yet -> optimize code
-- [ ] Bluetooth is not working together with other features -> optimize code in NINA/ESP32 to save more space to enable BT
+- [ ] Severe: Audio sent back to the X32 has different volumes on different channels -> probably a bit-shift-error. Work in Progress...
+- [ ] Medium: EQs crackle on adjusting the frequency -> problem is solved when using a steep low-pass-filter with a cutoff frequency <=24kHz. No solution for the small FPGA within the Vidor4000
+- [ ] Medium: MP3s with 44,1kHz have a slight noise -> implement sample-rate conversion to 48kHz (already prepared, but FPGA is a bit small). No solution for the small FPGA within the Vidor4000
+- [ ] Low: Bluetooth is not working together with other features -> optimize code in NINA/ESP32 to save more space to enable BT. Probably not possible with the NINA-W102 on the Vidor4000
 
 ## Overview
 The SAMD21 is used as an USB-2-UART converter for controlling and updating the individual devices. The device also controls the small I2C-display and communicates over the W5500-IC with your ethernet.
