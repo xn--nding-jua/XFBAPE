@@ -376,7 +376,7 @@
           Serial2.println("dmx512:output:ch" + String(channel + 1) + "@" + String(newValue));
         }
       }else if (midiChannel == 9) {
-        MackieMCU.hardwareChannel[8].faderPositionHW= value - MIDI_PITCHBEND_MIN;
+        MackieMCU.hardwareChannel[8].faderPositionHW = value - MIDI_PITCHBEND_MIN;
         if (MackieMCU.hardwareChannel[8].faderTouched) {
           MackieMCU.channelDmx[512].faderPosition = value - MIDI_PITCHBEND_MIN; // copy value to faderPosition
           uint8_t newValue = MackieMCU.channelDmx[512].faderPosition/64.2470588f;
@@ -672,6 +672,9 @@
 
   void MackieMCU_setFader(uint8_t channel, int16_t value) {
     // send PitchBend = 0xE0
+    if (!MackieMCU.hardwareChannel[channel].faderTouched) {
+      MackieMCU.hardwareChannel[channel].faderPositionHW = value; // X32 has no TouchFader, so we force the position everytime
+    }
     MIDI.send(midi::MidiType::PitchBend, (value & 0x7f), (value >> 7) & 0x7f, channel+1); // value between 0 and 16383
   }
 

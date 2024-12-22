@@ -311,6 +311,14 @@
           // check for touched fader
           if ((rxData[0] == 0x90) && (rxData[1] >= 0x68) && (rxData[1] <= 0x70)) {
             hardwareFader = (rxData[1] - 0x68);
+
+/*
+            // check if touch is removed from fader and update fader
+            if ((XCtl[i_xtouch].hardwareChannel[hardwareFader].faderTouched) && !(rxData[2] != 0))  {
+              // fader is untouched
+              XCtl[i_xtouch].hardwareChannel[hardwareFader].faderNeedsUpdate = true;
+            }
+*/
             XCtl[i_xtouch].hardwareChannel[hardwareFader].faderTouched = rxData[2] != 0;
           }
 
@@ -834,18 +842,23 @@
       }
 
       // update all faders and buttons for the current channel-selection
-      uint32_t newFaderValue;
       for (uint16_t i_ch=XCtl[i_xtouch].channelOffsetDmx; i_ch<(8+XCtl[i_xtouch].channelOffsetDmx); i_ch++) {
         uint8_t hardwareFader = i_ch - XCtl[i_xtouch].channelOffsetDmx;
-        XCtl[i_xtouch].hardwareChannel[hardwareFader].faderNeedsUpdate = (MackieMCU.channelDmx[i_ch].faderPosition != XCtl[i_xtouch].hardwareChannel[hardwareFader].faderPositionHW) && (!XCtl[i_xtouch].hardwareChannel[hardwareFader].faderTouched);
-        XCtl[i_xtouch].hardwareChannel[hardwareFader].meterLevel = MackieMCU.channel[i_ch].faderPosition/2047;
+        XCtl[i_xtouch].hardwareChannel[hardwareFader].faderNeedsUpdate = XCtl_checkIfFaderNeedsUpdate(MackieMCU.channelDmx[i_ch].faderPosition, XCtl[i_xtouch].hardwareChannel[hardwareFader].faderPositionHW) && (!XCtl[i_xtouch].hardwareChannel[hardwareFader].faderTouched);
+        if (!XCtl[i_xtouch].hardwareChannel[hardwareFader].faderTouched) {
+          XCtl[i_xtouch].hardwareChannel[hardwareFader].faderPositionHW = MackieMCU.channelDmx[i_ch].faderPosition;
+        }
+        XCtl[i_xtouch].hardwareChannel[hardwareFader].meterLevel = MackieMCU.channelDmx[i_ch].faderPosition/2047;
       }
 
       /*
       // we are not using the master-fader at the moment - maybe in a later revision
       // update Masterfader
-      newFaderValue = ...;
-      XCtl[i_xtouch].hardwareChannel[8].faderNeedsUpdate = newFaderValue != MackieMCU.channel[512].faderPosition;
+      uint16_t newFaderValue = ...;
+      XCtl[i_xtouch].hardwareChannel[8].faderNeedsUpdate = XCtl_checkIfFaderNeedsUpdate(newFaderValue, MackieMCU.channel[512].faderPosition);
+      if (!XCtl[i_xtouch].hardwareChannel[8].faderTouched) {
+        XCtl[i_xtouch].hardwareChannel[8].faderPositionHW = newFaderValue; // this prevents the fader to snap to desired position after untouching it!
+      }
       MackieMCU.channel[512].faderPosition = newFaderValue; // convert volumeMain from dBfs to 0...16388 but keep logarithmic scale
       */
     }else{
@@ -876,18 +889,24 @@
       }
 
       // update all faders and buttons for the current channel-selection
-      uint32_t newFaderValue;
+      uint16_t newFaderValue;
       for (uint8_t i_ch=XCtl[i_xtouch].channelOffset; i_ch<(8+XCtl[i_xtouch].channelOffset); i_ch++) {
         uint8_t hardwareFader = i_ch - XCtl[i_xtouch].channelOffset;
-        newFaderValue = ((playerinfo.volumeCh[i_ch] + 48.0f)/54.0f) * 16383.0f;
-        XCtl[i_xtouch].hardwareChannel[hardwareFader].faderNeedsUpdate = (newFaderValue != XCtl[i_xtouch].hardwareChannel[hardwareFader].faderPositionHW) && (!XCtl[i_xtouch].hardwareChannel[hardwareFader].faderTouched);
+        newFaderValue = round(((playerinfo.volumeCh[i_ch] + 48.0f)/54.0f) * 16383.0f);
+        XCtl[i_xtouch].hardwareChannel[hardwareFader].faderNeedsUpdate = XCtl_checkIfFaderNeedsUpdate(newFaderValue, XCtl[i_xtouch].hardwareChannel[hardwareFader].faderPositionHW) && (!XCtl[i_xtouch].hardwareChannel[hardwareFader].faderTouched);
         MackieMCU.channel[i_ch].faderPosition = newFaderValue; // 0..16383
+        if (!XCtl[i_xtouch].hardwareChannel[hardwareFader].faderTouched) {
+          XCtl[i_xtouch].hardwareChannel[hardwareFader].faderPositionHW = newFaderValue;
+        }
         XCtl[i_xtouch].hardwareChannel[hardwareFader].meterLevel = MackieMCU.channel[i_ch].faderPosition/2047;
       }
 
       // update Masterfader
-      newFaderValue = ((playerinfo.volumeMain + 48.0f)/54.0f) * 16383.0f;
-      XCtl[i_xtouch].hardwareChannel[8].faderNeedsUpdate = (newFaderValue != XCtl[i_xtouch].hardwareChannel[8].faderPositionHW) && (!XCtl[i_xtouch].hardwareChannel[8].faderTouched);
+      newFaderValue = round(((playerinfo.volumeMain + 48.0f)/54.0f) * 16383.0f);
+      XCtl[i_xtouch].hardwareChannel[8].faderNeedsUpdate = XCtl_checkIfFaderNeedsUpdate(newFaderValue, XCtl[i_xtouch].hardwareChannel[8].faderPositionHW) && (!XCtl[i_xtouch].hardwareChannel[8].faderTouched);
+      if (!XCtl[i_xtouch].hardwareChannel[8].faderTouched) {
+        XCtl[i_xtouch].hardwareChannel[8].faderPositionHW = newFaderValue;
+      }
       MackieMCU.channel[32].faderPosition = newFaderValue; // convert volumeMain from dBfs to 0...16388 but keep logarithmic scale
     }
   }
@@ -900,6 +919,11 @@
     }else{
       return "R" + String((value/2.55) - 50, 0);
     }
+  }
+
+  bool XCtl_checkIfFaderNeedsUpdate(uint16_t desiredPosition, uint16_t hardwarePosition) {
+    int16_t difference = desiredPosition - hardwarePosition;
+    return abs(difference) > 2;
   }
 
   uint8_t XCtl_getSegmentBitmap(char c) {

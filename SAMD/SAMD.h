@@ -175,10 +175,10 @@ uint32_t refreshCounter = 0;
   };
 
   struct sMackieMCU_ChannelHW{
-    uint16_t faderPositionHW; // 0...16383
-    bool faderTouched;
-    bool faderNeedsUpdate;
-    uint8_t meterLevel; // 0...11 for Mackie, 0..11 for X-Touch
+    uint16_t faderPositionHW = 0; // 0...16383
+    bool faderTouched = false;
+    bool faderNeedsUpdate = false;
+    uint8_t meterLevel; // 0...12 for Mackie, 0..8 for X-Touch
   };
 
   struct {
