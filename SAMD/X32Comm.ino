@@ -16,9 +16,6 @@
   Missing commands:
   - Firmwareupdate
 
-  Todo:
-  - Test commands
-
   These original functions are used to control the X-FBAPE MP3-player
   display TOC of the SD-Card and some other nice functions
 */
@@ -125,9 +122,9 @@ String x32ExecCmd(String command) {
       String sessionname = command.substring(3, 3+8); // 8 hex-characters after *9B are the session-name. ignore #Q# at the end
 
       // decode desired TrackNumber from Timecode (we are using minutes as storage)
-      uint8_t tracknumber = x32TimecodeToTracknumber(sessionname);
+      playerinfo.currentTrackNumber = x32TimecodeToTracknumber(sessionname);
       // now get the fileName from TOC
-      String filename = split(TOC, '|', tracknumber); // name of title0
+      String filename = split(TOC, '|', playerinfo.currentTrackNumber); // name of title0
       // play the file
       Serial2.println("player:file@" + filename); // load file (and file will be played immediatyl)
       Serial2.println("player:pause"); // stop file
@@ -337,8 +334,10 @@ void x32Init() {
   delay(500);
 }
 
-void x32NewCard(uint8_t cardIndex) {
-  SerialX32.print("*9N" + String(cardIndex) + "000007F4000000000#"); // 32576 could be MegaBytes?
+void x32UpdateCard() {
+  // this function will be called 10 seconds after boot-up to tell the X32 information about our (fake-)cards
+  SerialX32.print(x32ExecCmd("*9N0#")); // send card 1
+  SerialX32.print(x32ExecCmd("*9N1#")); // send card 2
 }
 
 String x32TimecodeToString(String timecodeHex) {

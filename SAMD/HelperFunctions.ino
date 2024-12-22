@@ -152,8 +152,8 @@ void saveConfig(){
 }
 
 void initEeprom() {
-
   eeprom.begin();
+
   if (!eeprom.isConnected())
   {
     Serial.println("Fatal Error: Can't find eeprom!!!");

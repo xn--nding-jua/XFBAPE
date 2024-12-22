@@ -1,6 +1,6 @@
 /*
   X-f/bape USBCtrl for Arduino MKR Vidor4000 Device
-  v3.0.0 built on 29.11.2024
+  v3.1.0 built on 21.12.2024
   Infos: https://www.github.com/xn--nding-jua/xfbape
   Copyright (c) 2023-2024 Dr.-Ing. Christian Nöding
 
@@ -130,7 +130,7 @@ void ticker100msFcn() {
   #if USE_MACKIE_MCU == 1
     mackieUpdateCounter -= 1;
     if (mackieUpdateCounter == 0) {
-      mackieUpdateCounter = 3; // 300ms update-rate
+      mackieUpdateCounter = 2; // 200ms update-rate
       MackieMCU_sendData();
     }
   #endif
@@ -143,6 +143,15 @@ void ticker85msFcn() {
     x32AliveCounter = 59; // preload to 5 seconds
 
     SerialX32.print(x32AliveCommand);
+  }
+
+  if (x32StartupCounter > 0) {
+    x32StartupCounter--;
+
+    if (x32StartupCounter == 0) {
+      // tell the X32, that we have a card
+      x32UpdateCard();
+    }
   }
 
   if (x32Playback) {
@@ -162,27 +171,27 @@ void setup() {
   Serial.begin(115200);
   Serial.setTimeout(1000); // Timeout for commands
 
-  #if USE_DISPLAY == 1
-    // init I2C
-    Wire.begin();
-    Wire.setClock(400000); // max. 400000Hz
-    initDisplay();
+  Serial.println("X-f/bape USBCtrl " + String(versionstring) + " | " + String(compile_date)); // send to USB
 
-    displayShowLogo(1); //  show main logo
-    //displayText(5, F("Init FPGA..."));
-  #endif
-  
   // initialize FPGA
+  Serial.println(F("Init FPGA..."));
   setup_fpga();
   delay(1000); // give FPGA a second to startup
 
+  // init I2C (is used at least by EEPROM)
+  Serial.println(F("Init I2C..."));
+  Wire.begin();
+  Wire.setClock(100000); // max. 400000Hz
+
   #if USE_DISPLAY == 1
+    Serial.println(F("Init Display..."));
     initDisplay(); // init display again after uploading data to FPGA
     displayShowLogo(1); // show main logo again
     //displayText(5, F("Init MainCtrl..."));
   #endif
 
   // SerialX32 for communication with Behringer X32 MainControl
+  Serial.println(F("Init UART-ports..."));
   SerialX32.begin(38400); // X32 uses regular 38400 8N1 for communication
   SerialX32.setTimeout(1000); // Timeout for commands
 
@@ -203,16 +212,16 @@ void setup() {
 */
 
   // initialize eeprom and ethernet via W5500
+  Serial.println(F("Init EEPROM..."));
   initEeprom();
+  Serial.println(F("Init Ethernet..."));
   initEthernet();
-
-  // start mainsystem
-  Serial.println("X-f/bape USBCtrl " + String(versionstring) + " | " + String(compile_date)); // send to USB
 
   // initialize the X32
   Serial.println(F("Init X32..."));
   x32Init();
 
+  // start mainsystem
   Serial.println(F("Init MainCtrl..."));
   Serial2.println(F("system:init")); // initialize main-system
 
@@ -222,6 +231,8 @@ void setup() {
   #endif
 
   #if USE_XTOUCH == 1
+    Serial.println(F("Init X-TOUCH-devices..."));
+
     for (uint8_t i_xtouch=0; i_xtouch<XTOUCH_COUNT; i_xtouch++) {
       XCtl[i_xtouch].ip = eeprom_config.xtouchip[i_xtouch];
       XCtl_init(i_xtouch);
@@ -229,12 +240,15 @@ void setup() {
   #endif
 
   #if USE_MACKIE_MCU == 1
+    Serial.println(F("Init MackieMCU..."));
     MackieMCU_init();
   #endif
 
   // start ticker
+  Serial.println(F("Init timers..."));
   ticker100ms.start();
   ticker85ms.start();
+  Serial.println(F("Ready."));
 }
 
 void loop() {

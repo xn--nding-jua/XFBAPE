@@ -1,6 +1,5 @@
 void initEthernet() {
   Ethernet.init(7);
-
   Ethernet.begin(config.mac, eeprom_config.ip);
   
   if (Ethernet.hardwareStatus() == EthernetNoHardware) {

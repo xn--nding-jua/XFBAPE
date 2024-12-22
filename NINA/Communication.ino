@@ -805,7 +805,6 @@ String executeCommand(String Command) {
 
       // stop the timers
       TimerSeconds.detach();
-      Timer100ms.detach();
 
       Answer = "OK";
     }else if (Command.indexOf("system:card:init") > -1){

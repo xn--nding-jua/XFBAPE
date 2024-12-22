@@ -108,16 +108,6 @@ void timerSecondsFcn() {
   updateSAMD(); // update the display of the SAMD with current information
 }
 
-void timer100msFcn() {
-  #if USE_MACKIE_MCU == 1
-    mackieUpdateCounter -= 1;
-    if (mackieUpdateCounter == 0) {
-      mackieUpdateCounter = 3; // 300ms update-rate
-      MackieMCU_sendData();
-    }
-  #endif
-}
-
 void setup() {
   pinMode(LED_GREEN, OUTPUT);
   pinMode(LED_BLUE, OUTPUT);
@@ -129,11 +119,6 @@ void setup() {
 
   // init communication with FPGA
   Serial1.begin(4000000, SERIAL_8N1, 22, 27, false, 1000); // BaudRate, Config, RxPin, TxPin, Invert, TimeoutMs, rxfifo_full_thrhd
-
-  #if USE_MACKIE_MCU == 1
-	  Serial2.begin(31250, SERIAL_8N1, NINA_PIO3, NINA_PIO2, false, 1000); // BaudRate, Config, RxPin, TxPin, Invert, TimeoutMs, rxfifo_full_thrhd
-    MackieMCU_init();
-  #endif
 
   setX32state(false); // disable X32
 }
@@ -158,10 +143,6 @@ void loop() {
       ftp.handleFTP();
     #elif USE_FTP_SERVER == 2
       ftp.handle();
-    #endif
-
-    #if USE_MACKIE_MCU == 1
-      handleMackieMCUCommunication(); // communication via Serial/MIDI
     #endif
   }
 
@@ -229,7 +210,6 @@ void initSystem() {
 
   // Initiate the timers
   TimerSeconds.attach_ms(1000, timerSecondsFcn);
-  Timer100ms.attach_ms(100, timer100msFcn);
 
   #if USE_DMX512 == 1
     initDmx512();

@@ -1,7 +1,8 @@
-const char* versionstring = "v3.0.0";
+const char* versionstring = "v3.1.0";
 const char compile_date[] = __DATE__ " " __TIME__;
 
 // the following defines will overwrite the standard arduino-defines from https://github.com/arduino/ArduinoCore-samd/blob/84c09b3265e2a8b548a29b141f0c9281b1baf154/variants/mkrvidor4000/variant.h
+// this is only nescessary, if SAMD21 should transmit audio-data to FPGA. At the moment only ESP32 transmits audio-data
 //#define I2S_INTERFACES_COUNT 1 // SAMD21 has two interfaces
 //#define I2S_DEVICE 0 // select if I2S device 0 or 1
 //#define I2S_CLOCK_GENERATOR 3 // select the correct clock for I2S-interface
@@ -9,10 +10,10 @@ const char compile_date[] = __DATE__ " " __TIME__;
 //#define PIN_I2S_SCK 02 // pin for bit-clock (= D2)
 //#define PIN_I2S_FS 03 // pin for FrameSelect / Wordclock (= D3)
 
-#define USE_DISPLAY       1      // enables a SSD1308 display connected to I2C
-#define USE_XTOUCH        0      // support for XTouch via Ethernet (currently in Alpha-state and needs more work!)
-#define XTOUCH_COUNT      1      // number of XTouch-Devices
-#define USE_MACKIE_MCU    0      // support for MackieMCU via MIDI
+#define USE_DISPLAY       0      // enables support for SSD1308 display connected to I2C
+#define USE_MACKIE_MCU    1      // support for MackieMCU via MIDI
+#define USE_XTOUCH        1      // support for XTouch via Ethernet
+#define XTOUCH_COUNT      1      // number of XTouch-Devices (max. 4 devices at the moment)
 
 // includes for FPGA
 #include <wiring_private.h>
@@ -64,6 +65,7 @@ Uart Serial2(&sercom3, PIN_SERIAL2_RX, PIN_SERIAL2_TX, PAD_SERIAL2_RX, PAD_SERIA
   #define PAD_SERIAL3_TX       (UART_TX_PAD_2)      // SERCOM pad 2 TX
   #define PAD_SERIAL3_RX       (SERCOM_RX_PAD_3)    // SERCOM pad 3 RX
   Uart Serial3(&sercom4, PIN_SERIAL3_RX, PIN_SERIAL3_TX, PAD_SERIAL3_RX, PAD_SERIAL3_TX);
+  MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, MIDI);
 #endif
 
 /*
@@ -79,6 +81,7 @@ bool passthroughNINA = false;
 uint8_t x32RingBuffer[X32_RINGBUF_LEN];
 uint16_t x32RingBufferPointer = 0;
 uint8_t x32AliveCounter = 59; // preload to 5 seconds (for ticker with 85ms)
+uint8_t x32StartupCounter = 100; // 10 Sekunden
 String x32AliveCommand = "*8BE#";
 bool x32Playback = false;
 bool x32Debug = false;
@@ -126,6 +129,7 @@ uint8_t tocCounter = 0;
 
 struct {
   String title = "Standby...";
+  uint8_t currentTrackNumber;
   uint32_t time;
   uint32_t duration;
   uint8_t progress;
@@ -157,6 +161,38 @@ bool firmwareUpdateMode = false;
 // general variables
 uint32_t refreshCounter = 0;
 
+#if USE_MACKIE_MCU == 1 || USE_XTOUCH == 1
+  uint8_t mackieUpdateCounter = 3; // 300ms update-rate
+  bool mackieDmxMode = false;
+
+  struct sMackieMCU_Channel{
+    uint16_t faderPosition = 0; // 0...16383
+    uint8_t encoderValue = 128; // 0..255 ->0..12
+    uint8_t rec = 0; // 0=OFF, 1=FLASHING, 127=ON
+    uint8_t solo = 0; // 0=OFF, 1=FLASHING, 127=ON
+    uint8_t mute = 0; // 0=OFF, 1=FLASHING, 127=ON
+    uint8_t select = 0; // 0=OFF, 1=FLASHING, 127=ON
+  };
+
+  struct sMackieMCU_ChannelHW{
+    uint16_t faderPositionHW; // 0...16383
+    bool faderTouched;
+    bool faderNeedsUpdate;
+    uint8_t meterLevel; // 0...11 for Mackie, 0..11 for X-Touch
+  };
+
+  struct {
+    uint8_t channelOffset = 0; // runs from 0 to 24
+    uint16_t channelOffsetDmx = 0; // runs from 0 to 504
+    bool forceUpdate = false;
+    sMackieMCU_ChannelHW hardwareChannel[9];
+    sMackieMCU_Channel channel[33]; // values for audio-control
+    sMackieMCU_Channel channelDmx[513]; // values for DMX-Control
+    uint8_t jogDialValue;
+    uint8_t jogDialValueDmx;
+  }MackieMCU;
+#endif
+
 #if USE_XTOUCH == 1
   EthernetUDP XCtlUdp[XTOUCH_COUNT];
 
@@ -166,69 +202,17 @@ uint32_t refreshCounter = 0;
   uint8_t XCtl_ProbeC[18] = {0xF0, 0x00, 0x00, 0x66, 0x58, 0x01, 0x30, 0x31, 0x35, 0x36, 0x34, 0x30, 0x36, 0x33, 0x44, 0x35, 0x36, 0xF7};
   uint8_t XCtl_IdlePacket[7] = {0xF0, 0x00, 0x00, 0x66, 0x14, 0x00, 0xF7};
 
-  struct sXctlScribblePad{
-    String topText = "TopText";
-    String botText = "BotText";
-    uint8_t color = 7; // 0=BLACK, 1=RED, 2=GREEN, 3=YELLOW, 4=BLUE, 5=PINK, 6=CYAN, 7=WHITE
-    bool inverted = false;
-  };
-
-  struct sXCtlChannel{
-    bool faderNeedsUpdate = true;
-    bool faderTouched = false;
-    uint16_t faderPosition = 0; // 0...16383
-    uint16_t faderPositionHW = 0; // 0...16383
-    uint8_t meterLevel = 0; // 0...8
-    uint8_t encoderValue = 128; // 0..255 ->0..12
-
-    uint8_t rec = 0; // 0=OFF, 1=ON, 2=FLASHING
-    uint8_t solo = 0; // 0=OFF, 1=ON, 2=FLASHING
-    uint8_t mute = 0; // 0=OFF, 1=ON, 2=FLASHING
-    uint8_t select = 0; // 0=OFF, 1=ON, 2=FLASHING
-  };
-
-  struct sXCtlOptions{
-    bool showValues = true;
-  };
-
   struct sXCtl{
     IPAddress ip;
     uint8_t channelOffset = 0;
+    uint16_t channelOffsetDmx = 0; // 0...504
     bool forceUpdate = false;
-
-    sXCtlOptions options;
-    sXctlScribblePad scribblePad[33];
-    sXCtlChannel channel[33]; // 33=masterFader
+    sMackieMCU_ChannelHW hardwareChannel[9];
+    bool showValues = true;
+    bool dmxMode = false;
     uint8_t jogDialValue = 0;
+    uint8_t jogDialValueDmx = 0;
     char segmentDisplay[12];
     uint8_t buttonLightOn[103];
   }XCtl[XTOUCH_COUNT];
-#endif
-
-#if USE_MACKIE_MCU == 1
-  uint8_t mackieUpdateCounter = 3; // 300ms update-rate
-
-  struct sMackieMCU_Channel{
-    bool faderNeedsUpdate = true;
-    bool faderTouched;
-    uint16_t faderPosition;
-    uint16_t faderPositionHW;
-    uint8_t meterLevel = 0; // 0...11
-    uint8_t encoderValue;
-
-    uint8_t rec = 0; // 0=OFF, 127=ON, 1=FLASHING
-    uint8_t solo = 0; // 0=OFF, 127=ON, 1=FLASHING
-    uint8_t mute = 0; // 0=OFF, 127=ON, 1=FLASHING
-    uint8_t select = 0; // 0=OFF, 127=ON, 1=FLASHING
-  };
-
-  struct {
-    uint8_t channelOffset = 0;
-    bool forceUpdate = false;
-
-    sMackieMCU_Channel channel[33];
-    uint8_t jogDialValue;
-  }MackieMCU;
-
-  MIDI_CREATE_INSTANCE(HardwareSerial, Serial3, MIDI);
 #endif
