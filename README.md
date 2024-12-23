@@ -98,11 +98,25 @@ After uploading the new firmware, please reset the board using the RESET-button.
 
 ## Graphical User Interfaces
 
-There are several options to control the system:
+There are several options to control this system:
+* Directly on X32 using the MIDI-Remote in MackieMCU-mode (directly via Expansion Slot)
+* X-Touch via Ethernet (multiple X-Touch are supported)
 * WiFi via integrated Webinterface
 * UART via FBAPE.EXE
 * via ASCII-commands via UART and Ethernet
 
+Here are some pictures to demonstrate the usage:
+
+MP3s can be played using the original X-LIVE-Controls:
+![alt text](Documentation/Images/XLIVE-Control.jpg)
+
+32-Audio channel and DMX512 can be controlled using the X32 in MIDI-Remote-Mode:
+![alt text](Documentation/Images/MackieMCU-Control.jpg)
+
+The X-Touch are supported as well:
+![alt text](Documentation/Images/XTouch-Control.jpg)
+
+The Windows-GUI is available as Windows11-App, Windows 3.11 and OS/2 (yes, I like Retro-Computing)
 ![alt text](Documentation/Images/GUI.jpg)
 
 As the Ethernet-Contoller is connected only to the SAMD21, the webinterface of the NINA-W102 cannot be accessed. Maybe we can change this in a later design. But for now the ethernet-port is limited to plain ASCII-commands.
