@@ -38,8 +38,8 @@ entity clipper is
 end clipper;
 
 architecture Behavioral of clipper is
-	signal max_pos_value	: signed(input_bit_width - 1 downto 0) := signed'("000000000000011000000000000000000000"); --to_signed((2**(output_bit_width - 1)) - 1, input_bit_width); -- 2^(output_bit_width - 1) - 1 = 2^23-1 = 8388607 for 24bit
-	signal max_neg_value	: signed(input_bit_width - 1 downto 0) := signed'("111111111111100111111111111111111111"); --to_signed(-((2**(output_bit_width - 1)) - 1), input_bit_width); -- 2^(output_bit_width - 1) - 1 = 2^23-1 = 8388607 for 24bit --signed'("100000000000000000000000000000000000");
+	signal max_pos_value	: signed(input_bit_width - 1 downto 0) := signed'("000000000000011111111000000000000000"); -- to_signed((2**(output_bit_width - 1)) - 1, input_bit_width); -- 2^(output_bit_width - 1) - 1 = 2^23-1 = 8388607 for 24bit
+	signal max_neg_value	: signed(input_bit_width - 1 downto 0) := signed'("111111111111100000000111111111111111"); -- to_signed(-((2**(output_bit_width - 1)) - 1), input_bit_width); -- 2^(output_bit_width - 1) - 1 = 2^23-1 = 8388607 for 24bit --signed'("100000000000000000000000000000000000");
 	signal s_clip_rst : std_logic;
 begin
 	process(clk)

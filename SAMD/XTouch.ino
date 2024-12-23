@@ -31,14 +31,14 @@
       // prepare values
       if (XCtl[i_xtouch].dmxMode) {
         channel = (uint16_t)i_ch + XCtl[i_xtouch].channelOffsetDmx;
-        inverted = false;
-        color = 3; // 0=BLACK, 1=RED, 2=GREEN, 3=YELLOW, 4=BLUE, 5=PINK, 6=CYAN, 7=WHITE // fixed to white at the moment
+        inverted = XTOUCH_COLOR_INVERT_DMX;
+        color = XTOUCH_COLOR_DMX; // 0=BLACK, 1=RED, 2=GREEN, 3=YELLOW, 4=BLUE, 5=PINK, 6=CYAN, 7=WHITE
         topText = "DMX " + String(channel + 1) + "    ";
         botText = String(MackieMCU.channelDmx[channel].faderPosition/64.247058f, 0) + "/" + String(MackieMCU.channelDmx[channel].faderPosition/163.83f, 0) + "%  ";
       }else{
         channel = i_ch + XCtl[i_xtouch].channelOffset;
-        inverted = false;
-        color = 7; // 0=BLACK, 1=RED, 2=GREEN, 3=YELLOW, 4=BLUE, 5=PINK, 6=CYAN, 7=WHITE // fixed to white at the moment
+        inverted = XTOUCH_COLOR_INVERT;
+        color = XTOUCH_COLOR; // 0=BLACK, 1=RED, 2=GREEN, 3=YELLOW, 4=BLUE, 5=PINK, 6=CYAN, 7=WHITE
         topText = "Ch" + String(channel + 1) + " " + XCtl_panString(MackieMCU.channel[channel].encoderValue);
         botText = String(playerinfo.volumeCh[channel], 2) + "dB    ";
       }      
@@ -707,7 +707,9 @@
                 if (buttonState) {
                   // pressed
                   // reset panning to 50%
-                  MackieMCU.channel[(button-32) + XCtl[i_xtouch].channelOffset].encoderValue = 128;
+                  uint8_t channel = (button-32) + XCtl[i_xtouch].channelOffset;
+                  MackieMCU.channel[channel].encoderValue = 128;
+                  Serial2.println("mixer:balance:ch" + String(channel + 1) + "@" + String(MackieMCU.channel[channel].encoderValue / 2.55f));
                 }else{
                   // released
                 }
@@ -949,9 +951,24 @@
   }
 
   void XCtl_sendUdpPacket(uint8_t i_xtouch, const uint8_t *buffer, uint16_t size) {
-    XCtlUdp[i_xtouch].beginPacket(XCtl[i_xtouch].ip, 10111);
-    XCtlUdp[i_xtouch].write(buffer, size);
-    XCtlUdp[i_xtouch].endPacket();
+    bool connectionOK = XCtlUdp[i_xtouch].beginPacket(XCtl[i_xtouch].ip, 10111);
+
+    if (connectionOK) {
+      uint16_t writtenBytes = XCtlUdp[i_xtouch].write(buffer, size);
+
+      if (writtenBytes > 0) {
+        // connection was OK, so close it gracefully
+        if (!XCtlUdp[i_xtouch].endPacket()) {
+          XCtlConnectionTimeout = 50;
+        }
+      }else{
+        // we have a connection-problem -> reduce transmission-rate
+        XCtlConnectionTimeout = 50; // transmit only every 5 seconds
+      }
+    }else{
+      // we have a connection-problem -> reduce transmission-rate
+      XCtlConnectionTimeout = 50; // transmit only every 5 seconds
+    }
   }
 
   void XCtl_sendWatchDogMessage(uint8_t i_xtouch) {

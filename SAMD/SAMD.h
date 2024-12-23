@@ -10,10 +10,15 @@ const char compile_date[] = __DATE__ " " __TIME__;
 //#define PIN_I2S_SCK 02 // pin for bit-clock (= D2)
 //#define PIN_I2S_FS 03 // pin for FrameSelect / Wordclock (= D3)
 
+// configure this software
 #define USE_DISPLAY       0      // enables support for SSD1308 display connected to I2C
 #define USE_MACKIE_MCU    1      // support for MackieMCU via MIDI
 #define USE_XTOUCH        1      // support for XTouch via Ethernet
 #define XTOUCH_COUNT      1      // number of XTouch-Devices (max. 4 devices at the moment)
+#define XTOUCH_COLOR      7      // 0=BLACK, 1=RED, 2=GREEN, 3=YELLOW, 4=BLUE, 5=PINK, 6=CYAN, 7=WHITE
+#define XTOUCH_COLOR_DMX  3      // 0=BLACK, 1=RED, 2=GREEN, 3=YELLOW, 4=BLUE, 5=PINK, 6=CYAN, 7=WHITE
+#define XTOUCH_COLOR_INVERT false // invert the display
+#define XTOUCH_COLOR_INVERT_DMX false // invert the display
 
 // includes for FPGA
 #include <wiring_private.h>
@@ -119,10 +124,6 @@ EthernetServer cmdserver(5025);
   uint8_t currentDisplayLine = 0;
 #endif
 
-#if USE_XTOUCH == 1
-  uint16_t XCtlWatchdogCounter = 20; // preload to 2 seconds
-#endif
-
 String TOC;
 uint8_t tocEntries = 3;
 uint8_t tocCounter = 0;
@@ -195,6 +196,8 @@ uint32_t refreshCounter = 0;
 
 #if USE_XTOUCH == 1
   EthernetUDP XCtlUdp[XTOUCH_COUNT];
+  uint16_t XCtlConnectionTimeout = 0; // should stay zero, but will be increased on udp-errors
+  uint16_t XCtlWatchdogCounter = 20; // preload to 2 seconds
 
   uint8_t XCtl_Probe[8] = {0xF0, 0x00, 0x20, 0x32, 0x58, 0x54, 0x00, 0xF7};
   uint8_t XCtl_ProbeResponse[8] = {0xF0, 0x00, 0x20, 0x32, 0x58, 0x54, 0x01, 0xF7};

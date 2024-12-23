@@ -33,12 +33,18 @@ Three individual devices are part of this repository:
 - [x] Optional: 24dB/oct Linkwitz-Riley Crossover for tweeter and subwoofer
 
 ## Current status of the project
-So far, the project is more of a "proof of concept". The audio-volume settings, the EQs and the dynamic compressor work well. But there are still a few small bugs in the system that don't make it easy to use at a live-event at the moment:
+This project is ready for smaller events. Audio-processing, audio-effects and DMX512 is working as well as support for MackieMCU-control via X32 or the X-Touch-Control via Ethernet.
 
-- [ ] Severe: Audio sent back to the X32 has different volumes on different channels -> probably a bit-shift-error. Work in Progress...
+However, as this project is a Hobby-project, please be aware, that this software/hardware-combination is not yet tested well. Everything seems to work somehow, but bugs will be here and there.
+
+Some known bugs:
 - [ ] Medium: EQs crackle on adjusting the frequency -> problem is solved when using a steep low-pass-filter with a cutoff frequency <=24kHz. No solution for the small FPGA within the Vidor4000
-- [ ] Medium: MP3s with 44,1kHz have a slight noise -> implement sample-rate conversion to 48kHz (already prepared, but FPGA is a bit small). No solution for the small FPGA within the Vidor4000
 - [ ] Low: Bluetooth is not working together with other features -> optimize code in NINA/ESP32 to save more space to enable BT. Probably not possible with the NINA-W102 on the Vidor4000
+
+Usage of the components:
+- FPGA: Logic Elements 93% of 15,408 LE / 9-bit Multiplier: 61% of 112 Multipliers
+- SAMD21: 30% of 256kB
+- NINA-W102: 76% of 2 MB
 
 ## Overview
 The SAMD21 is used as an USB-2-UART converter for controlling and updating the individual devices. The device also controls the small I2C-display and communicates over the W5500-IC with your ethernet.

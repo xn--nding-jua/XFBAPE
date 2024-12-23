@@ -625,14 +625,46 @@ String executeCommand(String Command) {
         audiomixer.peq[peq].gain = gain;
 
         recalcFilterCoefficients_PEQ(&audiomixer.peq[peq]);
-        sendDataToFPGA(FPGA_IDX_AUX_CMD); // disable filters
+        setResetFlags(1, -1, -1, -1); // disable eqs [eqs, compressor, crossover, upsampler]
+
+        // bypass PEQ if gain is 0
+        if (gain == 0) {
+          // bypass current PEQ automatically
+          bitSet(audiomixer.bypassFlags, peq);
+        }else{
+          // release bypass
+          bitClear(audiomixer.bypassFlags, peq);
+        }
+        data_16b fpga_data;
+        fpga_data.u16 = audiomixer.bypassFlags;
+        sendDataToFPGA(FPGA_IDX_AUX_CMD+1, &fpga_data);
+
         for (int i=0; i<3; i++) { sendDataToFPGA(FPGA_IDX_PEQ+(peq*5)+i, &audiomixer.peq[peq].a[i]); } // 3 a-coefficients
         for (int i=0; i<2; i++) { sendDataToFPGA(FPGA_IDX_PEQ+3+(peq*5)+i, &audiomixer.peq[peq].b[i+1]); } // only 2 b-coefficients
-        sendDataToFPGA(FPGA_IDX_AUX_CMD+1); // enable filters
+        delay(10);
+        setResetFlags(0, -1, -1, -1); // enable eqs [eqs, compressor, crossover, upsampler]
         Answer = "OK";
       }else{
         Answer = "ERROR: PEQ out of range! PEQ #" + String(peq+1) + " and Type = " + String(type);
       }
+    }else if (Command.indexOf("mixer:eq:bypass") > -1){
+      // received command "mixer:eq:bypass1@aaa"
+      uint8_t bypassIndex = Command.substring(15, Command.indexOf("@")).toInt() - 1;
+      bool bypass = (Command.substring(Command.indexOf("@")+1).toInt() == 1);
+      
+      // bypass PEQ (or crossover)
+      if (bypass == 1) {
+        // bypass current index
+        bitSet(audiomixer.bypassFlags, bypassIndex);
+      }else{
+        // release bypass for current index
+        bitClear(audiomixer.bypassFlags, bypassIndex);
+      }
+      data_16b fpga_data;
+      fpga_data.u16 = audiomixer.bypassFlags;
+      sendDataToFPGA(FPGA_IDX_AUX_CMD+1, &fpga_data);
+
+      Answer = "OK";
     }else if (Command.indexOf("mixer:eq:lp") > -1){
       // received command "mixer:eq:lp@yyy"
       // this function will set LowPass-frequency
@@ -645,10 +677,12 @@ String executeCommand(String Command) {
         recalcFilterCoefficients_LR24(&audiomixer.LR24_LP_Sub);
 
         // transmit the calculated coefficients to FPGA
-        sendDataToFPGA(FPGA_IDX_AUX_CMD); // disable filters
+        setResetFlags(-1, -1, 1, -1); // disable crossover [eqs, compressor, crossover, upsampler]
+        setBypassFlags(-1, -1, -1, -1, -1, -1, audiomixer.LR24_LP_Sub.fc>=19000, -1); // [eq1, eq2, eq3, eq4, eq5, crossoverLR, crossoverSub]
         for (int i=0; i<5; i++) { sendDataToFPGA(FPGA_IDX_XOVER+9+i, &audiomixer.LR24_LP_Sub.a[i]); }
         for (int i=0; i<4; i++) { sendDataToFPGA(FPGA_IDX_XOVER+14+i, &audiomixer.LR24_LP_Sub.b[i+1]); } // we are not using b0
-        sendDataToFPGA(FPGA_IDX_AUX_CMD+1); // enable filters
+        delay(10);
+        setResetFlags(-1, -1, 0, -1); // enable crossover [eqs, compressor, crossover, upsampler]
         Answer = "OK";
       }else{
         Answer = "ERROR: Frequency out of range! f_c = " + String(frequency);
@@ -665,10 +699,12 @@ String executeCommand(String Command) {
         recalcFilterCoefficients_LR24(&audiomixer.LR24_HP_LR);
 
         // transmit the calculated coefficients to FPGA
-        sendDataToFPGA(FPGA_IDX_AUX_CMD); // disable filters
+        setResetFlags(-1, -1, 1, -1); // disable crossover [eqs, compressor, crossover, upsampler]
+        setBypassFlags(-1, -1, -1, -1, -1, -1, -1, audiomixer.LR24_HP_LR.fc<=19); // [eq1, eq2, eq3, eq4, eq5, crossoverLR, crossoverSub]
         for (int i=0; i<5; i++) { sendDataToFPGA(FPGA_IDX_XOVER+i, &audiomixer.LR24_HP_LR.a[i]); }
         for (int i=0; i<4; i++) { sendDataToFPGA(FPGA_IDX_XOVER+5+i, &audiomixer.LR24_HP_LR.b[i+1]); } // we are not using b0
-        sendDataToFPGA(FPGA_IDX_AUX_CMD+1); // enable filters
+        delay(10);
+        setResetFlags(-1, -1, 0, -1); // enable crossover [eqs, compressor, crossover, upsampler]
         Answer = "OK";
       }else{
         Answer = "ERROR: Frequency out of range! f_c = " + String(frequency);
@@ -726,12 +762,15 @@ String executeCommand(String Command) {
         recalcCompressor(&audiomixer.compressors[comp]);
 
         // send data to FPGA
+        setResetFlags(-1, 1, -1, -1); // disable compressor [eqs, compressor, crossover, upsampler]
         sendDataToFPGA(FPGA_IDX_COMP+0+(comp*6), &audiomixer.compressors[comp].value_threshold);
         sendDataToFPGA(FPGA_IDX_COMP+1+(comp*6), &audiomixer.compressors[comp].value_ratio);
         sendDataToFPGA(FPGA_IDX_COMP+2+(comp*6), &audiomixer.compressors[comp].value_makeup);
         sendDataToFPGA(FPGA_IDX_COMP+3+(comp*6), &audiomixer.compressors[comp].value_coeff_attack);
         sendDataToFPGA(FPGA_IDX_COMP+4+(comp*6), &audiomixer.compressors[comp].value_hold_ticks);
         sendDataToFPGA(FPGA_IDX_COMP+5+(comp*6), &audiomixer.compressors[comp].value_coeff_release);
+        delay(10);
+        setResetFlags(-1, 0, -1, -1); // enable compressor [eqs, compressor, crossover, upsampler]
         
         Answer = "OK";
       }else{

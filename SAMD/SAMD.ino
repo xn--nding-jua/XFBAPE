@@ -111,19 +111,25 @@ void ticker100msFcn() {
   #endif
 
   #if USE_XTOUCH == 1
-    XCtlWatchdogCounter -= 1;
-    if (XCtlWatchdogCounter == 0) {
-      XCtlWatchdogCounter = 20;
+    if (Ethernet.linkStatus() != LinkOFF) {
+      if (XCtlConnectionTimeout > 0) {
+        XCtlConnectionTimeout -= 1;
+      }else{
+        XCtlWatchdogCounter -= 1;
+        if (XCtlWatchdogCounter == 0) {
+          XCtlWatchdogCounter = 20;
 
-      for (uint8_t i_xtouch=0; i_xtouch<XTOUCH_COUNT; i_xtouch++) {
-        XCtl_sendWatchDogMessage(i_xtouch);
+          for (uint8_t i_xtouch=0; i_xtouch<XTOUCH_COUNT; i_xtouch++) {
+            XCtl_sendWatchDogMessage(i_xtouch);
+          }
+        }
+
+        for (uint8_t i_xtouch=0; i_xtouch<XTOUCH_COUNT; i_xtouch++) {
+          XCtl_prepareData(i_xtouch); // prepare values to send to device
+          XCtl_sendGeneralData(i_xtouch); // update buttons and displays
+          XCtl_sendFaderData(i_xtouch); // update fader
+        }
       }
-    }
-
-    for (uint8_t i_xtouch=0; i_xtouch<XTOUCH_COUNT; i_xtouch++) {
-      XCtl_prepareData(i_xtouch); // prepare values to send to device
-      XCtl_sendGeneralData(i_xtouch); // update buttons and displays
-      XCtl_sendFaderData(i_xtouch); // update fader
     }
   #endif
   
@@ -278,8 +284,10 @@ void loop() {
     handleX32Communication(); // communication through Serial1 with Behringer X32 MainControl
     handleNINACommunication(); // communication through Serial2 with NINA W102
     #if USE_XTOUCH == 1
-      for (uint8_t i_xtouch=0; i_xtouch<XTOUCH_COUNT; i_xtouch++) {
-        handleXCtlMessages(i_xtouch); // communication via ethernet-jack (UDP)
+      if (XCtlConnectionTimeout == 0) {
+        for (uint8_t i_xtouch=0; i_xtouch<XTOUCH_COUNT; i_xtouch++) {
+          handleXCtlMessages(i_xtouch); // communication via ethernet-jack (UDP)
+        }
       }
     #endif
     #if USE_MACKIE_MCU == 1

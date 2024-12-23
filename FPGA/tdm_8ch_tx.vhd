@@ -37,10 +37,9 @@ architecture rtl of tdm_8ch_tx is
 	signal sample_data	: std_logic_vector(32 * 8 - 1 downto 0) := (others=>'0');
 	signal zfsync			: std_logic;
 	signal sdata_tmp		: std_logic;
+	signal bit_cnt			: integer range 0 to (32 * 8 - 1) := 0;
 begin
 	process(clk)
-	variable
-		bit_cnt				: integer range 0 to (32 * 8) := 0;
 	begin
 		if rising_edge(clk) then
 			-- check for positive edge of frame-sync
@@ -58,11 +57,11 @@ begin
 				sample_data(sample_data'high - (32 * 6) downto sample_data'high - 23 - (32 * 6)) <= ch7_in;
 				sample_data(sample_data'high - (32 * 7) downto sample_data'high - 23 - (32 * 7)) <= ch8_in;
 				
-				bit_cnt := 0; -- set bit-counter to MSB-1 as we already output MSB with next falling edge
 				sdata_tmp <= ch1_in(ch1_in'high); -- set MSB of channel 1
+				bit_cnt <= 1; -- preload bit-counter to MSB-1 as we already output MSB with next falling edge
 			else
-				bit_cnt := bit_cnt + 1; -- increment bit-counter
 				sdata_tmp <= sample_data(sample_data'high - bit_cnt);
+				bit_cnt <= bit_cnt + 1; -- increment bit-counter for the next cycle as we are using a signal instead of variable
 			end if;
 			zfsync <= fsync;
 		end if;

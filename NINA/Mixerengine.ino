@@ -32,6 +32,11 @@ void initAudiomixer() {
   // reset dynamics (noisegates and compressors) to standard-values
   resetDynamics();
   sendDynamicsToFPGA();
+
+  // reset all integrators
+  setResetFlags(1, 1, 1, 1); // [eqs, compressor, crossover, upsampler]
+  delay(20);
+  setResetFlags(0, 0, 0, 0); // [eqs, compressor, crossover, upsampler]
 }
 
 void sendStereoVolumeToFPGA(uint8_t channel, float volume) {
@@ -281,10 +286,10 @@ void recalcFilterCoefficients_LR24(struct sLR24 *LR24) {
   LR24->b[3].d = (4.0 * (wc4 - sq_tmp1 + sq_tmp2 - k4)) / norm;
   LR24->b[4].d = (k4 - 2.0 * sq_tmp1 + wc4 - 2.0 * sq_tmp2 + 4.0 * wc2 * k2) / norm;
 
-  // convert to Q36-format
+  // convert to Q44-format
   for (int i=0; i<5; i++) {
-    LR24->a[i].s64 = LR24->a[i].d * 68719476735; // convert to Q36
-    LR24->b[i].s64 = LR24->b[i].d * 68719476735; // convert to Q36
+    LR24->a[i].s64 = LR24->a[i].d * 17592186044415; // convert to Q44
+    LR24->b[i].s64 = LR24->b[i].d * 17592186044415; // convert to Q44
   }
 }
 
@@ -354,7 +359,9 @@ void sendFiltersToFPGA() {
   recalcFilterCoefficients_LR24(&audiomixer.LR24_HP_LR);
 
   // transmit the calculated coefficients to FPGA
-  sendDataToFPGA(FPGA_IDX_AUX_CMD); // disable filters
+  setResetFlags(1, -1, 1, -1); // [eqs, compressor, crossover, upsampler]
+  setBypassFlags(audiomixer.peq[0].gain==0, audiomixer.peq[1].gain==0, audiomixer.peq[2].gain==0, audiomixer.peq[3].gain==0, audiomixer.peq[4].gain==0, -1, audiomixer.LR24_LP_Sub.fc>=19000, audiomixer.LR24_HP_LR.fc<=19); // [eq1, eq2, eq3, eq4, eq5, flag6, crossoverSub, crossoverLR]
+
   // Linkwitz-Riley HighPass
   for (int i=0; i<5; i++) { sendDataToFPGA(FPGA_IDX_XOVER+i, &audiomixer.LR24_HP_LR.a[i]); }
   for (int i=0; i<4; i++) { sendDataToFPGA(FPGA_IDX_XOVER+5+i, &audiomixer.LR24_HP_LR.b[i+1]); }; // we are not using b0
@@ -367,7 +374,92 @@ void sendFiltersToFPGA() {
     for (int i=0; i<3; i++) { sendDataToFPGA(FPGA_IDX_PEQ+(peq*5)+i, &audiomixer.peq[peq].a[i]); } // 3 a-coefficients
     for (int i=0; i<2; i++) { sendDataToFPGA(FPGA_IDX_PEQ+3+(peq*5)+i, &audiomixer.peq[peq].b[i+1]); }// only 2 b-coefficients
   }
-  sendDataToFPGA(FPGA_IDX_AUX_CMD+1); // enable filters
+  delay(10);
+  setResetFlags(0, -1, 0, -1); // [eqs, compressor, crossover, upsampler]
+}
+
+void setResetFlags(int8_t eqs, int8_t compressor, int8_t crossover, int8_t upsampler) {
+  if (eqs == 1) {
+    bitSet(audiomixer.resetFlags, 0);
+  }else if (eqs == 0) {
+    bitClear(audiomixer.resetFlags, 0);
+  }
+  
+  if (compressor == 1) {
+    bitSet(audiomixer.resetFlags, 1);
+  }else if (compressor == 0) {
+    bitClear(audiomixer.resetFlags, 1);
+  }
+  
+  if (crossover == 1) {
+    bitSet(audiomixer.resetFlags, 2);
+  }else if (crossover == 0) {
+    bitClear(audiomixer.resetFlags, 2);
+  }
+  
+  if (upsampler == 1) {
+    bitSet(audiomixer.resetFlags, 3);
+  }else if (upsampler == 0) {
+    bitClear(audiomixer.resetFlags, 3);
+  }
+
+  data_16b fpga_data;
+  fpga_data.u16 = audiomixer.resetFlags;
+  sendDataToFPGA(FPGA_IDX_AUX_CMD, &fpga_data);
+}
+
+void setBypassFlags(int8_t eq1, int8_t eq2, int8_t eq3, int8_t eq4, int8_t eq5, int8_t flag6, int8_t crossoverSub, int8_t crossoverLR) {
+  if (eq1 == 1) {
+    bitSet(audiomixer.bypassFlags, 0);
+  }else if (eq1 == 0) {
+    bitClear(audiomixer.bypassFlags, 0);
+  }
+  
+  if (eq2 == 1) {
+    bitSet(audiomixer.bypassFlags, 1);
+  }else if (eq2 == 0) {
+    bitClear(audiomixer.bypassFlags, 1);
+  }
+  
+  if (eq3 == 1) {
+    bitSet(audiomixer.bypassFlags, 2);
+  }else if (eq3 == 0) {
+    bitClear(audiomixer.bypassFlags, 2);
+  }
+  
+  if (eq4 == 1) {
+    bitSet(audiomixer.bypassFlags, 3);
+  }else if (eq4 == 0) {
+    bitClear(audiomixer.bypassFlags, 3);
+  }
+  
+  if (eq5 == 1) {
+    bitSet(audiomixer.bypassFlags, 4);
+  }else if (eq5 == 0) {
+    bitClear(audiomixer.bypassFlags, 4);
+  }
+
+  if (flag6 == 1) {
+    bitSet(audiomixer.bypassFlags, 5);
+  }else if (flag6 == 0) {
+    bitClear(audiomixer.bypassFlags, 5);
+  }
+
+  if (crossoverSub == 1) {
+    bitSet(audiomixer.bypassFlags, 6);
+  }else if (crossoverSub == 0) {
+    bitClear(audiomixer.bypassFlags, 6);
+  }
+
+  if (crossoverLR == 1) {
+    bitSet(audiomixer.bypassFlags, 7);
+  }else if (crossoverLR == 0) {
+    bitClear(audiomixer.bypassFlags, 7);
+  }
+
+  data_16b fpga_data;
+  fpga_data.u16 = audiomixer.bypassFlags;
+  sendDataToFPGA(FPGA_IDX_AUX_CMD+1, &fpga_data);
 }
 
 void resetDynamics() {

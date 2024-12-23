@@ -99,26 +99,26 @@ entity rs232_decoder is
 		ch36_volume_r	: out std_logic_vector(7 downto 0); -- here we are expecting stereo signals, so we are not routing individual to left/right
 
 		-- LR24 Highpass
-		c_a0_hp	: out std_logic_vector(39 downto 0);
-		c_a1_hp	: out std_logic_vector(39 downto 0);
-		c_a2_hp	: out std_logic_vector(39 downto 0);
-		c_a3_hp	: out std_logic_vector(39 downto 0);
-		c_a4_hp	: out std_logic_vector(39 downto 0);
-		c_b1_hp	: out std_logic_vector(39 downto 0);
-		c_b2_hp	: out std_logic_vector(39 downto 0);
-		c_b3_hp	: out std_logic_vector(39 downto 0);
-		c_b4_hp	: out std_logic_vector(39 downto 0);
+		c_a0_hp	: out std_logic_vector(47 downto 0);
+		c_a1_hp	: out std_logic_vector(47 downto 0);
+		c_a2_hp	: out std_logic_vector(47 downto 0);
+		c_a3_hp	: out std_logic_vector(47 downto 0);
+		c_a4_hp	: out std_logic_vector(47 downto 0);
+		c_b1_hp	: out std_logic_vector(47 downto 0);
+		c_b2_hp	: out std_logic_vector(47 downto 0);
+		c_b3_hp	: out std_logic_vector(47 downto 0);
+		c_b4_hp	: out std_logic_vector(47 downto 0);
 
 		-- LR24 Lowpass
-		c_a0_lp	: out std_logic_vector(39 downto 0);
-		c_a1_lp	: out std_logic_vector(39 downto 0);
-		c_a2_lp	: out std_logic_vector(39 downto 0);
-		c_a3_lp	: out std_logic_vector(39 downto 0);
-		c_a4_lp	: out std_logic_vector(39 downto 0);
-		c_b1_lp	: out std_logic_vector(39 downto 0);
-		c_b2_lp	: out std_logic_vector(39 downto 0);
-		c_b3_lp	: out std_logic_vector(39 downto 0);
-		c_b4_lp	: out std_logic_vector(39 downto 0);
+		c_a0_lp	: out std_logic_vector(47 downto 0);
+		c_a1_lp	: out std_logic_vector(47 downto 0);
+		c_a2_lp	: out std_logic_vector(47 downto 0);
+		c_a3_lp	: out std_logic_vector(47 downto 0);
+		c_a4_lp	: out std_logic_vector(47 downto 0);
+		c_b1_lp	: out std_logic_vector(47 downto 0);
+		c_b2_lp	: out std_logic_vector(47 downto 0);
+		c_b3_lp	: out std_logic_vector(47 downto 0);
+		c_b4_lp	: out std_logic_vector(47 downto 0);
 		
 		-- Parametric EQ1
 		c_a0_peq1 : out std_logic_vector(31 downto 0);
@@ -182,7 +182,8 @@ entity rs232_decoder is
 		adc1_gain	: out std_logic_vector(7 downto 0);
 
 		-- some auxiliary stuff
-		filter_rst		: out std_logic;
+		reset				: out std_logic_vector(7 downto 0);
+		bypass			: out std_logic_vector(7 downto 0);
 		x32_enable		: out std_logic;
 		sync_select		: out std_logic_vector(7 downto 0);
 		fsclk_select	: out std_logic_vector(7 downto 0);
@@ -407,149 +408,133 @@ begin
 
 					-- commands from 70 are reserved for coefficients
 					when 70 =>
-						--c_a0_hp(47 downto 40) <= b3;
-						c_a0_hp(39) <= b3(7); -- copy signed-bit from 48-bit-value
-						c_a0_hp(38 downto 32) <= b4(6 downto 0);
+						c_a0_hp(47 downto 40) <= b3;
+						c_a0_hp(39 downto 32) <= b4;
 						c_a0_hp(31 downto 24) <= b5;
 						c_a0_hp(23 downto 16) <= b6;
 						c_a0_hp(15 downto 8) <= b7;
 						c_a0_hp(7 downto 0) <= b8;
 					when 71 =>
-						--c_a1_hp(47 downto 40) <= b3;
-						c_a1_hp(39) <= b3(7); -- copy signed-bit from 48-bit-value
-						c_a1_hp(38 downto 32) <= b4(6 downto 0);
+						c_a1_hp(47 downto 40) <= b3;
+						c_a1_hp(39 downto 32) <= b4;
 						c_a1_hp(31 downto 24) <= b5;
 						c_a1_hp(23 downto 16) <= b6;
 						c_a1_hp(15 downto 8) <= b7;
 						c_a1_hp(7 downto 0) <= b8;
 					when 72 =>
-						--c_a2_hp(47 downto 40) <= b3;
-						c_a2_hp(39) <= b3(7); -- copy signed-bit from 48-bit-value
-						c_a2_hp(38 downto 32) <= b4(6 downto 0);
+						c_a2_hp(47 downto 40) <= b3;
+						c_a2_hp(39 downto 32) <= b4;
 						c_a2_hp(31 downto 24) <= b5;
 						c_a2_hp(23 downto 16) <= b6;
 						c_a2_hp(15 downto 8) <= b7;
 						c_a2_hp(7 downto 0) <= b8;
 					when 73 =>
-						--c_a3_hp(47 downto 40) <= b3;
-						c_a3_hp(39) <= b3(7); -- copy signed-bit from 48-bit-value
-						c_a3_hp(38 downto 32) <= b4(6 downto 0);
+						c_a3_hp(47 downto 40) <= b3;
+						c_a3_hp(39 downto 32) <= b4;
 						c_a3_hp(31 downto 24) <= b5;
 						c_a3_hp(23 downto 16) <= b6;
 						c_a3_hp(15 downto 8) <= b7;
 						c_a3_hp(7 downto 0) <= b8;
 					when 74 =>
-						--c_a4_hp(47 downto 40) <= b3;
-						c_a4_hp(39) <= b3(7); -- copy signed-bit from 48-bit-value
-						c_a4_hp(38 downto 32) <= b4(6 downto 0);
+						c_a4_hp(47 downto 40) <= b3;
+						c_a4_hp(39 downto 32) <= b4;
 						c_a4_hp(31 downto 24) <= b5;
 						c_a4_hp(23 downto 16) <= b6;
 						c_a4_hp(15 downto 8) <= b7;
 						c_a4_hp(7 downto 0) <= b8;
 					when 75 =>
-						--c_b1_hp(47 downto 40) <= b3;
-						c_b1_hp(39) <= b3(7); -- copy signed-bit from 48-bit-value
-						c_b1_hp(38 downto 32) <= b4(6 downto 0);
+						c_b1_hp(47 downto 40) <= b3;
+						c_b1_hp(39 downto 32) <= b4;
 						c_b1_hp(31 downto 24) <= b5;
 						c_b1_hp(23 downto 16) <= b6;
 						c_b1_hp(15 downto 8) <= b7;
 						c_b1_hp(7 downto 0) <= b8;
 					when 76 =>
-						--c_b2_hp(47 downto 40) <= b3;
-						c_b2_hp(39) <= b3(7); -- copy signed-bit from 48-bit-value
-						c_b2_hp(38 downto 32) <= b4(6 downto 0);
+						c_b2_hp(47 downto 40) <= b3;
+						c_b2_hp(39 downto 32) <= b4;
 						c_b2_hp(31 downto 24) <= b5;
 						c_b2_hp(23 downto 16) <= b6;
 						c_b2_hp(15 downto 8) <= b7;
 						c_b2_hp(7 downto 0) <= b8;
 					when 77 =>
-						--c_b3_hp(47 downto 40) <= b3;
-						c_b3_hp(39) <= b3(7); -- copy signed-bit from 48-bit-value
-						c_b3_hp(38 downto 32) <= b4(6 downto 0);
+						c_b3_hp(47 downto 40) <= b3;
+						c_b3_hp(39 downto 32) <= b4;
 						c_b3_hp(31 downto 24) <= b5;
 						c_b3_hp(23 downto 16) <= b6;
 						c_b3_hp(15 downto 8) <= b7;
 						c_b3_hp(7 downto 0) <= b8;
 					when 78 =>
-						--c_b4_hp(47 downto 40) <= b3;
-						c_b4_hp(39) <= b3(7); -- copy signed-bit from 48-bit-value
-						c_b4_hp(38 downto 32) <= b4(6 downto 0);
+						c_b4_hp(47 downto 40) <= b3;
+						c_b4_hp(39 downto 32) <= b4;
 						c_b4_hp(31 downto 24) <= b5;
 						c_b4_hp(23 downto 16) <= b6;
 						c_b4_hp(15 downto 8) <= b7;
 						c_b4_hp(7 downto 0) <= b8;
 					when 79 =>
-						--c_a0_lp(47 downto 40) <= b3;
-						c_a0_lp(39) <= b3(7); -- copy signed-bit from 48-bit-value
-						c_a0_lp(38 downto 32) <= b4(6 downto 0);
+						c_a0_lp(47 downto 40) <= b3;
+						c_a0_lp(39 downto 32) <= b4;
 						c_a0_lp(31 downto 24) <= b5;
 						c_a0_lp(23 downto 16) <= b6;
 						c_a0_lp(15 downto 8) <= b7;
 						c_a0_lp(7 downto 0) <= b8;
 					when 80 =>
-						--c_a1_lp(47 downto 40) <= b3;
-						c_a1_lp(39) <= b3(7); -- copy signed-bit from 48-bit-value
-						c_a1_lp(38 downto 32) <= b4(6 downto 0);
+						c_a1_lp(47 downto 40) <= b3;
+						c_a1_lp(39 downto 32) <= b4;
 						c_a1_lp(31 downto 24) <= b5;
 						c_a1_lp(23 downto 16) <= b6;
 						c_a1_lp(15 downto 8) <= b7;
 						c_a1_lp(7 downto 0) <= b8;
 					when 81 =>
-						--c_a2_lp(47 downto 40) <= b3;
-						c_a2_lp(39) <= b3(7); -- copy signed-bit from 48-bit-value
-						c_a2_lp(38 downto 32) <= b4(6 downto 0);
+						c_a2_lp(47 downto 40) <= b3;
+						c_a2_lp(39 downto 32) <= b4;
 						c_a2_lp(31 downto 24) <= b5;
 						c_a2_lp(23 downto 16) <= b6;
 						c_a2_lp(15 downto 8) <= b7;
 						c_a2_lp(7 downto 0) <= b8;
 					when 82 =>
-						--c_a3_lp(47 downto 40) <= b3;
-						c_a3_lp(39) <= b3(7); -- copy signed-bit from 48-bit-value
-						c_a3_lp(38 downto 32) <= b4(6 downto 0);
+						c_a3_lp(47 downto 40) <= b3;
+						c_a3_lp(39 downto 32) <= b4;
 						c_a3_lp(31 downto 24) <= b5;
 						c_a3_lp(23 downto 16) <= b6;
 						c_a3_lp(15 downto 8) <= b7;
 						c_a3_lp(7 downto 0) <= b8;
 					when 83 =>
-						--c_a4_lp(47 downto 40) <= b3;
-						c_a4_lp(39) <= b3(7); -- copy signed-bit from 48-bit-value
-						c_a4_lp(38 downto 32) <= b4(6 downto 0);
+						c_a4_lp(47 downto 40) <= b3;
+						c_a4_lp(39 downto 32) <= b4;
 						c_a4_lp(31 downto 24) <= b5;
 						c_a4_lp(23 downto 16) <= b6;
 						c_a4_lp(15 downto 8) <= b7;
 						c_a4_lp(7 downto 0) <= b8;
 					when 84 =>
-						--c_b1_lp(47 downto 40) <= b3;
-						c_b1_lp(39) <= b3(7); -- copy signed-bit from 48-bit-value
-						c_b1_lp(38 downto 32) <= b4(6 downto 0);
+						c_b1_lp(47 downto 40) <= b3;
+						c_b1_lp(39 downto 32) <= b4;
 						c_b1_lp(31 downto 24) <= b5;
 						c_b1_lp(23 downto 16) <= b6;
 						c_b1_lp(15 downto 8) <= b7;
 						c_b1_lp(7 downto 0) <= b8;
 					when 85 =>
-						--c_b2_lp(47 downto 40) <= b3;
-						c_b2_lp(39) <= b3(7); -- copy signed-bit from 48-bit-value
-						c_b2_lp(38 downto 32) <= b4(6 downto 0);
+						c_b2_lp(47 downto 40) <= b3;
+						c_b2_lp(39 downto 32) <= b4;
 						c_b2_lp(31 downto 24) <= b5;
 						c_b2_lp(23 downto 16) <= b6;
 						c_b2_lp(15 downto 8) <= b7;
 						c_b2_lp(7 downto 0) <= b8;
 					when 86 =>
-						--c_b3_lp(47 downto 40) <= b3;
-						c_b3_lp(39) <= b3(7); -- copy signed-bit from 48-bit-value
-						c_b3_lp(38 downto 32) <= b4(6 downto 0);
+						c_b3_lp(47 downto 40) <= b3;
+						c_b3_lp(39 downto 32) <= b4;
 						c_b3_lp(31 downto 24) <= b5;
 						c_b3_lp(23 downto 16) <= b6;
 						c_b3_lp(15 downto 8) <= b7;
 						c_b3_lp(7 downto 0) <= b8;
 					when 87 =>
-						--c_b4_lp(47 downto 40) <= b3;
-						c_b4_lp(39) <= b3(7); -- copy signed-bit from 48-bit-value
-						c_b4_lp(38 downto 32) <= b4(6 downto 0);
+						c_b4_lp(47 downto 40) <= b3;
+						c_b4_lp(39 downto 32) <= b4;
 						c_b4_lp(31 downto 24) <= b5;
 						c_b4_lp(23 downto 16) <= b6;
 						c_b4_lp(15 downto 8) <= b7;
 						c_b4_lp(7 downto 0) <= b8;
+
+	
 					when 88 =>
 						c_a0_peq1(31 downto 24) <= b3;
 						c_a0_peq1(23 downto 16) <= b4;
@@ -676,6 +661,7 @@ begin
 						c_b2_peq5(15 downto 8) <= b5;
 						c_b2_peq5(7 downto 0) <= b6;
 
+						
 					when 150 =>
 						--gate1_thrsh(31 downto 24) <= b3;
 						gate1_thrsh(23 downto 16) <= b4;
@@ -736,9 +722,11 @@ begin
 						comp2_c_rel(7 downto 0) <= b4;
 					
 					when 200 =>
-						filter_rst <= '1';
+						--reset(15 downto 8) <= b3;
+						reset(7 downto 0) <= b4;
 					when 201 =>
-						filter_rst <= '0';
+						--bypass(15 downto 8) <= b3;
+						bypass(7 downto 0) <= b4;
 					when 202 =>
 						--sync_select(15 downto 8) <= b3;
 						sync_select(7 downto 0) <= b4;

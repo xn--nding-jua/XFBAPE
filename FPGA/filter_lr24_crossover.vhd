@@ -1,5 +1,5 @@
 -- Three-way Linkwitz-Riley-Crossover with 24dB/oct
--- (c) 2023-2024 Dr.-Ing. Christian Noeding
+-- (c) 2023 Dr.-Ing. Christian Noeding
 -- christian@noeding-online.de
 -- Released under GNU General Public License v3
 -- Source: https://www.github.com/xn--nding-jua/xfbape
@@ -27,6 +27,8 @@ entity filter_lr24_crossover is
 	input_sub	:	in signed(23 downto 0) := (others=>'0');
 	sync_in		:	in std_logic := '0';
 	rst			:	in std_logic := '0';
+	bypass_lr	:	in std_logic := '0';
+	bypass_sub	:	in std_logic := '0';
 
 	-- coefficients have to be multiplied with 2^fract_bits before
 	a0_hp 		:	in signed(coeff_bits - 1 downto 0);
@@ -76,7 +78,7 @@ architecture Behavioral of filter_lr24_crossover is
 	signal out_z1_l, out_z2_l, out_z3_l, out_z4_l						:	signed(coeff_bits + 24 - 1 downto 0):= (others=>'0');	
 	signal out_z1_r, out_z2_r, out_z3_r, out_z4_r						:	signed(coeff_bits + 24 - 1 downto 0):= (others=>'0');	
 	signal out_z1_sub, out_z2_sub, out_z3_sub, out_z4_sub				:	signed(coeff_bits + 24 - 1 downto 0):= (others=>'0');	
-	signal temp			:	signed(coeff_bits + 24 - 1 downto 0):= (others=>'0');
+	signal temp	:	signed(coeff_bits + 24 - 1 + 8 downto 0):= (others=>'0');
 begin
 	-- multiplier
 	process(mult_in_a, mult_in_b)
@@ -140,63 +142,63 @@ begin
 					
 				elsif (state = 1) then
 					-- save result of (samplein*a0) to temp and load multiplier with in_z1 and a1
-					temp <= resize(mult_out, coeff_bits + 24);
+					temp <= resize(mult_out, temp'length);
 					mult_in_a <= a1_hp;
 					mult_in_b <= resize(in_z1_l, coeff_bits + 24);
 					state <= state + 1;
 					
 				elsif (state = 2) then
 					-- save and sum up result of (in_z1*a1) to temp and load multiplier with in_z2 and a2
-					temp <= temp + resize(mult_out, coeff_bits + 24);
+					temp <= temp + resize(mult_out, temp'length);
 					mult_in_a <= a2_hp;
 					mult_in_b <= resize(in_z2_l, coeff_bits + 24);
 					state <= state + 1;
 					
 				elsif (state = 3) then
 					-- save and sum up result of (in_z2*a2) to temp and load multiplier with in_z3 and a3
-					temp <= temp + resize(mult_out, coeff_bits + 24);
+					temp <= temp + resize(mult_out, temp'length);
 					mult_in_a <= a3_hp;
 					mult_in_b <= resize(in_z3_l, coeff_bits + 24);
 					state <= state + 1;
 					
 				elsif (state = 4) then
 					-- save and sum up result of (in_z3*a3) to temp and load multiplier with in_z4 and a4
-					temp <= temp + resize(mult_out, coeff_bits + 24);
+					temp <= temp + resize(mult_out, temp'length);
 					mult_in_a <= a4_hp;
 					mult_in_b <= resize(in_z4_l, coeff_bits + 24);
 					state <= state + 1;
 					
 				elsif (state = 5) then
 					-- save and sum up result of (in_z4*a4) to temp and load multiplier with out_z1 and b1
-					temp <= temp + resize(mult_out, coeff_bits + 24);
+					temp <= temp + resize(mult_out, temp'length);
 					mult_in_a <= b1_hp;
 					mult_in_b <= out_z1_l;
 					state <= state + 1;
 					
 				elsif (state = 6) then
 					-- save and sum up (negative) result of (out_z1*b1) and load multiplier with out_z2 and b2
-					temp <= temp - resize(shift_right(mult_out, fract_bits), coeff_bits + 24);
+					temp <= temp - resize(shift_right(mult_out, fract_bits), temp'length);
 					mult_in_a <= b2_hp;
 					mult_in_b <= out_z2_l;
 					state <= state + 1;
 					
 				elsif (state = 7) then
 					-- save and sum up (negative) result of (out_z2*b2) and load multiplier with out_z3 and b3
-					temp <= temp - resize(shift_right(mult_out, fract_bits), coeff_bits + 24);
+					temp <= temp - resize(shift_right(mult_out, fract_bits), temp'length);
 					mult_in_a <= b3_hp;
 					mult_in_b <= out_z3_l;
 					state <= state + 1;
 					
 				elsif (state = 8) then
 					-- save and sum up (negative) result of (out_z3*b3) and load multiplier with out_z4 and b4
-					temp <= temp - resize(shift_right(mult_out, fract_bits), coeff_bits + 24);
+					temp <= temp - resize(shift_right(mult_out, fract_bits), temp'length);
 					mult_in_a <= b4_hp;
 					mult_in_b <= out_z4_l;
 					state <= state + 1;
 					
 				elsif (state = 9) then
 					-- save and sum up (negative) result of (out_z4*b4)
-					temp <= temp - resize(shift_right(mult_out, fract_bits), coeff_bits + 24);
+					temp <= temp - resize(shift_right(mult_out, fract_bits), temp'length);
 					state <= state + 1;
 					
 				elsif (state = 10) then
@@ -209,9 +211,13 @@ begin
 					out_z4_l <= out_z3_l;
 					out_z3_l <= out_z2_l;
 					out_z2_l <= out_z1_l;
-					out_z1_l <= temp; -- save value with fractions to gain higher resolution for this filter
+					out_z1_l <= resize(temp, out_z1_l'length); -- save value with fractions to gain higher resolution for this filter
 					
-					output_l <= resize(shift_right(temp, fract_bits), 24); -- resize to 24-bit audio
+					if (bypass_lr = '1') then
+						output_l <= input_l;
+					else
+						output_l <= resize(shift_right(temp, fract_bits), 24); -- resize to 24-bit audio
+					end if;
 
 					-- load multiplier with a0 * input
 					mult_in_a <= a0_hp;
@@ -221,63 +227,63 @@ begin
 					
 				elsif (state = 11) then
 					-- save result of (samplein*a0) to temp and load multiplier with in_z1 and a1
-					temp <= resize(mult_out, coeff_bits + 24);
+					temp <= resize(mult_out, temp'length);
 					mult_in_a <= a1_hp;
 					mult_in_b <= resize(in_z1_r, coeff_bits + 24);
 					state <= state + 1;
 					
 				elsif (state = 12) then
 					-- save and sum up result of (in_z1*a1) to temp and load multiplier with in_z2 and a2
-					temp <= temp + resize(mult_out, coeff_bits + 24);
+					temp <= temp + resize(mult_out, temp'length);
 					mult_in_a <= a2_hp;
 					mult_in_b <= resize(in_z2_r, coeff_bits + 24);
 					state <= state + 1;
 					
 				elsif (state = 13) then
 					-- save and sum up result of (in_z2*a2) to temp and load multiplier with in_z3 and a3
-					temp <= temp + resize(mult_out, coeff_bits + 24);
+					temp <= temp + resize(mult_out, temp'length);
 					mult_in_a <= a3_hp;
 					mult_in_b <= resize(in_z3_r, coeff_bits + 24);
 					state <= state + 1;
 					
 				elsif (state = 14) then
 					-- save and sum up result of (in_z3*a3) to temp and load multiplier with in_z4 and a4
-					temp <= temp + resize(mult_out, coeff_bits + 24);
+					temp <= temp + resize(mult_out, temp'length);
 					mult_in_a <= a4_hp;
 					mult_in_b <= resize(in_z4_r, coeff_bits + 24);
 					state <= state + 1;
 					
 				elsif (state = 15) then
 					-- save and sum up result of (in_z4*a4) to temp and load multiplier with out_z1 and b1
-					temp <= temp + resize(mult_out, coeff_bits + 24);
+					temp <= temp + resize(mult_out, temp'length);
 					mult_in_a <= b1_hp;
 					mult_in_b <= out_z1_r;
 					state <= state + 1;
 					
 				elsif (state = 16) then
 					-- save and sum up (negative) result of (out_z1*b1) and load multiplier with out_z2 and b2
-					temp <= temp - resize(shift_right(mult_out, fract_bits), coeff_bits + 24);
+					temp <= temp - resize(shift_right(mult_out, fract_bits), temp'length);
 					mult_in_a <= b2_hp;
 					mult_in_b <= out_z2_r;
 					state <= state + 1;
 					
 				elsif (state = 17) then
 					-- save and sum up (negative) result of (out_z2*b2) and load multiplier with out_z3 and b3
-					temp <= temp - resize(shift_right(mult_out, fract_bits), coeff_bits + 24);
+					temp <= temp - resize(shift_right(mult_out, fract_bits), temp'length);
 					mult_in_a <= b3_hp;
 					mult_in_b <= out_z3_r;
 					state <= state + 1;
 					
 				elsif (state = 18) then
 					-- save and sum up (negative) result of (out_z3*b3) and load multiplier with out_z4 and b4
-					temp <= temp - resize(shift_right(mult_out, fract_bits), coeff_bits + 24);
+					temp <= temp - resize(shift_right(mult_out, fract_bits), temp'length);
 					mult_in_a <= b4_hp;
 					mult_in_b <= out_z4_r;
 					state <= state + 1;
 					
 				elsif (state = 19) then
 					-- save and sum up (negative) result of (out_z4*b4)
-					temp <= temp - resize(shift_right(mult_out, fract_bits), coeff_bits + 24);
+					temp <= temp - resize(shift_right(mult_out, fract_bits), temp'length);
 					state <= state + 1;
 					
 				elsif (state = 20) then
@@ -290,9 +296,13 @@ begin
 					out_z4_r <= out_z3_r;
 					out_z3_r <= out_z2_r;
 					out_z2_r <= out_z1_r;
-					out_z1_r <= temp; -- save value with fractions to gain higher resolution for this filter
+					out_z1_r <= resize(temp, out_z1_r'length); -- save value with fractions to gain higher resolution for this filter
 					
-					output_r <= resize(shift_right(temp, fract_bits), 24); -- resize to 24-bit audio
+					if (bypass_lr = '1') then
+						output_r <= input_r;
+					else
+						output_r <= resize(shift_right(temp, fract_bits), 24); -- resize to 24-bit audio
+					end if;
 
 					-- load multiplier with a0 * input
 					mult_in_a <= a0_lp;
@@ -302,63 +312,63 @@ begin
 					
 				elsif (state = 21) then
 					-- save result of (samplein*a0) to temp and load multiplier with in_z1 and a1
-					temp <= resize(mult_out, coeff_bits + 24);
+					temp <= resize(mult_out, temp'length);
 					mult_in_a <= a1_lp;
 					mult_in_b <= resize(in_z1_sub, coeff_bits + 24);
 					state <= state + 1;
 					
 				elsif (state = 22) then
 					-- save and sum up result of (in_z1*a1) to temp and load multiplier with in_z2 and a2
-					temp <= temp + resize(mult_out, coeff_bits + 24);
+					temp <= temp + resize(mult_out, temp'length);
 					mult_in_a <= a2_lp;
 					mult_in_b <= resize(in_z2_sub, coeff_bits + 24);
 					state <= state + 1;
 					
 				elsif (state = 23) then
 					-- save and sum up result of (in_z2*a2) to temp and load multiplier with in_z3 and a3
-					temp <= temp + resize(mult_out, coeff_bits + 24);
+					temp <= temp + resize(mult_out, temp'length);
 					mult_in_a <= a3_lp;
 					mult_in_b <= resize(in_z3_sub, coeff_bits + 24);
 					state <= state + 1;
 					
 				elsif (state = 24) then
 					-- save and sum up result of (in_z3*a3) to temp and load multiplier with in_z4 and a4
-					temp <= temp + resize(mult_out, coeff_bits + 24);
+					temp <= temp + resize(mult_out, temp'length);
 					mult_in_a <= a4_lp;
 					mult_in_b <= resize(in_z4_sub, coeff_bits + 24);
 					state <= state + 1;
 					
 				elsif (state = 25) then
 					-- save and sum up result of (in_z4*a4) to temp and load multiplier with out_z1 and b1
-					temp <= temp + resize(mult_out, coeff_bits + 24);
+					temp <= temp + resize(mult_out, temp'length);
 					mult_in_a <= b1_lp;
 					mult_in_b <= out_z1_sub;
 					state <= state + 1;
 					
 				elsif (state = 26) then
 					-- save and sum up (negative) result of (out_z1*b1) and load multiplier with out_z2 and b2
-					temp <= temp - resize(shift_right(mult_out, fract_bits), coeff_bits + 24);
+					temp <= temp - resize(shift_right(mult_out, fract_bits), temp'length);
 					mult_in_a <= b2_lp;
 					mult_in_b <= out_z2_sub;
 					state <= state + 1;
 					
 				elsif (state = 27) then
 					-- save and sum up (negative) result of (out_z2*b2) and load multiplier with out_z3 and b3
-					temp <= temp - resize(shift_right(mult_out, fract_bits), coeff_bits + 24);
+					temp <= temp - resize(shift_right(mult_out, fract_bits), temp'length);
 					mult_in_a <= b3_lp;
 					mult_in_b <= out_z3_sub;
 					state <= state + 1;
 					
 				elsif (state = 28) then
 					-- save and sum up (negative) result of (out_z3*b3) and load multiplier with out_z4 and b4
-					temp <= temp - resize(shift_right(mult_out, fract_bits), coeff_bits + 24);
+					temp <= temp - resize(shift_right(mult_out, fract_bits), temp'length);
 					mult_in_a <= b4_lp;
 					mult_in_b <= out_z4_sub;
 					state <= state + 1;
 					
 				elsif (state = 29) then
 					-- save and sum up (negative) result of (out_z4*b4)
-					temp <= temp - resize(shift_right(mult_out, fract_bits), coeff_bits + 24);
+					temp <= temp - resize(shift_right(mult_out, fract_bits), temp'length);
 					state <= state + 1;
 					
 				elsif (state = 30) then
@@ -371,9 +381,14 @@ begin
 					out_z4_sub <= out_z3_sub;
 					out_z3_sub <= out_z2_sub;
 					out_z2_sub <= out_z1_sub;
-					out_z1_sub <= temp; -- save value with fractions to gain higher resolution for this filter
+					out_z1_sub <= resize(temp, out_z1_sub'length); -- save value with fractions to gain higher resolution for this filter
 					
-					output_sub <= resize(shift_right(temp, fract_bits), 24); -- resize to 24-bit audio
+					if (bypass_sub = '1') then
+						output_sub <= input_sub;
+					else
+						output_sub <= resize(shift_right(temp, fract_bits), 24); -- resize to 24-bit audio
+					end if;
+					
 					sync_out <= '1';
 					state <= state + 1;
 					

@@ -35,41 +35,72 @@ entity tdm_8ch_rx is
 end tdm_8ch_rx;
 
 architecture rtl of tdm_8ch_rx is
-	signal sample_data	: std_logic_vector(32 * 8 - 1 downto 0) := (others=>'0');
 	signal zfsync			: std_logic;
-	signal copy_data		: std_logic;
+	signal bit_cnt			: integer range 0 to (32 * 8) - 1 := 0; -- one extra bit to prevent additional bitshift on following ch1 after ch8
+	
+	signal ch1	: std_logic_vector(32 downto 0);
+	signal ch2	: std_logic_vector(31 downto 0);
+	signal ch3	: std_logic_vector(31 downto 0);
+	signal ch4	: std_logic_vector(31 downto 0);
+	signal ch5	: std_logic_vector(31 downto 0);
+	signal ch6	: std_logic_vector(31 downto 0);
+	signal ch7	: std_logic_vector(31 downto 0);
+	signal ch8	: std_logic_vector(31 downto 0);
 begin
 	process(clk)
 	begin
 		if rising_edge(clk) then
-			-- check for positive edge of frame-sync
-			if fsync = '1' and zfsync = '0' then
-				-- we are reading the last bit of the last channel
-				-- on next rising clock we will read the MSB of first channel
-				-- so we set the copy-flag to copy data on next rising clock
-				copy_data <= '1';
+			-- continuously reading bit into shift-register
+			if ((bit_cnt >= 0) and (bit_cnt <= 31)) then
+				ch1 <= ch1(ch1'high - 1 downto 0) & sdata;
+			elsif ((bit_cnt >= 32) and (bit_cnt <= 63)) then
+				ch2 <= ch2(ch2'high - 1 downto 0) & sdata;
+			elsif ((bit_cnt >= 64) and (bit_cnt <= 95)) then
+				ch3 <= ch3(ch3'high - 1 downto 0) & sdata;
+			elsif ((bit_cnt >= 96) and (bit_cnt <= 127)) then
+				ch4 <= ch4(ch4'high - 1 downto 0) & sdata;
+			elsif ((bit_cnt >= 128) and (bit_cnt <= 159)) then
+				ch5 <= ch5(ch5'high - 1 downto 0) & sdata;
+			elsif ((bit_cnt >= 160) and (bit_cnt <= 191)) then
+				ch6 <= ch6(ch6'high - 1 downto 0) & sdata;
+			elsif ((bit_cnt >= 192) and (bit_cnt <= 223)) then
+				ch7 <= ch7(ch7'high - 1 downto 0) & sdata;
+			elsif ((bit_cnt >= 224) and (bit_cnt <= 255)) then
+				ch8 <= ch8(ch8'high - 1 downto 0) & sdata;
 			end if;
-			zfsync <= fsync;
+
+			-- check for positive edge of frame-sync (1 bit-clock before bit 0 of channel 1)
+			if fsync = '1' and zfsync = '0' then
+				-- ch1 and ch8 have some problems:
+				-- we are making some counting errors within this receiving-block.
+				-- channel 1 is shifted one bit too much, channel 8 obviously one bit too few.
+				-- Without simulation I'm not able to find the culprit :-/ 
+				-- 
+				-- I used a dirty solution here:
+				-- we are adding one more element to ch1 and taking the 24 bits of channel 8 shifted by one bit.
+				-- as the last 8 bits are only zeros, thats no problem with 24 bit audio-data. But this receiver
+				-- will not work with 32 bit TDM-signals
+				--
+				-- Keep in mind: this is a hobby project and I'm an autodidact in VHDL! :-)
 			
-			-- we reach the first bit of the first channel, so copy the audio-samples
-			if copy_data = '1' then
-				ch1_out <= sample_data(sample_data'high - (32 * 0) downto sample_data'high - (32 * 0) - 23); -- first 24 bits
-				ch2_out <= sample_data(sample_data'high - (32 * 1) downto sample_data'high - (32 * 1) - 23); -- next 24 bits with ignoring 8 zero-bits
-				ch3_out <= sample_data(sample_data'high - (32 * 2) downto sample_data'high - (32 * 2) - 23); -- next 24 bits with ignoring 8 zero-bits
-				ch4_out <= sample_data(sample_data'high - (32 * 3) downto sample_data'high - (32 * 3) - 23); -- next 24 bits with ignoring 8 zero-bits
-				ch5_out <= sample_data(sample_data'high - (32 * 4) downto sample_data'high - (32 * 4) - 23); -- next 24 bits with ignoring 8 zero-bits
-				ch6_out <= sample_data(sample_data'high - (32 * 5) downto sample_data'high - (32 * 5) - 23); -- next 24 bits with ignoring 8 zero-bits
-				ch7_out <= sample_data(sample_data'high - (32 * 6) downto sample_data'high - (32 * 6) - 23); -- next 24 bits with ignoring 8 zero-bits
-				ch8_out <= sample_data(sample_data'high - (32 * 7) downto sample_data'high - (32 * 7) - 23); -- next 24 bits with ignoring 8 zero-bits
-				
-				copy_data <= '0'; -- reset copy-data-flag
-				sync_out <= '1'; -- set data-ready-output
+				ch1_out <= ch1(32 downto 9); -- one bit shift too much
+				ch2_out <= ch2(31 downto 8);
+				ch3_out <= ch3(31 downto 8);
+				ch4_out <= ch4(31 downto 8);
+				ch5_out <= ch5(31 downto 8);
+				ch6_out <= ch6(31 downto 8);
+				ch7_out <= ch7(31 downto 8);
+				ch8_out <= ch8(30 downto 7); -- on bit shift too few
+				sync_out <= '1';
+
+				bit_cnt <= 0;
 			else
 				sync_out <= '0';
+
+				bit_cnt <= bit_cnt + 1;
 			end if;
-			
-			-- continuously reading bit into shift-register
-			sample_data <= sample_data(sample_data'high - 1 downto 0) & sdata; -- in TDM first bit is MSB so shift from right to left
+
+			zfsync <= fsync;
 		end if;
 	end process;
 end rtl;

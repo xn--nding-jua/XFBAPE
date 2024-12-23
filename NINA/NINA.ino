@@ -1,6 +1,6 @@
 /*
   X-f/bape MainCtrl for Arduino MKR Vidor4000 Device
-  v3.0.0 built on 29.11.2024
+  v3.1.0 built on 23.12.2024
   Infos: https://www.github.com/xn--nding-jua/xfbape
   Copyright (c) 2023-2024 Dr.-Ing. Christian Nöding
 

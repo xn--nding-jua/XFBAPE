@@ -1,8 +1,9 @@
 -- Compressor/Limiter Filter
--- (c) 2023-2024 Dr.-Ing. Christian Noeding
+-- (c) 2023 Dr.-Ing. Christian Noeding
 -- christian@noeding-online.de
 -- Released under GNU General Public License v3
 -- Source: https://www.github.com/xn--nding-jua/xfbape
+-- Original Source: https://github.com/YetAnotherElectronicsChannel/FPGA-Audio-IIR
 --
 -- This file contains a compressor/limiter that will set the output to a specific
 -- maximum gain-value depending on a specific maximum threshold.
@@ -11,6 +12,8 @@
 --
 -- It is same as compressor_stereo.vhd but with additional subwoofer-channel. The
 -- combined version saves some logic-elements as we are using a single divider
+
+-- Online-Calculation of Filter-Coefficients: https://www.earlevel.com/main/2021/09/02/biquad-calculator-v3
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -29,6 +32,7 @@ entity compressor_stereosub is
 		sample_r_in		:	in signed(bit_width - 1 downto 0) := (others=>'0');
 		sample_sub_in	:	in signed(bit_width - 1 downto 0) := (others=>'0');
 		sync_in			:	in std_logic := '0';
+		rst				:	in std_logic := '0';
 		
 		-- setup-input for left/right-compressor
 		threshold_lr	:	in unsigned(threshold_bit_width - 1 downto 0) := (others=>'0'); -- threshold with bitdepth of sample, that will be used to check the audio-level (between 0 and 8388608)
@@ -119,7 +123,7 @@ begin
 			clk => clk,
 			start => div_start,
 			dividend => div_dividend,
-			divisor => unsigned(sample_tmp), -- sample_tmp contains only the abs()-value of sample. So its OK to cast to unsigned without additional abs()
+			divisor => unsigned(sample_tmp), -- sample_tmp contains only the abs()-value of sample. So its OK to cast to unsigned
 			quotient => div_quotient,
 			remainder => open,
 			busy => div_busy
@@ -130,6 +134,24 @@ begin
 		variable effect_triggered_sub : std_logic := '0';
 	begin
 		if rising_edge(clk) then
+			if (rst = '1') then
+				-- reset compressor for left/right
+				effect_triggered_lr := '0';
+				gain_set_lr <= to_unsigned(255, gain_set_lr'length);
+				coeff_lr <= coeff_release_lr;
+				s_SM_Effect_lr <= s_Idle;
+				
+				-- reset compressor for subwoofer
+				effect_triggered_sub := '0';
+				gain_set_sub <= to_unsigned(255, gain_set_sub'length);
+				coeff_sub <= coeff_release_sub;
+				s_SM_Effect_sub <= s_Idle;
+				
+				-- reset outputs and statemachine
+				sync_out <= '0';
+				s_SM_Main <= 0;
+			end if;
+		
 			if (sync_in = '1' and s_SM_Main = 0) then
 				-- we are receiving a new sample
 				

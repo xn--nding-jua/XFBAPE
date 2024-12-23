@@ -4,7 +4,7 @@ editor if you plan to continue editing the block that represents it in
 the Block Editor! File corruption is VERY likely to occur.
 */
 /*
-Copyright (C) 2023  Intel Corporation. All rights reserved.
+Copyright (C) 2022  Intel Corporation. All rights reserved.
 Your use of Intel Corporation's design tools, logic functions 
 and other software and tools, and any partner logic 
 functions, and any output files from any of the foregoing 
@@ -21,9 +21,9 @@ https://fpgasoftware.intel.com/eula.
 */
 (header "symbol" (version "1.1"))
 (symbol
-	(rect 16 16 304 224)
+	(rect 16 16 304 256)
 	(text "filter_iir_stereo" (rect 5 0 64 12)(font "Arial" ))
-	(text "inst" (rect 8 192 20 204)(font "Arial" ))
+	(text "inst" (rect 8 224 20 236)(font "Arial" ))
 	(port
 		(pt 0 32)
 		(input)
@@ -34,15 +34,15 @@ https://fpgasoftware.intel.com/eula.
 	(port
 		(pt 0 48)
 		(input)
-		(text "iir_in_l[(bit_width-1)..0]" (rect 0 0 86 12)(font "Arial" ))
-		(text "iir_in_l[(bit_width-1)..0]" (rect 21 43 107 55)(font "Arial" ))
+		(text "input_l[(bit_width-1)..0]" (rect 0 0 86 12)(font "Arial" ))
+		(text "input_l[(bit_width-1)..0]" (rect 21 43 107 55)(font "Arial" ))
 		(line (pt 0 48)(pt 16 48)(line_width 3))
 	)
 	(port
 		(pt 0 64)
 		(input)
-		(text "iir_in_r[(bit_width-1)..0]" (rect 0 0 88 12)(font "Arial" ))
-		(text "iir_in_r[(bit_width-1)..0]" (rect 21 59 109 71)(font "Arial" ))
+		(text "input_r[(bit_width-1)..0]" (rect 0 0 88 12)(font "Arial" ))
+		(text "input_r[(bit_width-1)..0]" (rect 21 59 109 71)(font "Arial" ))
 		(line (pt 0 64)(pt 16 64)(line_width 3))
 	)
 	(port
@@ -62,50 +62,57 @@ https://fpgasoftware.intel.com/eula.
 	(port
 		(pt 0 112)
 		(input)
-		(text "a0[(coeff_bits-1)..0]" (rect 0 0 77 12)(font "Arial" ))
-		(text "a0[(coeff_bits-1)..0]" (rect 21 107 98 119)(font "Arial" ))
-		(line (pt 0 112)(pt 16 112)(line_width 3))
+		(text "bypass" (rect 0 0 29 12)(font "Arial" ))
+		(text "bypass" (rect 21 107 50 119)(font "Arial" ))
+		(line (pt 0 112)(pt 16 112)(line_width 1))
 	)
 	(port
 		(pt 0 128)
 		(input)
-		(text "a1[(coeff_bits-1)..0]" (rect 0 0 76 12)(font "Arial" ))
-		(text "a1[(coeff_bits-1)..0]" (rect 21 123 97 135)(font "Arial" ))
+		(text "a0[(coeff_bits-1)..0]" (rect 0 0 77 12)(font "Arial" ))
+		(text "a0[(coeff_bits-1)..0]" (rect 21 123 98 135)(font "Arial" ))
 		(line (pt 0 128)(pt 16 128)(line_width 3))
 	)
 	(port
 		(pt 0 144)
 		(input)
-		(text "a2[(coeff_bits-1)..0]" (rect 0 0 77 12)(font "Arial" ))
-		(text "a2[(coeff_bits-1)..0]" (rect 21 139 98 151)(font "Arial" ))
+		(text "a1[(coeff_bits-1)..0]" (rect 0 0 76 12)(font "Arial" ))
+		(text "a1[(coeff_bits-1)..0]" (rect 21 139 97 151)(font "Arial" ))
 		(line (pt 0 144)(pt 16 144)(line_width 3))
 	)
 	(port
 		(pt 0 160)
 		(input)
-		(text "b1[(coeff_bits-1)..0]" (rect 0 0 76 12)(font "Arial" ))
-		(text "b1[(coeff_bits-1)..0]" (rect 21 155 97 167)(font "Arial" ))
+		(text "a2[(coeff_bits-1)..0]" (rect 0 0 77 12)(font "Arial" ))
+		(text "a2[(coeff_bits-1)..0]" (rect 21 155 98 167)(font "Arial" ))
 		(line (pt 0 160)(pt 16 160)(line_width 3))
 	)
 	(port
 		(pt 0 176)
 		(input)
-		(text "b2[(coeff_bits-1)..0]" (rect 0 0 77 12)(font "Arial" ))
-		(text "b2[(coeff_bits-1)..0]" (rect 21 171 98 183)(font "Arial" ))
+		(text "b1[(coeff_bits-1)..0]" (rect 0 0 76 12)(font "Arial" ))
+		(text "b1[(coeff_bits-1)..0]" (rect 21 171 97 183)(font "Arial" ))
 		(line (pt 0 176)(pt 16 176)(line_width 3))
+	)
+	(port
+		(pt 0 192)
+		(input)
+		(text "b2[(coeff_bits-1)..0]" (rect 0 0 77 12)(font "Arial" ))
+		(text "b2[(coeff_bits-1)..0]" (rect 21 187 98 199)(font "Arial" ))
+		(line (pt 0 192)(pt 16 192)(line_width 3))
 	)
 	(port
 		(pt 288 32)
 		(output)
-		(text "iir_out_l[(bit_width-1)..0]" (rect 0 0 92 12)(font "Arial" ))
-		(text "iir_out_l[(bit_width-1)..0]" (rect 175 27 267 39)(font "Arial" ))
+		(text "output_l[(bit_width-1)..0]" (rect 0 0 92 12)(font "Arial" ))
+		(text "output_l[(bit_width-1)..0]" (rect 175 27 267 39)(font "Arial" ))
 		(line (pt 288 32)(pt 272 32)(line_width 3))
 	)
 	(port
 		(pt 288 48)
 		(output)
-		(text "iir_out_r[(bit_width-1)..0]" (rect 0 0 94 12)(font "Arial" ))
-		(text "iir_out_r[(bit_width-1)..0]" (rect 173 43 267 55)(font "Arial" ))
+		(text "output_r[(bit_width-1)..0]" (rect 0 0 94 12)(font "Arial" ))
+		(text "output_r[(bit_width-1)..0]" (rect 173 43 267 55)(font "Arial" ))
 		(line (pt 288 48)(pt 272 48)(line_width 3))
 	)
 	(port
@@ -122,16 +129,16 @@ https://fpgasoftware.intel.com/eula.
 		(type "PARAMETER_SIGNED_DEC")	)
 	(parameter
 		"coeff_bits"
-		"32"
+		"40"
 		""
 		(type "PARAMETER_SIGNED_DEC")	)
 	(parameter
 		"fract_bits"
-		"30"
+		"35"
 		""
 		(type "PARAMETER_SIGNED_DEC")	)
 	(drawing
-		(rectangle (rect 16 16 272 192)(line_width 1))
+		(rectangle (rect 16 16 272 224)(line_width 1))
 	)
 	(annotation_block (parameter)(rect 304 -64 404 16))
 )

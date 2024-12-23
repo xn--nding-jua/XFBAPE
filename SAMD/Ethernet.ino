@@ -2,6 +2,10 @@ void initEthernet() {
   Ethernet.init(7);
   Ethernet.begin(config.mac, eeprom_config.ip);
   
+  // configure ethernet-connection
+  Ethernet.setRetransmissionCount(0); // default 8
+  Ethernet.setRetransmissionTimeout(0); // default value 2000 = 200ms
+
   if (Ethernet.hardwareStatus() == EthernetNoHardware) {
     // Serial.println("Ethernet shield was not found.  Sorry, can't run without hardware. :(");
     while (true) {

@@ -1,4 +1,4 @@
-const char* versionstring = "v3.0.0";
+const char* versionstring = "v3.1.0";
 const char compile_date[] = __DATE__ " " __TIME__;
 
 String hostname = "xfbape";
@@ -334,6 +334,9 @@ struct {
   // crossover
   sLR24 LR24_LP_Sub; // <=100Hz
   sLR24 LR24_HP_LR; // >=100Hz
+
+  uint16_t resetFlags = 0; // b7..b4=free, b3=Upsampler, b2=Crossover, b1=Compressor, b0=EQs
+  uint16_t bypassFlags = 0; // b7=Crossover LR, b6=Crossover Sub, b5=free, b4..b0=eq5..eq1
 
   uint16_t adcGain[MAX_ADCS];
   sNoisegate gates[MAX_NOISEGATES];
