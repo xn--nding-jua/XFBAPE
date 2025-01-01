@@ -69,11 +69,11 @@ void httpHandleJson() {
 
   // Main-Volume-Information
   message += (F("\",\"volume_main\":"));
-  message += audiomixer.mainVolume;
+  message += audiomixer.volumeMain;
   message += (F(",\"balance_main\":"));
-  message += audiomixer.mainBalance;
+  message += audiomixer.balanceMain;
   message += (F(",\"volume_sub\":"));
-  message += audiomixer.mainVolumeSub;
+  message += audiomixer.volumeSub;
 
   // Player-Data
   message += (F(",\"player_isplaying\":"));
@@ -109,23 +109,23 @@ void httpHandleJson() {
   // Audiovolumes
   for (int i=0; i<MAX_AUDIO_CHANNELS; i++) {
     message += ",\"volume_ch" + String(i+1) + "\":";
-    message += audiomixer.chVolume[i];
+    message += audiomixer.volumeCh[i];
     message += ",\"balance_ch" + String(i+1) + "\":";
-    message += audiomixer.chBalance[i];
+    message += audiomixer.balanceCh[i];
   }
 
   message += ",\"volume_sd\":";
-  message += audiomixer.cardVolume;
+  message += audiomixer.volumeCard;
   message += ",\"volume_bt\":";
-  message += audiomixer.btVolume;
+  message += audiomixer.volumeBt;
 
   // VU-meter-values
   message += ",\"vumeter_left\":";
-  message += vu_meter_value[0];
+  message += audiomixer.vuMeterMain[0];
   message += ",\"vumeter_right\":";
-  message += vu_meter_value[1];
+  message += audiomixer.vuMeterMain[1];
   message += ",\"vumeter_sub\":";
-  message += vu_meter_value[2];
+  message += audiomixer.vuMeterMain[2];
 
   // channel-clipping
   message += ",\"clip_left\":";

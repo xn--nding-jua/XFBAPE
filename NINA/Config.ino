@@ -69,14 +69,14 @@ bool configWrite(String configFileName) {
     //configFile.println("player:file@" + currentAudioFile); // uncomment this line to load the last audiofile on next start
     
     // audio-settings
-    configFile.println(String("mixer:volume:main@" + String(audiomixer.mainVolume, 2)).c_str());
-    configFile.println("mixer:balance:main@" + String(audiomixer.mainBalance));
-    configFile.println("mixer:volume:sub@" + String(audiomixer.mainVolumeSub, 2));
-    configFile.println("mixer:volume:sd@" + String(audiomixer.cardVolume, 2));
-    configFile.println("mixer:volume:bt@" + String(audiomixer.btVolume, 2));
+    configFile.println(String("mixer:volume:main@" + String(audiomixer.volumeMain, 2)).c_str());
+    configFile.println("mixer:balance:main@" + String(audiomixer.balanceMain));
+    configFile.println("mixer:volume:sub@" + String(audiomixer.volumeMain, 2));
+    configFile.println("mixer:volume:sd@" + String(audiomixer.volumeCard, 2));
+    configFile.println("mixer:volume:bt@" + String(audiomixer.volumeBt, 2));
     for (int i=1; i<=MAX_AUDIO_CHANNELS; i++) {
-      configFile.println("mixer:volume:ch" + String(i) + "@" + String(audiomixer.chVolume[i-1], 2));
-      configFile.println("mixer:balance:ch" + String(i) + "@" + String(audiomixer.chBalance[i-1]));
+      configFile.println("mixer:volume:ch" + String(i) + "@" + String(audiomixer.volumeCh[i-1], 2));
+      configFile.println("mixer:balance:ch" + String(i) + "@" + String(audiomixer.balanceCh[i-1]));
     }
 
     for (int i=1; i<=MAX_EQUALIZERS; i++) {

@@ -66,14 +66,13 @@ String executeCommand(String Command) {
       playerinfo.volumeMain = split(ParameterString, ',', 4).toFloat();
       playerinfo.balanceMain = split(ParameterString, ',', 5).toInt();
       playerinfo.volumeSub = split(ParameterString, ',', 6).toFloat();
-      playerinfo.volumeAnalog = split(ParameterString, ',', 7).toFloat();
-      playerinfo.volumeCard = split(ParameterString, ',', 8).toFloat();
-      playerinfo.frequencyLowPass = split(ParameterString, ',', 9).toFloat();
-      playerinfo.frequencyHighPass = split(ParameterString, ',', 10).toFloat();
-      playerinfo.adcGain = split(ParameterString, ',', 11).toInt();
-      playerinfo.gateThreshold = split(ParameterString, ',', 12).toFloat();
-      playerinfo.audioStatusInfo = split(ParameterString, ',', 13).toInt(); // contains infos about noisegate, clip (L/R/S) and compression (LR/S)
-      TOC = split(ParameterString, ',', 14);
+      playerinfo.volumeCard = split(ParameterString, ',', 7).toFloat();
+      playerinfo.volumeBt = split(ParameterString, ',', 8).toFloat();
+      playerinfo.audioStatusInfo = split(ParameterString, ',', 9).toInt(); // contains infos about noisegate, clip (L/R/S) and compression (LR/S)
+      TOC = split(ParameterString, ',', 10);
+      // receive volumeCh[] as parameters 11 to 43 as float-values
+      // receive balance[] as parameter 44 as concatenated HEX-Strings
+      // receive vuMeterCh[] as parameter 45 as concatenated HEX-Strings
       tocEntries = getNumberOfTocEntries('|');
 
       // send time to X32 when progress is above 0

@@ -116,6 +116,21 @@ void arrayToString(uint8_t array[], unsigned int len, char buffer[])
   buffer[len * 2] = '\0';
 }
 
+String intToHex(uint32_t val, uint8_t outputLength) {
+  String hexString;
+  for (int8_t shift = outputLength * sizeof(val) - 4; shift >= 0; shift -= 4) {
+    uint8_t hexDigit = (val >> shift) & 0xF;
+    hexString += String(hexDigit, HEX);
+  }
+  return hexString;
+}
+
+uint32_t hexToInt(String hexString){
+  char c[hexString.length() + 1];
+  hexString.toCharArray(c, hexString.length() + 1);
+  return strtol(c, NULL, 16); 
+}
+
 // clear serial input-buffer
 void serialFlush() {
   while (Serial.available()) {

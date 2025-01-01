@@ -24,7 +24,7 @@
 
   Used libraries:
   =====================================================================
-  - ESP32 Board-Libraries v3.0.0 (https://dl.espressif.com/dl/package_esp32_index.json)
+  - ESP32 Board-Libraries v3.0.7 (https://dl.espressif.com/dl/package_esp32_index.json)
   - SD-Card-Playback: ESP32-audioI2S v2.0.0 (https://github.com/schreibfaul1/ESP32-audioI2S)
   - Ticker by Stefan Staub
   - PubSubClient by Nick O'Leary

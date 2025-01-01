@@ -137,14 +137,10 @@ struct {
   float volumeMain;
   uint8_t balanceMain;
   float volumeSub;
-  float volumeCh[32]; // currently there is no communication between NINA and SAMD for this value
-  float volumeAnalog;
   float volumeCard;
-  float frequencyLowPass;
-  float frequencyHighPass;
-  uint8_t adcGain;
-  float gateThreshold;
-  float limitThreshold;
+  float volumeBt;
+  float volumeCh[32];
+  uint8_t vuMeterCh[32];
   uint8_t audioStatusInfo;
 
   String MainCtrlVersion;

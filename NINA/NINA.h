@@ -203,9 +203,9 @@ uint8_t compStatusInfo = 0; // info about individual gates (at the moment we are
 uint8_t clipStatusInfo = 0; // info about individual gates (at the moment we are using only 3 clip-channels for left, right and sub)
 uint8_t audioStatusInfo = 0; // most important infos in one byte for SAMD21
 bool debugRedirectFpgaSerialToUSB = false;
-#define SCI_PAYLOAD_LEN 7 // 7 bytes as payload
-#define SCI_RINGBUF_LEN 15
-#define SCI_CMD_LEN (SCI_PAYLOAD_LEN + 4) // payload + "A", "C0", "C1", "E"
+#define SCI_PAYLOAD_LEN 39 // 39 bytes as payload
+#define SCI_RINGBUF_LEN (SCI_PAYLOAD_LEN * 2 - 1)
+#define SCI_CMD_LEN (SCI_PAYLOAD_LEN + 4) // "A" + payload, "C0", "C1", "E"
 uint8_t fpgaRingBuffer[SCI_RINGBUF_LEN];
 uint16_t fpgaRingBufferPointer = 0;
 
@@ -213,7 +213,6 @@ uint16_t fpgaRingBufferPointer = 0;
 #define vumeter_halfLife 0.25f // seconds
 #define vumeter_sampleRate 20.0f // effective samplerate for VuMeter (FPGA sends 20 messages per second)
 float vumeter_decay = pow(0.5f, 1.0f / (vumeter_halfLife * vumeter_sampleRate));
-float vu_meter_value[3]; // vu-meter for left, right and sub
 
 // define own datatypes
 typedef union 
@@ -319,14 +318,18 @@ struct sCompressor {
 
 // struct for audiomixer
 struct {
-  float mainVolume = -20.0; // dBfs
-  uint8_t mainBalance = 50; // center L/R
-  float mainVolumeSub = -20.0; // dBfs
-  float cardVolume = -20.0; // dBfs
-  float btVolume = -20.0; // dBfs
+  // main-control
+  float volumeMain = -20.0; // dBfs
+  uint8_t balanceMain = 50; // center L/R
+  float volumeSub = -20.0; // dBfs
+  float volumeCard = -20.0; // dBfs
+  float volumeBt = -20.0; // dBfs
+  float vuMeterMain[3]; // vu-meter for left, right and sub for Webserver
 
-  float chVolume[MAX_AUDIO_CHANNELS];
-  uint8_t chBalance[MAX_AUDIO_CHANNELS];
+  // individual channels for SAMD (X-Touch-Control and X32-DAW-Controller)
+  float volumeCh[MAX_AUDIO_CHANNELS];
+  uint8_t balanceCh[MAX_AUDIO_CHANNELS];
+  uint8_t vuMeterCh[MAX_AUDIO_CHANNELS];
 
   // equalizers
   sPEQ peq[MAX_EQUALIZERS];

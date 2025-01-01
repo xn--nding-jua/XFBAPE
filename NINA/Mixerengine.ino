@@ -1,19 +1,19 @@
 void initAudiomixer() {
   // set main-volume for left, right and sub to 100%
-  audiomixer.mainVolume = -20.0; // set to -20dBfs
-  audiomixer.mainBalance = 50; // set to center
-  audiomixer.mainVolumeSub = -20.0; // set to -20dBfs
-  audiomixer.cardVolume = 0.0; // set to 0dBfs
-  audiomixer.btVolume = 0.0; // set to 0dBfs
+  audiomixer.volumeMain = 0.0; // set to -20dBfs
+  audiomixer.balanceMain = 50; // set to center
+  audiomixer.volumeSub = 0.0; // set to -20dBfs
+  audiomixer.volumeCard = 0.0; // set to 0dBfs
+  audiomixer.volumeBt = 0.0; // set to 0dBfs
   sendVolumeToFPGA(0); // send main to FPGA
 
   // set individual channels to 100% and left/right
   uint8_t i;
   for (i=0; i<MAX_AUDIO_CHANNELS; i++) {
-    audiomixer.chVolume[i] = -48; // set channel to 0% = -48dBfs
+    audiomixer.volumeCh[i] = -48; // set channel to 0% = -48dBfs
 	
     // pan channels 1..32 to center
-    audiomixer.chBalance[i] = 50; // set to center
+    audiomixer.balanceCh[i] = 50; // set to center
 	
     sendVolumeToFPGA(i+1); // send values to FPGA
   }
@@ -64,9 +64,9 @@ void sendVolumeToFPGA(uint8_t channel) {
     // main-channels have only left, right and sub, no balance
 
     // convert dBfs-values into byte-value. -140dBfs = 0, -72dBfs = 0.5x, 0dBfs = 1x, 6dBfs = 2x
-    volume_left = (pow(10, audiomixer.mainVolume/20.0f) * 128.0f) * limitMax((100 - audiomixer.mainBalance) * 2, 100) / 100.0f;
-    volume_right = (pow(10, audiomixer.mainVolume/20.0f) * 128.0f) * limitMax(audiomixer.mainBalance * 2, 100) / 100.0f;
-    volume_sub = (pow(10, audiomixer.mainVolumeSub/20.0f) * 128.0f);
+    volume_left = (pow(10, audiomixer.volumeMain/20.0f) * 128.0f) * limitMax((100 - audiomixer.balanceMain) * 2, 100) / 100.0f;
+    volume_right = (pow(10, audiomixer.volumeMain/20.0f) * 128.0f) * limitMax(audiomixer.balanceMain * 2, 100) / 100.0f;
+    volume_sub = (pow(10, audiomixer.volumeSub/20.0f) * 128.0f);
 
     // send data to FPGA
     fpga_data.u32[0] = trunc(volume_left);
@@ -79,8 +79,8 @@ void sendVolumeToFPGA(uint8_t channel) {
     // each channel has two audio-volumes: left and right, so we have to send 2x the values that we have channels
 
     // convert dBfs-values into byte-value
-    volume_left = (pow(10, audiomixer.chVolume[channel - 1]/20.0f) * 128.0f) * limitMax((100 - audiomixer.chBalance[channel - 1]) * 2, 100) / 100.0f;
-    volume_right = (pow(10, audiomixer.chVolume[channel - 1]/20.0f) * 128.0f) * limitMax(audiomixer.chBalance[channel - 1] * 2, 100) / 100.0f;
+    volume_left = (pow(10, audiomixer.volumeCh[channel - 1]/20.0f) * 128.0f) * limitMax((100 - audiomixer.balanceCh[channel - 1]) * 2, 100) / 100.0f;
+    volume_right = (pow(10, audiomixer.volumeCh[channel - 1]/20.0f) * 128.0f) * limitMax(audiomixer.balanceCh[channel - 1] * 2, 100) / 100.0f;
 
     fpga_data.u32[0] = trunc(volume_left);
     sendDataToFPGA(FPGA_IDX_CH_VOL + (channel - 1) * 2, &fpga_data); // send data for this channel to main left

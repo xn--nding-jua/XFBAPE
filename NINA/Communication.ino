@@ -139,18 +139,33 @@ void fpgaSearchCmd() {
           audioStatusInfo += 32;
         }
 
-        // newData[4] ... newData[5] contain VU-meter information for left, right and subwoofer
+        // newData[4] ... newData[6] contain VU-meter information for left, right and subwoofer
         for (int i=0; i<3; i++) {
           // we are taking only larger values than the current value
           uint8_t new_value = log2(newData[i+4] + 1) * (255/8);
 
-          if (new_value > vu_meter_value[i]) {
+          if (new_value > audiomixer.vuMeterMain[i]) {
             // convert bit-values to a linear scale
-            vu_meter_value[i] = new_value; // direct update
-            //vu_meter_value[i] = vu_meter_value[i] + (new_value - vu_meter_value[i])*0.2f; // slow update -> smoother transition
+            audiomixer.vuMeterMain[i] = new_value; // direct update
+            //audiomixer.vuMeterMain[i] = audiomixer.vuMeterMain[i] + (new_value - audiomixer.vuMeterMain[i])*0.2f; // slow update -> smoother transition
           }else{
             // decay the vu-meter with the given slope
-            vu_meter_value[i] = vu_meter_value[i] * vumeter_decay;
+            audiomixer.vuMeterMain[i] = audiomixer.vuMeterMain[i] * vumeter_decay;
+          }
+        }
+
+        // newData[7] ... newData[38] contain VU-meter information for ch1 .. ch32
+        for (int i=0; i<32; i++) {
+          // we are taking only larger values than the current value
+          uint8_t new_value = log2(newData[i+7] + 1) * (255/8);
+
+          if (new_value > audiomixer.vuMeterCh[i]) {
+            // convert bit-values to a linear scale
+            audiomixer.vuMeterCh[i] = new_value; // direct update
+            //audiomixer.vuMeterCh[i] = audiomixer.vuMeterCh[i] + (new_value - audiomixer.vuMeterCh[i])*0.2f; // slow update -> smoother transition
+          }else{
+            // decay the vu-meter with the given slope
+            audiomixer.vuMeterCh[i] = audiomixer.vuMeterCh[i] * vumeter_decay;
           }
         }
       }else{
@@ -294,9 +309,9 @@ void handleFPGACommunication() {
       #endif
       mqttclient.publish("fbape/status/player/currentfile", currentAudioFile.c_str());
 
-      mqttclient.publish("fbape/status/mixer/vumeter/left", String(vu_meter_value[0]).c_str());
-      mqttclient.publish("fbape/status/mixer/vumeter/right", String(vu_meter_value[1]).c_str());
-      mqttclient.publish("fbape/status/mixer/vumeter/sub", String(vu_meter_value[2]).c_str());
+      mqttclient.publish("fbape/status/mixer/vumeter/left", String(audiomixer.vuMeterMain[0]).c_str());
+      mqttclient.publish("fbape/status/mixer/vumeter/right", String(audiomixer.vuMeterMain[1]).c_str());
+      mqttclient.publish("fbape/status/mixer/vumeter/sub", String(audiomixer.vuMeterMain[2]).c_str());
 
       mqttclient.publish("fbape/status/mixer/volume/main", String(audiomixer.mainVolume).c_str());
       mqttclient.publish("fbape/status/mixer/volume/sub", String(audiomixer.mainVolumeSub).c_str());
@@ -544,17 +559,17 @@ String executeCommand(String Command) {
     #endif
     }else if (Command.indexOf("mixer:volume:main") > -1){
       // received command "mixer:volume:main@value"
-      audiomixer.mainVolume = Command.substring(Command.indexOf("@")+1).toFloat();
+      audiomixer.volumeMain = Command.substring(Command.indexOf("@")+1).toFloat();
       sendVolumeToFPGA(0); // update main-channel
       Answer = "OK";
     }else if (Command.indexOf("mixer:balance:main") > -1){
       // received command "mixer:balance:main@value"
-      audiomixer.mainBalance = Command.substring(Command.indexOf("@")+1).toInt();
+      audiomixer.balanceMain = Command.substring(Command.indexOf("@")+1).toInt();
       sendVolumeToFPGA(0); // update main-channel
       Answer = "OK";
     }else if (Command.indexOf("mixer:volume:sub") > -1){
       // received command "mixer:volume:sub@value"
-      audiomixer.mainVolumeSub = Command.substring(Command.indexOf("@")+1).toFloat();
+      audiomixer.volumeSub = Command.substring(Command.indexOf("@")+1).toFloat();
       sendVolumeToFPGA(0); // update main-channel
       Answer = "OK";
     }else if (Command.indexOf("mixer:volume:ch") > -1){
@@ -563,7 +578,7 @@ String executeCommand(String Command) {
       float value = Command.substring(Command.indexOf("@")+1).toFloat();
 
       if ((channel>=1) && (channel<=MAX_AUDIO_CHANNELS) && (value>=-140) && (value<=6)) {
-        audiomixer.chVolume[channel-1] = value;
+        audiomixer.volumeCh[channel-1] = value;
         sendVolumeToFPGA(channel);
         Answer = "OK";
       }else{
@@ -574,14 +589,14 @@ String executeCommand(String Command) {
       float value = Command.substring(Command.indexOf("@")+1).toFloat();
 
       // we are setting volume for SD and bluetooth as stereo-pair at commands 
-	    audiomixer.cardVolume = value;
+	    audiomixer.volumeCard = value;
       sendStereoVolumeToFPGA(0, Command.substring(Command.indexOf("@")+1).toFloat());
       Answer = "OK";
     }else if (Command.indexOf("mixer:volume:bt") > -1){
       // received command "mixer:volume:bt@value"
       float value = Command.substring(Command.indexOf("@")+1).toFloat();
 
-	    audiomixer.btVolume = value;
+	    audiomixer.volumeBt = value;
       sendStereoVolumeToFPGA(1, Command.substring(Command.indexOf("@")+1).toFloat());
       Answer = "OK";
     }else if (Command.indexOf("mixer:balance:ch") > -1){
@@ -590,7 +605,7 @@ String executeCommand(String Command) {
       uint8_t value = Command.substring(Command.indexOf("@")+1).toInt();
 
       if ((channel>=1) && (channel<=MAX_AUDIO_CHANNELS) && (value>=0) && (value<=100)) {
-        audiomixer.chBalance[channel-1] = value;
+        audiomixer.balanceCh[channel-1] = value;
         sendVolumeToFPGA(channel);
         Answer = "OK";
       }else{
@@ -941,23 +956,39 @@ void updateSAMD() {
   }
 
   // send updatepacket
-  Serial.println("samd:update:info@" + currentAudioFile + "," +
+  String txString;
+  txString = "samd:update:info@" + currentAudioFile + "," +
 	String(audioTime) + "," +
 	String(audioDuration) + "," +
 	audioProgress_s + "," +
-	String(audiomixer.mainVolume, 1) + "," +
-	String(audiomixer.mainBalance) + "," +
-	String(audiomixer.mainVolumeSub, 1) + "," +
-	String(audiomixer.cardVolume, 1) + "," +
-	String(audiomixer.btVolume, 1) + "," +
-	String(audiomixer.LR24_LP_Sub.fc, 1) + "," +
-	String(audiomixer.LR24_HP_LR.fc, 1) + "," +
-	String(audiomixer.adcGain[0]) + "," +
-	String(audiomixer.gates[0].threshold, 1) + "," +
+	String(audiomixer.volumeMain, 1) + "," +
+	String(audiomixer.balanceMain) + "," +
+	String(audiomixer.volumeSub, 1) + "," +
+	String(audiomixer.volumeCard, 1) + "," +
+	String(audiomixer.volumeBt, 1) + "," +
 	String(audioStatusInfo) + "," +
-	SD_getTOC(2) + "|," + // request TOC in PSV-format. We need a trailing "|" so that the split() function in SAMD can work correctly
-	"E"
-	);
+	SD_getTOC(2) + "|,"; // request TOC in PSV-format. We need a trailing "|" so that the split() function in SAMD can work correctly
+
+  /*
+  // send 32 volumeCh[] values as Float-Strings
+  for (uint8_t i=0; i<32; i++) {
+    txString = txString + String(audiomixer.volumeCh[i], 1) + ",";
+  }
+  // send 32 balanceCh[] values as concatenated HEX-STRINGs
+  for (uint8_t i=0; i<32; i++) {
+    txString = txString + intToHex(audiomixer.balanceCh[i], 2);
+  }
+  txString = txString + ",";
+  // send 32 vuMeterCh[] values as concatenated HEX-STRINGs
+  for (uint8_t i=0; i<32; i++) {
+    txString = txString + intToHex(audiomixer.vuMeterCh[i], 2);
+  }
+  txString = txString + ",";
+  */
+
+	txString = txString + "E"
+
+  Serial.println(txString);
 }
 
 void setX32state(bool state) {
