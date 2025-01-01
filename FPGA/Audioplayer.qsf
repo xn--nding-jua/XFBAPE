@@ -204,8 +204,8 @@ set_global_assignment -name VHDL_FILE i2s_rx.vhd
 set_global_assignment -name VHDL_FILE spdif_transmitter.vhd
 set_global_assignment -name VHDL_FILE aes3rx.vhd
 set_global_assignment -name VHDL_FILE pll_1.vhd
-set_global_assignment -name VHDL_FILE RS232_Interface.vhd
-set_global_assignment -name VHDL_FILE RS232_Decoder.vhdl
+set_global_assignment -name VHDL_FILE rs232_Interface.vhd
+set_global_assignment -name VHDL_FILE rs232_Decoder.vhd
 set_global_assignment -name BDF_FILE Audioplayer.bdf
 set_global_assignment -name SDC_FILE Audioplayer.sdc
 set_global_assignment -name QIP_FILE pll_2.qip

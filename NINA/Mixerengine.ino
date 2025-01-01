@@ -49,7 +49,9 @@ void sendStereoVolumeToFPGA(uint8_t channel, float volume) {
   sendDataToFPGA(FPGA_IDX_MAIN_VOL+67+channel, &fpga_data);
 }
 
-void sendVolumeToFPGA(uint8_t channel) {
+void sendVolumeToFPGA(int8_t channel) {
+  // negative values means we mute this specific channel. With int8_t we can still address 127 channels. If you need more, you have to change to int16_t
+
   // send volume for left and right for desired channel
 
   data_64b fpga_data;
@@ -75,9 +77,10 @@ void sendVolumeToFPGA(uint8_t channel) {
     sendDataToFPGA(FPGA_IDX_MAIN_VOL+1, &fpga_data);
     fpga_data.u32[0] = trunc(volume_sub);
     sendDataToFPGA(FPGA_IDX_MAIN_VOL+2, &fpga_data);
-  }else{
-    // each channel has two audio-volumes: left and right, so we have to send 2x the values that we have channels
+  }else if (channel > 0) {
+    // send regular volume to FPGA
 
+    // each channel has two audio-volumes: left and right, so we have to send 2x the values that we have channels
     // convert dBfs-values into byte-value
     volume_left = (pow(10, audiomixer.volumeCh[channel - 1]/20.0f) * 128.0f) * limitMax((100 - audiomixer.balanceCh[channel - 1]) * 2, 100) / 100.0f;
     volume_right = (pow(10, audiomixer.volumeCh[channel - 1]/20.0f) * 128.0f) * limitMax(audiomixer.balanceCh[channel - 1] * 2, 100) / 100.0f;
@@ -85,6 +88,12 @@ void sendVolumeToFPGA(uint8_t channel) {
     fpga_data.u32[0] = trunc(volume_left);
     sendDataToFPGA(FPGA_IDX_CH_VOL + (channel - 1) * 2, &fpga_data); // send data for this channel to main left
     fpga_data.u32[0] = trunc(volume_right);
+    sendDataToFPGA(FPGA_IDX_CH_VOL + (channel - 1) * 2 + 1, &fpga_data); // send data for this channel to main right
+  }else{
+    // mute this specific channel without changing the volume-information in the fpga
+    fpga_data.u32[0] = 0;
+    sendDataToFPGA(FPGA_IDX_CH_VOL + (channel - 1) * 2, &fpga_data); // send data for this channel to main left
+    fpga_data.u32[0] = 0;
     sendDataToFPGA(FPGA_IDX_CH_VOL + (channel - 1) * 2 + 1, &fpga_data); // send data for this channel to main right
   }
 }

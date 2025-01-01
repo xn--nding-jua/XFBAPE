@@ -115,7 +115,8 @@ void setup() {
   ledcAttach(LED_BLUE, 2000, 8); // IO-pin, frequency in Hz, Resolution in Bit
 
   // init communication with SAMD21/USB
-  Serial.begin(115200, SERIAL_8N1, 3, 1, false, 1000); // BaudRate, Config, RxPin, TxPin, Invert, TimeoutMs, rxfifo_full_thrhd
+  // set to maximum UART-speed of SAMD21: f_baud <= 48MHz/16 = 3 Mbps
+  Serial.begin(3000000, SERIAL_8N1, 3, 1, false, 1000); // BaudRate, Config, RxPin, TxPin, Invert, TimeoutMs, rxfifo_full_thrhd
 
   // init communication with FPGA
   Serial1.begin(4000000, SERIAL_8N1, 22, 27, false, 1000); // BaudRate, Config, RxPin, TxPin, Invert, TimeoutMs, rxfifo_full_thrhd

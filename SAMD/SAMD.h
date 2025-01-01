@@ -140,6 +140,7 @@ struct {
   float volumeCard;
   float volumeBt;
   float volumeCh[32];
+  uint8_t balanceCh[32];
   uint8_t vuMeterCh[32];
   uint8_t audioStatusInfo;
 
@@ -164,11 +165,12 @@ uint32_t refreshCounter = 0;
 
   struct sMackieMCU_Channel{
     uint16_t faderPosition = 0; // 0...16383
-    uint8_t encoderValue = 128; // 0..255 ->0..12
-    uint8_t rec = 0; // 0=OFF, 1=FLASHING, 127=ON
+    uint8_t encoderValue = 128; // 0..255 -> 0..12
+    uint8_t rec = 0; // 0=OFF, 1=FLASHING, 127=ON (function unused at the moment)
     uint8_t solo = 0; // 0=OFF, 1=FLASHING, 127=ON
     uint8_t mute = 0; // 0=OFF, 1=FLASHING, 127=ON
-    uint8_t select = 0; // 0=OFF, 1=FLASHING, 127=ON
+    uint8_t select = 0; // 0=OFF, 1=FLASHING, 127=ON (function unused at the moment)
+    String name;
   };
 
   struct sMackieMCU_ChannelHW{
@@ -176,13 +178,15 @@ uint32_t refreshCounter = 0;
     bool faderTouched = false;
     bool faderNeedsUpdate = false;
     uint8_t meterLevel; // 0...12 for Mackie, 0..8 for X-Touch
+    uint8_t nameCounter = 0; // 
   };
 
   struct {
     uint8_t channelOffset = 0; // runs from 0 to 24
     uint16_t channelOffsetDmx = 0; // runs from 0 to 504
     bool forceUpdate = false;
-    sMackieMCU_ChannelHW hardwareChannel[9];
+    sMackieMCU_ChannelHW hardwareChannel[8];
+    sMackieMCU_ChannelHW hardwareMainfader;
     sMackieMCU_Channel channel[33]; // values for audio-control
     sMackieMCU_Channel channelDmx[513]; // values for DMX-Control
     uint8_t jogDialValue;
@@ -206,7 +210,8 @@ uint32_t refreshCounter = 0;
     uint8_t channelOffset = 0;
     uint16_t channelOffsetDmx = 0; // 0...504
     bool forceUpdate = false;
-    sMackieMCU_ChannelHW hardwareChannel[9];
+    sMackieMCU_ChannelHW hardwareChannel[8];
+    sMackieMCU_ChannelHW hardwareMainfader;
     bool showValues = true;
     bool dmxMode = false;
     uint8_t jogDialValue = 0;

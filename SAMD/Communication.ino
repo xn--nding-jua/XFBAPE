@@ -70,10 +70,22 @@ String executeCommand(String Command) {
       playerinfo.volumeBt = split(ParameterString, ',', 8).toFloat();
       playerinfo.audioStatusInfo = split(ParameterString, ',', 9).toInt(); // contains infos about noisegate, clip (L/R/S) and compression (LR/S)
       TOC = split(ParameterString, ',', 10);
-      // receive volumeCh[] as parameters 11 to 43 as float-values
-      // receive balance[] as parameter 44 as concatenated HEX-Strings
-      // receive vuMeterCh[] as parameter 45 as concatenated HEX-Strings
       tocEntries = getNumberOfTocEntries('|');
+
+      // receive volumeCh[] as parameters 11 to 42 as float-values
+      for (uint8_t i=0; i<32; i++) {
+        playerinfo.volumeCh[i] = split(ParameterString, ',', 11 + i).toFloat();
+      }
+
+      String balanceInfo = split(ParameterString, ',', 43); // 64-char HEX-String containing 32 values for balance
+      String vuMeterInfo = split(ParameterString, ',', 44); // 64-char HEX-String containing 32 values for vuMeter
+      for (uint8_t i=0; i<32; i++) {
+        // receive balance[] as parameter 44 as concatenated HEX-Strings
+        playerinfo.balanceCh[i] = hexToInt((String)balanceInfo[i * 2] + (String)balanceInfo[i * 2 + 1]);
+
+        // receive vuMeterCh[] as parameter 45 as concatenated HEX-Strings
+        playerinfo.vuMeterCh[i] = hexToInt((String)vuMeterInfo[i * 2] + (String)vuMeterInfo[i * 2 + 1]);
+      }
 
       // send time to X32 when progress is above 0
       x32Playback = (playerinfo.progress > 0);
@@ -118,7 +130,7 @@ String executeCommand(String Command) {
       // requesting the MAC-Address from EEPROM
       Answer = mac2String(config.mac);
     }else if (Command.indexOf(F("samd:config:ip")) > -1) {
-      // requesting the 
+      // requesting the current IP-address
       Answer = IpAddress2String(eeprom_config.ip);
     }else if (Command.indexOf("samd:config:set:ip") > -1){
       //samd:config:set:ip@000.000.000.000
@@ -147,6 +159,15 @@ String executeCommand(String Command) {
         delay(10);
         XCtl[i_xtouch].ip = newIp;
         XCtl_init(i_xtouch);
+        Answer = "SAMD: OK";
+    #endif
+    #if USE_MACKIE_MCU == 1 || USE_XTOUCH == 1
+      }else if (Command.indexOf("samd:setname:ch") > -1){
+        //samd:setname:ch1@Ch 1
+        uint16_t channel = Command.substring(15, Command.indexOf("@")).toInt();
+        String name = Command.substring(Command.indexOf("@")+1);
+        MackieMCU.channel[channel].name = name;
+
         Answer = "SAMD: OK";
     #endif
     }else if (Command.indexOf("samd:config:save") > -1){

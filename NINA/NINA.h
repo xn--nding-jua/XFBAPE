@@ -330,6 +330,8 @@ struct {
   float volumeCh[MAX_AUDIO_CHANNELS];
   uint8_t balanceCh[MAX_AUDIO_CHANNELS];
   uint8_t vuMeterCh[MAX_AUDIO_CHANNELS];
+  bool muteCh[MAX_AUDIO_CHANNELS];
+  bool soloCh[MAX_AUDIO_CHANNELS];
 
   // equalizers
   sPEQ peq[MAX_EQUALIZERS];

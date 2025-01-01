@@ -584,8 +584,62 @@ String executeCommand(String Command) {
       }else{
         Answer = "ERROR: Channel or value out of range!";
       }
-    }else if (Command.indexOf("mixer:volume:sd") > -1){
-      // received command "mixer:volume:sd@value"
+    }else if (Command.indexOf("mixer:mute:ch") > -1){
+      // received command "mixer:mute:chxx@value"
+      uint8_t channel = Command.substring(13, Command.indexOf("@")).toInt();
+      bool muted = (Command.substring(Command.indexOf("@")+1).toInt() == 1);
+
+      if ((channel>=1) && (channel<=MAX_AUDIO_CHANNELS)) {
+        // set this channel to -48dBfs in FPGA without changing the volume in struct to keep the volume-level for unmuting
+
+        audiomixer.muteCh[channel - 1] = muted; // keep track of muted and unmuted channels
+
+        if (muted) {
+          sendVolumeToFPGA(-channel); // negative number mutes the channel without changing the current volume-level in struct
+        }else{
+          sendVolumeToFPGA(channel); // positive number sets the channel to the current volume again (= unmute)
+        }
+        Answer = "OK";
+      }else{
+        Answer = "ERROR: Channel or value out of range!";
+      }
+    }else if (Command.indexOf("mixer:solo:ch") > -1){
+      // received command "mixer:solo:chxx@value"
+      uint8_t channel = Command.substring(13, Command.indexOf("@")).toInt();
+      bool solo = (Command.substring(Command.indexOf("@")+1).toInt() == 1);
+
+      if ((channel>=1) && (channel<=MAX_AUDIO_CHANNELS)) {
+        // set all channels except current channel to -48dBfs in FPGA without changing the volume in struct to keep the volume-level for unmuting
+
+        audiomixer.soloCh[channel - 1] = solo; // keep track of soloed channels
+
+        // check if at least one channel is soloed
+        bool soloInUse = false;
+        for (uint8_t i=0; i<MAX_AUDIO_CHANNELS; i++) {
+          if (audiomixer.soloCh[i]) {
+            // at least one single channel in solo-mode
+            soloInUse = true;
+            break;
+          }
+        }
+
+        for (uint8_t i=0; i<MAX_AUDIO_CHANNELS; i++) {
+          // mute all channels except soloed channels if solo is in use. Otherwise unmute all channels
+          if ((audiomixer.soloCh[i]) || (!soloInUse)) {
+            // channel is soloed -> enable it or no solo at all
+            sendVolumeToFPGA(i + 1); // positive number sets the channel to the current volume again (= unmute)
+          }else{
+            // channel is not soloed -> mute it
+            sendVolumeToFPGA(-(i + 1)); // negative number mutes the channel without changing the current volume-level in struct
+          }
+        }
+
+        Answer = "OK";
+      }else{
+        Answer = "ERROR: Channel or value out of range!";
+      }
+    }else if ((Command.indexOf("mixer:volume:card") > -1) || (Command.indexOf("mixer:volume:sd") > -1)){
+      // received command "mixer:volume:card@value"
       float value = Command.substring(Command.indexOf("@")+1).toFloat();
 
       // we are setting volume for SD and bluetooth as stereo-pair at commands 
@@ -957,36 +1011,37 @@ void updateSAMD() {
 
   // send updatepacket
   String txString;
-  txString = "samd:update:info@" + currentAudioFile + "," +
-	String(audioTime) + "," +
-	String(audioDuration) + "," +
-	audioProgress_s + "," +
-	String(audiomixer.volumeMain, 1) + "," +
-	String(audiomixer.balanceMain) + "," +
-	String(audiomixer.volumeSub, 1) + "," +
-	String(audiomixer.volumeCard, 1) + "," +
-	String(audiomixer.volumeBt, 1) + "," +
-	String(audioStatusInfo) + "," +
+  txString = "samd:update:info@" + currentAudioFile + "," + // value 0
+	String(audioTime) + "," + // value 1
+	String(audioDuration) + "," + // value 2
+	audioProgress_s + "," + // value 3
+	String(audiomixer.volumeMain, 1) + "," + // value 4
+	String(audiomixer.balanceMain) + "," + // value 5
+	String(audiomixer.volumeSub, 1) + "," + // value 6
+	String(audiomixer.volumeCard, 1) + "," + // value 7
+	String(audiomixer.volumeBt, 1) + "," + // value 8
+	String(audioStatusInfo) + "," + // value 9
 	SD_getTOC(2) + "|,"; // request TOC in PSV-format. We need a trailing "|" so that the split() function in SAMD can work correctly
 
-  /*
-  // send 32 volumeCh[] values as Float-Strings
+  // send 32 volumeCh[] values as Float-Strings to ensure high accuracy between the faders of MackieMCU and XTouch
   for (uint8_t i=0; i<32; i++) {
+    // "-48.4," uses 6 bytes per value, the raw float-value would use only 4 bytes. So we are loosing 32*2 = 64 bytes here using Strings
+    // maybe we can change the communication to a binary-communication to reduce the overload to a minimum?
     txString = txString + String(audiomixer.volumeCh[i], 1) + ",";
   }
   // send 32 balanceCh[] values as concatenated HEX-STRINGs
   for (uint8_t i=0; i<32; i++) {
+    // we are using HEX here, to use only 2 bytes per value
     txString = txString + intToHex(audiomixer.balanceCh[i], 2);
   }
   txString = txString + ",";
   // send 32 vuMeterCh[] values as concatenated HEX-STRINGs
   for (uint8_t i=0; i<32; i++) {
+    // we are using HEX here, to use only 2 bytes per value
     txString = txString + intToHex(audiomixer.vuMeterCh[i], 2);
   }
-  txString = txString + ",";
-  */
 
-	txString = txString + "E"
+	txString = txString + ",E"; // add a final comma to use the split-function without problem and terminate the command
 
   Serial.println(txString);
 }

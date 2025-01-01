@@ -125,6 +125,14 @@ void ticker100msFcn() {
         }
 
         for (uint8_t i_xtouch=0; i_xtouch<XTOUCH_COUNT; i_xtouch++) {
+          // count down channel-name-counter to display channel-name after changing a valud
+          for (uint8_t i_ch=0; i_ch<8; i_ch++) {
+            if (XCtl[i_xtouch].hardwareChannel[i_ch].nameCounter > 0) {
+              XCtl[i_xtouch].hardwareChannel[i_ch].nameCounter -= 1;
+            }
+          }
+
+          // send data
           XCtl_prepareData(i_xtouch); // prepare values to send to device
           XCtl_sendGeneralData(i_xtouch); // update buttons and displays
           XCtl_sendFaderData(i_xtouch); // update fader
@@ -135,6 +143,14 @@ void ticker100msFcn() {
   
   #if USE_MACKIE_MCU == 1
     mackieUpdateCounter -= 1;
+
+    // count down channel-name-counter to display channel-name after changing a valud
+    for (uint8_t i_ch=0; i_ch<8; i_ch++) {
+      if (MackieMCU.hardwareChannel[i_ch].nameCounter > 0) {
+        MackieMCU.hardwareChannel[i_ch].nameCounter -= 1;
+      }
+    }
+
     if (mackieUpdateCounter == 0) {
       mackieUpdateCounter = 2; // 200ms update-rate
       MackieMCU_sendData();
@@ -174,7 +190,7 @@ void setup() {
 
   // initialize communication
   // Serial for communication via USB
-  Serial.begin(115200);
+  Serial.begin(115200); // the baud-rate will be set dynamically on connecting a computer
   Serial.setTimeout(1000); // Timeout for commands
 
   Serial.println("X-f/bape USBCtrl " + String(versionstring) + " | " + String(compile_date)); // send to USB
@@ -202,7 +218,7 @@ void setup() {
   SerialX32.setTimeout(1000); // Timeout for commands
 
   // Serial2 for communication with NINA-module
-  Serial2.begin(115200);
+  Serial2.begin(3000000); // set to maximum UART-speed of SAMD21: f_baud <= 48MHz/16 = 3 Mbps
   Serial2.setTimeout(1000); // Timeout for commands
   pinPeripheral(0, PIO_SERCOM); //Assign TX function to pin 0
   pinPeripheral(1, PIO_SERCOM); //Assign RX function to pin 1
