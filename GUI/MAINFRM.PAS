@@ -1,6 +1,6 @@
 {*****************************************
- * f/bape Config Tool                    *
- * v1.0.2 from 20.05.2024                *
+ * X-f/bape Config Tool                  *
+ * v2.0.0 from 19.01.2025                *
  * (c) 2024 by Dr.-Ing. Christian Nöding *
  * christian@noeding-online.de           *
  * https://www.github.com/xn--nding-jua  *
@@ -13,12 +13,7 @@ interface
 uses
   SysUtils, WinTypes, WinProcs, Messages, Classes, Graphics, Controls,
   Forms, Dialogs, TabNotBk, ExtCtrls, StdCtrls, Buttons,
-  {$IFDEF VER80}
-    ComDrv16,
-  {$ELSE}
-    CPDrv, ComCtrls,
-  {$ENDIF}
-  Spin;
+  CPDrv, ComCtrls, Mask, Spin, XPMan;
 
 type
   TEQ = record
@@ -79,52 +74,36 @@ type
     comp_hold_lbl: TLabel;
     comp_release_lbl: TLabel;
     GroupBox3: TGroupBox;
-    Label15: TLabel;
     Label16: TLabel;
-    Label17: TLabel;
     GroupBox4: TGroupBox;
-    volumeanalogslider: TScrollBar;
     volumesdcardslider: TScrollBar;
-    volumespdifslider: TScrollBar;
-    volume_ultranet_slider1: TScrollBar;
-    volume_ultranet_slider2: TScrollBar;
-    volume_ultranet_slider3: TScrollBar;
-    volume_ultranet_slider4: TScrollBar;
-    volume_ultranet_slider8: TScrollBar;
-    volume_ultranet_slider5: TScrollBar;
-    volume_ultranet_slider6: TScrollBar;
-    volume_ultranet_slider7: TScrollBar;
-    volume_ultranet_slider16: TScrollBar;
-    volume_ultranet_slider13: TScrollBar;
-    volume_ultranet_slider14: TScrollBar;
-    volume_ultranet_slider15: TScrollBar;
-    volume_ultranet_slider9: TScrollBar;
-    volume_ultranet_slider10: TScrollBar;
-    volume_ultranet_slider11: TScrollBar;
-    volume_ultranet_slider12: TScrollBar;
+    volume_slider_ch1: TScrollBar;
+    volume_slider_ch2: TScrollBar;
+    volume_slider_ch3: TScrollBar;
+    volume_slider_ch4: TScrollBar;
+    volume_slider_ch8: TScrollBar;
+    volume_slider_ch5: TScrollBar;
+    volume_slider_ch6: TScrollBar;
+    volume_slider_ch7: TScrollBar;
+    volume_slider_ch16: TScrollBar;
+    volume_slider_ch13: TScrollBar;
+    volume_slider_ch14: TScrollBar;
+    volume_slider_ch15: TScrollBar;
+    volume_slider_ch9: TScrollBar;
+    volume_slider_ch10: TScrollBar;
+    volume_slider_ch11: TScrollBar;
+    volume_slider_ch12: TScrollBar;
     Label18: TLabel;
     Label19: TLabel;
     Label20: TLabel;
     Label21: TLabel;
-    GroupBox5: TGroupBox;
-    Label22: TLabel;
-    volumemainslider: TScrollBar;
-    volumesubslider: TScrollBar;
-    Label23: TLabel;
     GroupBox6: TGroupBox;
     Label25: TLabel;
     Label26: TLabel;
-    freq_hp: TSpinEdit;
-    freq_lp: TSpinEdit;
     comport_dropdown: TComboBox;
     connectbtn: TButton;
     disconnectbtn: TButton;
     RxMemo: TMemo;
-    GroupBox7: TGroupBox;
-    Label27: TLabel;
-    syncsourcedropdown: TComboBox;
-    Label28: TLabel;
-    sampleratedropdown: TComboBox;
     playermemo: TMemo;
     Label34: TLabel;
     Label35: TLabel;
@@ -202,14 +181,115 @@ type
     gate_range_lbl: TLabel;
     gate_range_slider: TScrollBar;
     Label47: TLabel;
-    vol_spdif_lbl: TLabel;
     vol_sdcard_lbl: TLabel;
-    vol_analog_lbl: TLabel;
-    vol_main_lbl: TLabel;
-    vol_sub_lbl: TLabel;
     cmdbtn: TButton;
     cmdmemo: TMemo;
     baudrate_dropdown: TComboBox;
+    freq_lp: TSpinEdit;
+    freq_hp: TSpinEdit;
+    GroupBox14: TGroupBox;
+    chnameedit1: TEdit;
+    Label24: TLabel;
+    chnameedit2: TEdit;
+    Label46: TLabel;
+    chnameedit3: TEdit;
+    Label51: TLabel;
+    chnameedit4: TEdit;
+    Label52: TLabel;
+    chnameedit5: TEdit;
+    Label53: TLabel;
+    chnameedit6: TEdit;
+    Label54: TLabel;
+    chnameedit7: TEdit;
+    Label55: TLabel;
+    Label56: TLabel;
+    chnameedit8: TEdit;
+    chnameedit9: TEdit;
+    Label57: TLabel;
+    chnameedit10: TEdit;
+    Label58: TLabel;
+    chnameedit11: TEdit;
+    Label59: TLabel;
+    chnameedit12: TEdit;
+    Label60: TLabel;
+    chnameedit13: TEdit;
+    Label61: TLabel;
+    chnameedit14: TEdit;
+    Label62: TLabel;
+    chnameedit15: TEdit;
+    Label63: TLabel;
+    Label64: TLabel;
+    chnameedit16: TEdit;
+    chnameedit17: TEdit;
+    Label65: TLabel;
+    chnameedit18: TEdit;
+    Label66: TLabel;
+    chnameedit19: TEdit;
+    Label67: TLabel;
+    chnameedit20: TEdit;
+    Label68: TLabel;
+    chnameedit21: TEdit;
+    Label69: TLabel;
+    chnameedit22: TEdit;
+    Label70: TLabel;
+    chnameedit23: TEdit;
+    Label71: TLabel;
+    Label72: TLabel;
+    chnameedit24: TEdit;
+    chnameedit25: TEdit;
+    Label73: TLabel;
+    chnameedit26: TEdit;
+    Label74: TLabel;
+    chnameedit27: TEdit;
+    Label75: TLabel;
+    chnameedit28: TEdit;
+    Label76: TLabel;
+    chnameedit29: TEdit;
+    Label77: TLabel;
+    chnameedit30: TEdit;
+    Label78: TLabel;
+    chnameedit31: TEdit;
+    Label79: TLabel;
+    Label80: TLabel;
+    chnameedit32: TEdit;
+    sendnames: TButton;
+    Label22: TLabel;
+    vol_main_lbl: TLabel;
+    volumemainslider: TScrollBar;
+    GroupBox5: TGroupBox;
+    Label15: TLabel;
+    Label17: TLabel;
+    Label23: TLabel;
+    Label27: TLabel;
+    Label28: TLabel;
+    Label81: TLabel;
+    Label82: TLabel;
+    Label83: TLabel;
+    Label84: TLabel;
+    Label85: TLabel;
+    Label86: TLabel;
+    Label87: TLabel;
+    Label88: TLabel;
+    Label89: TLabel;
+    Label90: TLabel;
+    Label91: TLabel;
+    volume_slider_ch17: TScrollBar;
+    volume_slider_ch18: TScrollBar;
+    volume_slider_ch19: TScrollBar;
+    volume_slider_ch20: TScrollBar;
+    volume_slider_ch24: TScrollBar;
+    volume_slider_ch21: TScrollBar;
+    volume_slider_ch22: TScrollBar;
+    volume_slider_ch23: TScrollBar;
+    volume_slider_ch32: TScrollBar;
+    volume_slider_ch29: TScrollBar;
+    volume_slider_ch30: TScrollBar;
+    volume_slider_ch31: TScrollBar;
+    volume_slider_ch25: TScrollBar;
+    volume_slider_ch26: TScrollBar;
+    volume_slider_ch27: TScrollBar;
+    volume_slider_ch28: TScrollBar;
+    XPManifest1: TXPManifest;
     procedure Timer1Timer(Sender: TObject);
     procedure eq_type_dropdownChange(Sender: TObject);
     procedure Button1Click(Sender: TObject);
@@ -220,41 +300,16 @@ type
     procedure comp_threshold_sliderChange(Sender: TObject);
     procedure connectbtnClick(Sender: TObject);
     procedure disconnectbtnClick(Sender: TObject);
-    {$IFDEF VER80}
-    procedure comportReceiveData(Sender: TObject; DataPtr: Pointer;
-      DataSize: Integer);
-    {$ELSE}
     procedure comportReceiveData(Sender: TObject; DataPtr: Pointer;
       DataSize: Cardinal);
-    {$ENDIF}
     procedure tocbtnClick(Sender: TObject);
     procedure bootloadbtnClick(Sender: TObject);
     procedure infobtnClick(Sender: TObject);
     procedure freq_hpChange(Sender: TObject);
     procedure freq_lpChange(Sender: TObject);
-    procedure volumeanalogsliderChange(Sender: TObject);
     procedure volumesdcardsliderChange(Sender: TObject);
-    procedure volumespdifsliderChange(Sender: TObject);
     procedure volumemainsliderChange(Sender: TObject);
-    procedure volumesubsliderChange(Sender: TObject);
-    procedure volume_ultranet_slider1Change(Sender: TObject);
-    procedure volume_ultranet_slider2Change(Sender: TObject);
-    procedure volume_ultranet_slider3Change(Sender: TObject);
-    procedure volume_ultranet_slider4Change(Sender: TObject);
-    procedure volume_ultranet_slider5Change(Sender: TObject);
-    procedure volume_ultranet_slider6Change(Sender: TObject);
-    procedure volume_ultranet_slider7Change(Sender: TObject);
-    procedure volume_ultranet_slider8Change(Sender: TObject);
-    procedure volume_ultranet_slider9Change(Sender: TObject);
-    procedure volume_ultranet_slider10Change(Sender: TObject);
-    procedure volume_ultranet_slider11Change(Sender: TObject);
-    procedure volume_ultranet_slider12Change(Sender: TObject);
-    procedure volume_ultranet_slider13Change(Sender: TObject);
-    procedure volume_ultranet_slider14Change(Sender: TObject);
-    procedure volume_ultranet_slider15Change(Sender: TObject);
-    procedure volume_ultranet_slider16Change(Sender: TObject);
-    procedure syncsourcedropdownChange(Sender: TObject);
-    procedure sampleratedropdownChange(Sender: TObject);
+    procedure volume_slider_ch1Change(Sender: TObject);
     procedure mixerresetbtnClick(Sender: TObject);
     procedure reseteqbtnClick(Sender: TObject);
     procedure resetdynamicsbtnClick(Sender: TObject);
@@ -287,6 +342,8 @@ type
     procedure cmdbtnClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure sendnamesClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private-Deklarationen}
     FirstStart:boolean;
@@ -326,14 +383,184 @@ var
 
 implementation
 
+uses
+  JwaWinType,
+  SetupApi, Cfg, CfgMgr32;
+
 {$R *.DFM}
+
+// Delphi wrapper for CM_Get_Device_ID
+
+function GetDeviceID(Inst: DEVINST): string;
+var
+  Buffer: PTSTR;
+  Size: ULONG;
+begin
+  CM_Get_Device_ID_Size(Size, Inst, 0);
+  // Required! See DDK help for CM_Get_Device_ID
+  Inc(Size);
+  Buffer := AllocMem(Size * SizeOf(TCHAR));
+  CM_Get_Device_ID(Inst, Buffer, Size, 0);
+  Result := Buffer;
+  FreeMem(Buffer);
+end;
+
+// Delphi wrapper for SetupDiGetDeviceRegistryProperty
+
+function GetRegistryPropertyString(PnPHandle: HDEVINFO; const DevData: TSPDevInfoData; Prop: DWORD): string;
+var
+  BytesReturned: DWORD;
+  RegDataType: DWORD;
+  Buffer: array [0..1023] of TCHAR;
+begin
+  BytesReturned := 0;
+  RegDataType := 0;
+  Buffer[0] := #0;
+  SetupDiGetDeviceRegistryProperty(PnPHandle, DevData, Prop,
+    RegDataType, PByte(@Buffer[0]), SizeOf(Buffer), BytesReturned);
+  Result := Buffer;
+end;
+
+function ExtractBus(DeviceID: string): string;
+begin
+  Result := Copy(DeviceID, 1, Pos('\', DeviceID) - 1);
+end;
+
+function GetModulePath : String;
+var
+  QueryRes: TMemoryBasicInformation;
+  LBuffer: String;
+begin
+  VirtualQuery(@GetModulePath, QueryRes, SizeOf(QueryRes));
+  SetLength(LBuffer, MAX_PATH);
+  SetLength(LBuffer, GetModuleFileName(Cardinal(QueryRes.AllocationBase),
+  PChar(LBuffer), Length(LBuffer)));
+  result:=LBuffer;
+end;
+
+procedure FindComPorts(Destination: TComboBox);
+const
+  GUID_DEVINTERFACE_COMPORT: TGUID                = '{86e0d1e0-8089-11d0-9ce4-08003e301f73}';
+  GUID_DEVINTERFACE_SERENUM_BUS_ENUMERATOR: TGUID = '{4D36E978-E325-11CE-BFC1-08002BE10318}';
+var
+  PnPHandle: HDEVINFO;
+  DevData: TSPDevInfoData;
+  DeviceInterfaceData: TSPDeviceInterfaceData;
+  FunctionClassDeviceData: PSPDeviceInterfaceDetailData;
+  Success: LongBool;
+  Devn: Integer;
+  BytesReturned: DWORD;
+  SerialGUID: TGUID;
+  Inst: DEVINST;
+  RegKey: HKEY;
+  RegBuffer: array [0..1023] of Char;
+  RegSize, RegType: DWORD;
+  FriendlyName: string;
+  PortName: string;
+  DeviceDescription: string;
+  Bus: string;
+  TestHandle : integer;
+  i:integer;
+begin
+  // these API conversions are loaded dynamically by default
+  LoadSetupApi;
+  LoadConfigManagerApi;
+
+
+  // enumerate all serial devices (COM port devices)
+    SerialGUID := GUID_DEVINTERFACE_COMPORT;
+//    SerialGUID := GUID_DEVINTERFACE_SERENUM_BUS_ENUMERATOR;
+  PnPHandle := SetupDiGetClassDevs(@SerialGUID, nil, 0, DIGCF_PRESENT or DIGCF_DEVICEINTERFACE);
+  if PnPHandle = INVALID_HANDLE_VALUE then
+    Exit;
+  Destination.Items.BeginUpdate;
+  Destination.Items.Clear;
+  Devn := 0;
+  repeat
+    DeviceInterfaceData.cbSize := SizeOf(TSPDeviceInterfaceData);
+    Success := SetupDiEnumDeviceInterfaces(PnPHandle, nil, SerialGUID, Devn, DeviceInterfaceData);
+    if Success then
+    begin
+      TestHandle := CreateFile(PChar('\\.\COM'+IntToStr(Devn+1)),GENERIC_READ or GENERIC_WRITE,0,nil,OPEN_EXISTING,FILE_FLAG_OVERLAPPED,LongInt(0));
+//    	if (TestHandle > 0) then
+      begin
+        DevData.cbSize := SizeOf(DevData);
+        BytesReturned := 0;
+        // get size required for call
+        SetupDiGetDeviceInterfaceDetail(PnPHandle, @DeviceInterfaceData, nil, 0, BytesReturned, @DevData);
+        if (BytesReturned <> 0) and (GetLastError = ERROR_INSUFFICIENT_BUFFER) then
+        begin
+          // allocate buffer and initialize it for call
+          FunctionClassDeviceData := AllocMem(BytesReturned);
+          FunctionClassDeviceData.cbSize := SizeOf(TSPDeviceInterfaceDetailData);
+
+          if SetupDiGetDeviceInterfaceDetail(PnPHandle, @DeviceInterfaceData,
+            FunctionClassDeviceData, BytesReturned, BytesReturned, @DevData) then
+          begin
+            // gives the friendly name of the device as shown in Device Manager
+            FriendlyName := GetRegistryPropertyString(PnPHandle, DevData, SPDRP_FRIENDLYNAME);
+            // gives a device description
+            DeviceDescription := GetRegistryPropertyString(PnPHandle, DevData, SPDRP_DEVICEDESC);
+            // now try to get the assigned COM port name
+            RegKey := SetupDiOpenDevRegKey(PnPHandle, DevData, DICS_FLAG_GLOBAL, 0, DIREG_DEV, KEY_READ);
+            RegType := REG_SZ;
+            RegSize := SizeOf(RegBuffer);
+            RegQueryValueEx(RegKey, 'PortName', nil, @RegType, @RegBuffer[0], @RegSize);
+            RegCloseKey(RegKey);
+            PortName := RegBuffer;
+            Inst := DevData.DevInst;
+            CM_Get_Parent(Inst, Inst, 0);
+            Bus := ExtractBus(GetDeviceID(Inst));
+            Destination.Items.Add(PortName + ' (' + DeviceDescription + ', ' + Bus+')');
+          end;
+          FreeMem(FunctionClassDeviceData);
+        end;
+      end;
+	    CloseHandle(TestHandle);
+    end;
+    Inc(Devn);
+  until not Success;
+  SetupDiDestroyDeviceInfoList(PnPHandle);
+  Destination.Items.EndUpdate;
+
+  // unload API conversions
+  UnloadSetupApi;
+  UnloadConfigManagerApi;
+
+  // retry without using friendly names if no comport was found
+  if Destination.Items.Count = 0 then
+  begin
+    // COM-Ports von 1 bis 16 abklappern
+    Destination.Clear;
+    for i:=1 to 16 do
+    begin
+      TestHandle := CreateFile(PChar('\\.\COM'+IntToStr(i)),GENERIC_READ or GENERIC_WRITE,0,
+                nil,OPEN_EXISTING,FILE_FLAG_OVERLAPPED,LongInt(0));
+      if (TestHandle > 0) then
+      begin
+        Destination.Items.Add('COM '+inttostr(i));
+        CloseHandle(TestHandle);
+      end;
+    end;
+  end;
+
+  if Destination.Items.Count > 0 then
+  begin
+    Destination.ItemIndex := 0;
+  end;
+end;
 
 procedure Tmainform.Timer1Timer(Sender: TObject);
 var
   i:integer;
+  sl : TStringList;
 begin
   if not flag_StartComplete then
   begin
+    flag_StartComplete := true;
+
+    FindComPorts(comport_dropdown);
+
     eqbitmap := TBitmap.Create;
     compbitmap := TBitmap.Create;
     eqbitmap.width := eq_box.width;
@@ -343,8 +570,6 @@ begin
 
     comport_dropdown.itemindex := 0; {set to COM1}
     baudrate_dropdown.itemindex := 4; {set to 115200}
-    syncsourcedropdown.itemindex := 0; {set to Analog input}
-    sampleratedropdown.itemindex := 1; {set to 48kHz}
 
     CurrentEQ := 0;
     for i:=0 to 4 do
@@ -362,7 +587,21 @@ begin
     comp_ratio_dropdown.ItemIndex:=0;
     comp_makeup_dropdown.ItemIndex:=0;
 
-    flag_StartComplete := true;
+    if FileExists(ExtractFilePath(ParamStr(0)) + '\names.txt') then
+    begin
+      sl := TStringList.Create;
+      sl.LoadFromFile(ExtractFilePath(ParamStr(0)) + '\names.txt');
+
+      if sl.Count = 32 then
+      begin
+        for i:=1 to 32 do
+        begin
+          TEdit(FindComponent('chnameedit' + inttostr(i))).Text := sl.Strings[i - 1];
+        end;
+      end;
+
+      sl.Free;
+    end;
   end;
 
   if flag_recalcEQs then
@@ -447,62 +686,62 @@ begin
     begin
       if (gain>=0) then
       begin
-	norm := 1.0 / (1.0 + (1.0/Q) * K + power(K,2));
+      	norm := 1.0 / (1.0 + (1.0/Q) * K + power(K,2));
 
-	a0 := (1.0 + (V/Q) * K + power(K,2)) * norm;
-	a1 := 2.0 * (power(K,2) - 1.0) * norm;
-	a2 := (1.0 - (V/Q) * K + power(K,2)) * norm;
-	b1 := a1;
-	b2 := (1.0 - (1.0/Q) * K + power(K,2)) * norm;
+      	a0 := (1.0 + (V/Q) * K + power(K,2)) * norm;
+      	a1 := 2.0 * (power(K,2) - 1.0) * norm;
+      	a2 := (1.0 - (V/Q) * K + power(K,2)) * norm;
+      	b1 := a1;
+      	b2 := (1.0 - (1.0/Q) * K + power(K,2)) * norm;
       end else
       begin
-	norm := 1.0 / (1.0 + (V/Q) * K + power(K,2));
+      	norm := 1.0 / (1.0 + (V/Q) * K + power(K,2));
 
-	a0 := (1.0 + (1.0/Q) * K + power(K,2)) * norm;
-	a1 := 2.0 * (power(K,2) - 1.0) * norm;
-	a2 := (1.0 - (1.0/Q) * K + power(K,2)) * norm;
-	b1 := a1;
-	b2 := (1.0 - (V/Q) * K + power(K,2)) * norm;
+      	a0 := (1.0 + (1.0/Q) * K + power(K,2)) * norm;
+      	a1 := 2.0 * (power(K,2) - 1.0) * norm;
+      	a2 := (1.0 - (1.0/Q) * K + power(K,2)) * norm;
+      	b1 := a1;
+      	b2 := (1.0 - (V/Q) * K + power(K,2)) * norm;
       end;
     end;
     2:
     begin
       if (gain>=0) then
       begin
-	norm := 1.0 / (1.0 + sqrt(2.0) * K + power(K, 2));
-	a0 := (1.0 + sqrt(2.0*V) * K + V * power(K, 2)) * norm;
-	a1 := 2.0 * (V * power(K, 2) - 1.0) * norm;
-	a2 := (1.0 - sqrt(2.0*V) * K + V * power(K, 2)) * norm;
-	b1 := 2.0 * (power(K, 2) - 1.0) * norm;
-	b2 := (1.0 - sqrt(2.0) * K + power(K, 2)) * norm;
+      	norm := 1.0 / (1.0 + sqrt(2.0) * K + power(K, 2));
+      	a0 := (1.0 + sqrt(2.0*V) * K + V * power(K, 2)) * norm;
+      	a1 := 2.0 * (V * power(K, 2) - 1.0) * norm;
+      	a2 := (1.0 - sqrt(2.0*V) * K + V * power(K, 2)) * norm;
+      	b1 := 2.0 * (power(K, 2) - 1.0) * norm;
+      	b2 := (1.0 - sqrt(2.0) * K + power(K, 2)) * norm;
       end else
       begin
-	norm := 1.0 / (1.0 + sqrt(2.0*V) * K + V * power(K, 2));
-	a0 := (1.0 + sqrt(2.0) * K + power(K, 2)) * norm;
-	a1 := 2.0 * (power(K, 2) - 1.0) * norm;
-	a2 := (1.0 - sqrt(2) * K + power(K, 2)) * norm;
-	b1 := 2.0 * (V * power(K, 2) - 1.0) * norm;
-	b2 := (1.0 - sqrt(2.0*V) * K + V * power(K, 2)) * norm;
+      	norm := 1.0 / (1.0 + sqrt(2.0*V) * K + V * power(K, 2));
+      	a0 := (1.0 + sqrt(2.0) * K + power(K, 2)) * norm;
+      	a1 := 2.0 * (power(K, 2) - 1.0) * norm;
+      	a2 := (1.0 - sqrt(2) * K + power(K, 2)) * norm;
+      	b1 := 2.0 * (V * power(K, 2) - 1.0) * norm;
+      	b2 := (1.0 - sqrt(2.0*V) * K + V * power(K, 2)) * norm;
       end;
     end;
     3:
     begin
       if (gain>=0) then
       begin
-	norm := 1.0 / (1.0 + sqrt(2.0) * K + power(K, 2));
-	a0 := (V + sqrt(2.0*V) * K + power(K, 2)) * norm;
-	a1 := 2.0 * (power(K, 2) - V) * norm;
-	a2 := (V - sqrt(2.0*V) * K + power(K, 2)) * norm;
-	b1 := 2.0 * (power(K, 2) - 1.0) * norm;
-	b2 := (1.0 - sqrt(2.0) * K + power(K, 2)) * norm;
+      	norm := 1.0 / (1.0 + sqrt(2.0) * K + power(K, 2));
+      	a0 := (V + sqrt(2.0*V) * K + power(K, 2)) * norm;
+      	a1 := 2.0 * (power(K, 2) - V) * norm;
+      	a2 := (V - sqrt(2.0*V) * K + power(K, 2)) * norm;
+      	b1 := 2.0 * (power(K, 2) - 1.0) * norm;
+      	b2 := (1.0 - sqrt(2.0) * K + power(K, 2)) * norm;
       end else
       begin
-	norm := 1.0 / (V + sqrt(2.0*V) * K + power(K, 2));
-	a0 := (1.0 + sqrt(2.0) * K + power(K, 2)) * norm;
-	a1 := 2.0 * (power(K, 2) - 1.0) * norm;
-	a2 := (1.0 - sqrt(2.0) * K + power(K, 2)) * norm;
-	b1 := 2.0 * (power(K, 2) - V) * norm;
-	b2 := (V - sqrt(2.0*V) * K + power(K, 2)) * norm;
+      	norm := 1.0 / (V + sqrt(2.0*V) * K + power(K, 2));
+      	a0 := (1.0 + sqrt(2.0) * K + power(K, 2)) * norm;
+      	a1 := 2.0 * (power(K, 2) - 1.0) * norm;
+      	a2 := (1.0 - sqrt(2.0) * K + power(K, 2)) * norm;
+      	b1 := 2.0 * (power(K, 2) - V) * norm;
+      	b2 := (V - sqrt(2.0*V) * K + power(K, 2)) * norm;
       end;
     end;
     4:
@@ -977,27 +1216,44 @@ begin
 end;
 
 procedure Tmainform.connectbtnClick(Sender: TObject);
+var
+  temp:string;
+  comportnumber:integer;
 begin
-  {$IFDEF VER80}
-    comport.comport := TComPortNumber(ord(comport_dropdown.itemindex));
-    case baudrate_dropdown.itemindex of
-      0: comport.comportspeed := br9600;
-      1: comport.comportspeed := br19200;
-      2: comport.comportspeed := br38400;
-      3: comport.comportspeed := br57600;
-      4: comport.comportspeed := br115200;
+  if comport_dropdown.Items.Count = 0 then
+    exit;
+
+  temp:=copy(comport_dropdown.Items[comport_dropdown.Itemindex],4,2);
+  if temp[2]=' ' then
+    comportnumber:=strtoint(temp[1])
+  else
+    comportnumber:=strtoint(temp);
+
+  comport.port := pnCustom;
+  comport.portname := 'COM' + inttostr(comportnumber);
+  case baudrate_dropdown.itemindex of
+    0: comport.baudrate := br9600;
+    1: comport.baudrate := br19200;
+    2: comport.baudrate := br38400;
+    3: comport.baudrate := br57600;
+    4: comport.baudrate := br115200;
+    5: comport.baudrate := br256000; // official supported by TCommPort32 and working with FPGA
+    6:
+    begin
+      comport.baudrate := brCustom;
+      comport.BaudRateValue := 921600; // maximum Baudrate, Windows is aware of
     end;
-  {$ELSE}
-    comport.port := pnCustom;
-    comport.portname := 'COM' + inttostr(comport_dropdown.itemindex + 1);
-    case baudrate_dropdown.itemindex of
-      0: comport.baudrate := br9600;
-      1: comport.baudrate := br19200;
-      2: comport.baudrate := br38400;
-      3: comport.baudrate := br57600;
-      4: comport.baudrate := br115200;
+    7:
+    begin
+      comport.BaudRate := brCustom;
+      comport.BaudRateValue := 1500000;
     end;
-  {$ENDIF}
+    8:
+    begin
+      comport.BaudRate := brCustom;
+      comport.BaudRateValue := 3000000; // maximum baudrate (3 MBit/s) an FTDI adapter can handle
+    end;
+  end;
 
   if comport.Connect then
   begin
@@ -1020,13 +1276,8 @@ begin
   comport_dropdown.enabled:=true;
 end;
 
-{$IFDEF VER80}
-procedure Tmainform.comportReceiveData(Sender: TObject; DataPtr: Pointer;
-  DataSize: Integer);
-{$ELSE}
 procedure Tmainform.comportReceiveData(Sender: TObject; DataPtr: Pointer;
   DataSize: Cardinal);
-{$ENDIF}
 var
   p: pchar;
   s: string;
@@ -1115,27 +1366,12 @@ end;
 
 procedure Tmainform.freq_hpChange(Sender: TObject);
 begin
-  SendCommand('mixer:eq:hp@' + inttostr(freq_hp.value));
+  SendCommand('mixer:eq:hp@' + inttostr(round(freq_hp.value)));
 end;
 
 procedure Tmainform.freq_lpChange(Sender: TObject);
 begin
-  SendCommand('mixer:eq:lp@' + inttostr(freq_lp.value));
-end;
-
-procedure Tmainform.volumeanalogsliderChange(Sender: TObject);
-var
-  s: String;
-begin
-  s := value2str((60-volumeanalogslider.position)/10);
-  SendCommand('mixer:volume:ch1@' + s);
-  SendCommand('mixer:volume:ch2@' + s);
-  vol_analog_lbl.caption := s + 'dB';
-  {
-  SendVolume(volumeanalogslider.position, 'ch1');
-  SendVolume(volumeanalogslider.position, 'ch2');
-  vol_analog_lbl.caption := value2str((60-volumeanalogslider.position)/10) + 'dB';
-  }
+  SendCommand('mixer:eq:lp@' + inttostr(round(freq_lp.value)));
 end;
 
 procedure Tmainform.volumesdcardsliderChange(Sender: TObject);
@@ -1143,28 +1379,11 @@ var
   s:string;
 begin
   s := value2str((60-volumesdcardslider.position)/10);
-  SendCommand('mixer:volume:ch3@' + s);
-  SendCommand('mixer:volume:ch4@' + s);
+  SendCommand('mixer:volume:card@' + s);
   vol_sdcard_lbl.caption := s + 'dB';
   {
   SendVolume(volumesdcardslider.position, 'ch3');
-  SendVolume(volumesdcardslider.position, 'ch4');
   vol_sdcard_lbl.caption := value2str((60-volumesdcardslider.position)/10) + 'dB';
-  }
-end;
-
-procedure Tmainform.volumespdifsliderChange(Sender: TObject);
-var
-  s:string;
-begin
-  s := value2str((60-volumespdifslider.position)/10);
-  SendCommand('mixer:volume:ch5@' + s);
-  SendCommand('mixer:volume:ch6@' + s);
-  vol_spdif_lbl.caption := s + 'dB';
-  {
-  SendVolume(volumespdifslider.position, 'ch5');
-  SendVolume(volumespdifslider.position, 'ch6');
-  vol_spdif_lbl.caption := value2str((60-volumespdifslider.position)/10) + 'dB';
   }
 end;
 
@@ -1181,110 +1400,17 @@ begin
   }
 end;
 
-procedure Tmainform.volumesubsliderChange(Sender: TObject);
+procedure Tmainform.volume_slider_ch1Change(Sender: TObject);
 var
-  s:string;
+  i:integer;
 begin
-  s := value2str((60-volumesubslider.position)/10);
-  SendCommand('mixer:volume:sub@' + s);
-  vol_sub_lbl.caption := s + 'dB';
-  {
-  SendVolume(volumesubslider.position, 'sub');
-  vol_sub_lbl.caption := value2str((60-volumesubslider.position)/10) + 'dB';
-  }
-end;
-
-procedure Tmainform.volume_ultranet_slider1Change(Sender: TObject);
-begin
-  SendVolume(volume_ultranet_slider1.position, 'ch7');
-end;
-
-procedure Tmainform.volume_ultranet_slider2Change(Sender: TObject);
-begin
-  SendVolume(volume_ultranet_slider2.position, 'ch8');
-end;
-
-procedure Tmainform.volume_ultranet_slider3Change(Sender: TObject);
-begin
-  SendVolume(volume_ultranet_slider3.position, 'ch9');
-end;
-
-procedure Tmainform.volume_ultranet_slider4Change(Sender: TObject);
-begin
-  SendVolume(volume_ultranet_slider4.position, 'ch10');
-end;
-
-procedure Tmainform.volume_ultranet_slider5Change(Sender: TObject);
-begin
-  SendVolume(volume_ultranet_slider5.position, 'ch11');
-end;
-
-procedure Tmainform.volume_ultranet_slider6Change(Sender: TObject);
-begin
-  SendVolume(volume_ultranet_slider6.position, 'ch12');
-end;
-
-procedure Tmainform.volume_ultranet_slider7Change(Sender: TObject);
-begin
-  SendVolume(volume_ultranet_slider7.position, 'ch13');
-end;
-
-procedure Tmainform.volume_ultranet_slider8Change(Sender: TObject);
-begin
-  SendVolume(volume_ultranet_slider8.position, 'ch14');
-end;
-
-procedure Tmainform.volume_ultranet_slider9Change(Sender: TObject);
-begin
-  SendVolume(volume_ultranet_slider9.position, 'ch15');
-end;
-
-procedure Tmainform.volume_ultranet_slider10Change(Sender: TObject);
-begin
-  SendVolume(volume_ultranet_slider10.position, 'ch16');
-end;
-
-procedure Tmainform.volume_ultranet_slider11Change(Sender: TObject);
-begin
-  SendVolume(volume_ultranet_slider11.position, 'ch17');
-end;
-
-procedure Tmainform.volume_ultranet_slider12Change(Sender: TObject);
-begin
-  SendVolume(volume_ultranet_slider12.position, 'ch18');
-end;
-
-procedure Tmainform.volume_ultranet_slider13Change(Sender: TObject);
-begin
-  SendVolume(volume_ultranet_slider13.position, 'ch19');
-end;
-
-procedure Tmainform.volume_ultranet_slider14Change(Sender: TObject);
-begin
-  SendVolume(volume_ultranet_slider14.position, 'ch20');
-end;
-
-procedure Tmainform.volume_ultranet_slider15Change(Sender: TObject);
-begin
-  SendVolume(volume_ultranet_slider15.position, 'ch21');
-end;
-
-procedure Tmainform.volume_ultranet_slider16Change(Sender: TObject);
-begin
-  SendVolume(volume_ultranet_slider16.position, 'ch22');
-end;
-
-procedure Tmainform.syncsourcedropdownChange(Sender: TObject);
-begin
-  SendCommand('mixer:sync@' + inttostr(syncsourcedropdown.itemindex));
-end;
-
-procedure Tmainform.sampleratedropdownChange(Sender: TObject);
-begin
-  case sampleratedropdown.itemindex of
-    0: SendCommand('mixer:samplerate@44100');
-    1: SendCommand('mixer:samplerate@48000');
-    2: SendCommand('mixer:samplerate@96000');
+  for i:=1 to 32 do
+  begin
+    if Sender = FindComponent('volume_slider_ch' + inttostr(i)) then
+    begin
+      SendVolume(TScrollBar(Sender).position, 'ch' + inttostr(i));
+      break;
+    end;
   end;
 end;
 
@@ -1430,13 +1556,8 @@ begin
   compbitmap.width := comp_box.width;
   compbitmap.height := comp_box.height;
 
-  if tabnotebook.pageindex = 2 then
-  begin
-    flag_recalcEQs := true;
-  end else if tabnotebook.pageindex = 3 then
-  begin
-    flag_recalcComp := true;
-  end;
+  flag_recalcEQs := true;
+  flag_recalcComp := true;
 end;
 
 procedure Tmainform.FormResize(Sender: TObject);
@@ -1496,4 +1617,31 @@ begin
   FirstStart:=true;
 end;
 
+procedure Tmainform.sendnamesClick(Sender: TObject);
+var
+  i:integer;
+begin
+  for i:=1 to 32 do
+  begin
+    SendCommand('samd:setname:ch' + inttostr(i) + '@' + TEdit(FindComponent('chnameedit' + inttostr(i))).Text);
+  end;
+end;
+
+procedure Tmainform.FormClose(Sender: TObject; var Action: TCloseAction);
+var
+  i:integer;
+  sl:TStringList;
+begin
+  sl := TStringList.Create;
+
+  for i:=1 to 32 do
+  begin
+    sl.Add(TEdit(FindComponent('chnameedit' + inttostr(i))).Text);
+  end;
+
+  sl.SaveToFile(ExtractFilePath(ParamStr(0)) + '\names.txt');
+  sl.Free;
+end;
+
 end.
+

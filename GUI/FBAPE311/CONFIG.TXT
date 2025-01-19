@@ -1,3 +1,0 @@
-samd:*IDN?
-*IDN?
-fpga:*IDN?

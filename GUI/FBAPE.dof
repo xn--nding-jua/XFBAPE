@@ -105,10 +105,14 @@ HostApplication=
 Launcher=
 UseLauncher=0
 DebugCWD=
+[Language]
+ActiveLang=
+ProjectLang=
+RootDir=
 [Version Info]
 IncludeVerInfo=1
 AutoIncBuild=0
-MajorVer=1
+MajorVer=2
 MinorVer=0
 Release=2
 Build=1
@@ -121,15 +125,15 @@ Locale=1031
 CodePage=1252
 [Version Info Keys]
 CompanyName=PHOENIXstudios
-FileDescription=The fbape Config Tool
-FileVersion=1.0.2.1
+FileDescription=The X-fbape Config Tool
+FileVersion=2.0.2.1
 InternalName=
 LegalCopyright=
 LegalTrademarks=
 OriginalFilename=fbape.exe
 ProductName=
-ProductVersion=1.0.0.0
-Comments=https://www.github.com/xn--nding-jua/Audioplayer
+ProductVersion=2.0.0.0
+Comments=https://www.github.com/xn--nding-jua/xfbape
 [Excluded Packages]
 c:\program files (x86)\borland\delphi7\Projects\Bpl\CHComponentsD7.bpl=Christian Hämmerle - Component Pack
 C:\Program Files (x86)\DevExpress VCL\Library\Delphi7\dcldxDBXServerModeD7.bpl=dbExpress Data Source for ExpressDataController Server Mode by Developer Express Inc.

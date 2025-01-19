@@ -1,4 +1,4 @@
-program Fbape311;
+program Fbape;
 
 uses
   Forms,
@@ -7,7 +7,7 @@ uses
 {$R *.RES}
 
 begin
-  Application.Title := 'fbape Config Tool';
+  Application.Title := 'X-fbape Config Tool';
   Application.CreateForm(Tmainform, mainform);
   Application.Run;
 end.
