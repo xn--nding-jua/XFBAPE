@@ -357,7 +357,7 @@
                   
                   // send new dmx-value to NINA
                   uint8_t newDmxValue = (value/64.24705882352941f);
-                  Serial2.println("dmx512:output:ch" + String(channel + 1) + "@" + String(newDmxValue));
+                  SerialNina.println("dmx512:output:ch" + String(channel + 1) + "@" + String(newDmxValue));
                 }
               }else if ((rxData[0] & 0x0F) == 8){
                 // masterfader = fader 9
@@ -382,7 +382,7 @@
                   playerinfo.volumeCh[channel] = newVolume; // we are receiving this value from NINA with a bit delay again
 
                   // send new channel-volume to NINA
-                  Serial2.println("mixer:volume:ch" + String(channel + 1) + "@" + String(newVolume, 2));
+                  SerialNina.println("mixer:volume:ch" + String(channel + 1) + "@" + String(newVolume, 2));
 
                   // reset nameCounter to display current value in displays instead of names for some time
                   XCtl[i_xtouch].hardwareChannel[hardwareFader].nameCounter = 30; // show value for 3 seconds as counter is at 100ms
@@ -397,7 +397,7 @@
                   playerinfo.volumeMain = newVolume;
 
                   // send new main-volume
-                  Serial2.println("mixer:volume:main@" + String(newVolume, 2));
+                  SerialNina.println("mixer:volume:main@" + String(newVolume, 2));
                 }
               }
             }
@@ -466,7 +466,7 @@
                   }
                   // set balance
                   playerinfo.balanceCh[channel] = MackieMCU.channel[channel].encoderValue; // we are receiving this value from NINA with a bit delay again
-                  Serial2.println("mixer:balance:ch" + String(channel + 1) + "@" + String(MackieMCU.channel[channel].encoderValue / 2.55f));
+                  SerialNina.println("mixer:balance:ch" + String(channel + 1) + "@" + String(MackieMCU.channel[channel].encoderValue / 2.55f));
                 }else{
                   // turn left
                   channel = (rxData[1] - 16) + XCtl[i_xtouch].channelOffset;
@@ -477,7 +477,7 @@
                   }
                   // set balance
                   playerinfo.balanceCh[channel] = MackieMCU.channel[channel].encoderValue; // we are receiving this value from NINA with a bit delay again
-                  Serial2.println("mixer:balance:ch" + String(channel + 1) + "@" + String(MackieMCU.channel[channel].encoderValue / 2.55f));
+                  SerialNina.println("mixer:balance:ch" + String(channel + 1) + "@" + String(MackieMCU.channel[channel].encoderValue / 2.55f));
                 }
               }else if (rxData[1] == 60) {
                 // large jog-dial
@@ -691,7 +691,7 @@
                   }
 
                   // send value to NINA
-                  Serial2.println("mixer:solo:ch" + String(channel + 1) + "@" + String(MackieMCU.channel[channel].solo > 0));
+                  SerialNina.println("mixer:solo:ch" + String(channel + 1) + "@" + String(MackieMCU.channel[channel].solo > 0));
                 }else{
                   // released
                 }
@@ -709,7 +709,7 @@
                   }
 
                   // send value to NINA
-                  Serial2.println("mixer:mute:ch" + String(channel + 1) + "@" + String(MackieMCU.channel[channel].mute > 0));
+                  SerialNina.println("mixer:mute:ch" + String(channel + 1) + "@" + String(MackieMCU.channel[channel].mute > 0));
                 }else{
                   // released
                 }
@@ -742,7 +742,7 @@
                   uint8_t channel = (button-32) + XCtl[i_xtouch].channelOffset;
                   MackieMCU.channel[channel].encoderValue = 128;
                   playerinfo.balanceCh[channel] = 128; // we are receiving this value from NINA with a bit delay again
-                  Serial2.println("mixer:balance:ch" + String(channel + 1) + "@" + String(MackieMCU.channel[channel].encoderValue / 2.55f));
+                  SerialNina.println("mixer:balance:ch" + String(channel + 1) + "@" + String(MackieMCU.channel[channel].encoderValue / 2.55f));
                 }else{
                   // released
                 }
@@ -809,7 +809,7 @@
               // now get the fileName from TOC
               String filename = split(TOC, '|', playerinfo.currentTrackNumber); // name of title0
               // play the file
-              Serial2.println("player:file@" + filename); // load file (and file will be played immediatyl)
+              SerialNina.println("player:file@" + filename); // load file (and file will be played immediatyl)
             }
             if ((button == 92) && (buttonState)) {
               // button "forward"
@@ -819,15 +819,15 @@
               // now get the fileName from TOC
               String filename = split(TOC, '|', playerinfo.currentTrackNumber); // name of title0
               // play the file
-              Serial2.println("player:file@" + filename); // load file (and file will be played immediatyl)
+              SerialNina.println("player:file@" + filename); // load file (and file will be played immediatyl)
             }
             if ((button == 93) && (buttonState)) {
               // button "stop"
-              Serial2.println("player:stop");
+              SerialNina.println("player:stop");
             }
             if ((button == 94) && (buttonState)) {
               // button "play"
-              Serial2.println("player:pause");
+              SerialNina.println("player:pause");
             }
 
             if (((button == 50) || (button == 95)) && (buttonState)) {

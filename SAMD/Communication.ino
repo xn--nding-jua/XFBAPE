@@ -9,8 +9,8 @@ void handleUSBCommunication() {
       Serial.println(executeCommand(command));
     }else{
       // we received a command for NINA-module or FPGA -> passthrough command via Serial2 to NINA-Module
-      Serial2.println(command); // "\n" has been truncated from command, so we have to use println() again
-      Serial.println(Serial2.readStringUntil('\n')); // receive answer
+      SerialNina.println(command); // "\n" has been truncated from command, so we have to use println() again
+      Serial.println(SerialNina.readStringUntil('\n')); // receive answer
     }
   }
 }
@@ -18,21 +18,21 @@ void handleUSBCommunication() {
 // NINA-CMD-Receiver
 void handleNINACommunication() {
   // passthrough all incoming data to USB-serial
-  if (Serial2.available() > 0) {
+  if (SerialNina.available() > 0) {
     if (passthroughNINA) {
-      //Serial.write(Serial2.read()); // this prevents us from receiving commands from NINA
-      String command = Serial2.readStringUntil('\n');
+      //Serial.write(SerialNina.read()); // this prevents us from receiving commands from NINA
+      String command = SerialNina.readStringUntil('\n');
       command.trim();
       
       if (command.indexOf(F("samd:")) == 0) {
         // command begins with "samd:" so we have to interprete it
-        Serial2.println(executeCommand(command));
+        SerialNina.println(executeCommand(command));
       }else{
         // passthrough command to USB
         Serial.println(command);
       }
     }else{
-      String command = Serial2.readStringUntil('\n');
+      String command = SerialNina.readStringUntil('\n');
       command.trim();
 
       if (command.indexOf("OK") > -1) {
@@ -43,7 +43,7 @@ void handleNINACommunication() {
         // NINA received some garbage or communication-problem -> ignore it for the moment
       }else{
         // this is a command for our command-processor
-        Serial2.println(executeCommand(command));
+        SerialNina.println(executeCommand(command));
       }
     }
   }
@@ -187,7 +187,7 @@ String executeCommand(String Command) {
 // Interrupt handler for SERCOM3
 void SERCOM3_Handler()
 {
-  Serial2.IrqHandler();
+  SerialNina.IrqHandler();
 }
 
 /*
@@ -214,7 +214,7 @@ void resetNina() {
 void enterNinaUpdateMode(bool performReset) {
   if (!performReset) {
     // stop mainCtrl
-    Serial2.println(F("system:stop"));
+    SerialNina.println(F("system:stop"));
   }
 
   #if USE_DISPLAY == 1
@@ -268,11 +268,11 @@ void handleNINAUpdate() {
 
   // copy bytes from USB to NINA
   if (Serial.available()) {
-    Serial2.write(Serial.read());
+    SerialNina.write(Serial.read());
   }
   // copy bytes from NINA to USB
-  if (Serial2.available()) {
-    Serial.write(Serial2.read());
+  if (SerialNina.available()) {
+    Serial.write(SerialNina.read());
   }
 
   // check if the USB virtual serial wants a new baud rate
@@ -281,8 +281,8 @@ void handleNINAUpdate() {
     dtr = -1;
 
     baud = Serial.baud();
-    Serial2.flush();
-    Serial2.begin(baud);
+    SerialNina.flush();
+    SerialNina.begin(baud);
     pinPeripheral(0, PIO_SERCOM); //Assign TX function to pin 0
     pinPeripheral(1, PIO_SERCOM); //Assign RX function to pin 1
   }

@@ -133,8 +133,8 @@ uint32_t hexToInt(String hexString){
 
 // clear serial input-buffer
 void serialFlush() {
-  while (Serial.available()) {
-    Serial.read();
+  while (SerialSamd.available()) {
+    SerialSamd.read();
   }
 }
 

@@ -195,6 +195,8 @@ File configFile;
 Ticker TimerSeconds;
 
 // general variables
+#define SerialSamd Serial
+#define SerialFpga Serial1
 bool systemOnline = false;
 String USBCtrlIDN = "0";
 String FPGA_Version = "0";

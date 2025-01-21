@@ -80,8 +80,8 @@ void handleCMDClients() {
         client.println(executeCommand(command));
       }else{
         // we received a command for NINA-module or FPGA -> passthrough command via Serial2 to NINA-Module
-        Serial2.println(command); // "\n" has been truncated from command, so we have to use println() again
-        client.println(Serial2.readStringUntil('\n')); // receive answer
+        SerialNina.println(command); // "\n" has been truncated from command, so we have to use println() again
+        client.println(SerialNina.readStringUntil('\n')); // receive answer
       }
     }
   }

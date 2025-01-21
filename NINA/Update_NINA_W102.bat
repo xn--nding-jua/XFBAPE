@@ -40,7 +40,7 @@ echo ----------------------------------
 echo. 
 echo Flashing LittleFS to ESP32 on %port%...
 rem "%APPDATA%\..\Local\Arduino15\packages\esp32\tools\esptool_py\4.5.1\esptool.exe" --chip esp32 --port %port% --baud 921600 write_flash -z --flash_mode dio --flash_freq 80m --flash_size 2MB 0x10000 NINA.bin
-Tools\esptool.exe --chip esp32 --port %port% --baud 921600 --before default_reset --after hard_reset write_flash -z --flash_mode dio --flash_freq 80m --flash_size 2MB 0x1000 Update\NINA.bootloader.bin 0x8000 Update\NINA.partitions.bin 0xe000 Tools\boot_app0.bin 0x10000 Update\NINA.bin
+Tools\esptool.exe --chip esp32 --port %port% --baud 921600 --before default_reset --after hard_reset write_flash -z --flash_mode dio --flash_freq 80m --flash_size 2MB 0x1000 build\esp32.esp32.nina_w10\NINA.ino.bootloader.bin 0x8000 build\esp32.esp32.nina_w10\NINA.ino.partitions.bin 0xe000 Tools\boot_app0.bin 0x10000 build\esp32.esp32.nina_w10\NINA.ino.bin
 
 rem Tools\esptool.exe --chip esp32 --port COM9 --baud 921600 --before default_reset --after hard_reset write_flash -z --flash_mode dio --flash_freq 80m --flash_size 2MB 0x1000 Update\NINA.bootloader.bin 0x8000 Update\NINA.partitions.bin 0xe000 Tools\boot_app0.bin 0x10000 Update\NINA.bin
 

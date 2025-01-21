@@ -72,7 +72,7 @@ architecture Behavioral of rs232_encoder is
 	signal s_SM_Encoder 	: t_SM_Encoder := s_Idle;
 	
 	signal txd_rate_cnt	: natural range 0 to clk_rate_hz/(2*txd_rate_hz) := 0;
-	signal byte_cnt 		: natural range 0 to PAYLOAD_TO_TX + 3 - 1 := 0; -- payload-bytes + 3 frame-bytes
+	signal byte_cnt 		: natural range 0 to PAYLOAD_TO_TX + 4 - 1 := 0; -- payload-bytes + 4 frame-bytes
 	
 	signal tx_next_byte	: std_logic := '0';
 	
@@ -153,13 +153,13 @@ begin
 						when 0 =>
 							-- start of frame
 							TX_data <= to_unsigned(65, 8); -- character "A"
-						when PAYLOAD_TO_TX =>
+						when PAYLOAD_TO_TX + 1 =>
 							-- payload part 1
 							TX_data <= unsigned(std_logic_vector(PayloadSum)(15 downto 8));
-						when PAYLOAD_TO_TX + 1 =>
+						when PAYLOAD_TO_TX + 2 =>
 							-- payload part 2
 							TX_data <= unsigned(std_logic_vector(PayloadSum)(7 downto 0));
-						when PAYLOAD_TO_TX + 2 =>
+						when PAYLOAD_TO_TX + 3 =>
 							-- end of frame
 							TX_data <= to_unsigned(69, 8); -- character "E"
 						when others =>

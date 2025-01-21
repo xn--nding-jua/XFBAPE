@@ -24,14 +24,20 @@
 
   Used libraries:
   =====================================================================
-  - ESP32 Board-Libraries v3.0.7 (https://dl.espressif.com/dl/package_esp32_index.json)
-  - SD-Card-Playback: ESP32-audioI2S v2.0.0 (https://github.com/schreibfaul1/ESP32-audioI2S)
-  - Ticker by Stefan Staub
-  - PubSubClient by Nick O'Leary
-  - SimpleFTPServer by Renzo Mischianti [change SD-settings in FtpServerKey.h if you have trouble connecting to SD-card]
+  - ESP32 Board-Libraries v3.1.1 (https://dl.espressif.com/dl/package_esp32_index.json)
+  - SD-Card-Playback: ESP32-audioI2S v3.0.13 (https://github.com/schreibfaul1/ESP32-audioI2S)
+  - Ticker v4.4.0 by Stefan Staub
+  - PubSubClient v2.8 by Nick O'Leary
+  - SimpleFTPServer v2.1.10 by Renzo Mischianti [change SD-settings in FtpServerKey.h if you have trouble connecting to SD-card]
       Alternative: ESP-FTP-Server-Lib by Peterus (https://github.com/peterus/ESP-FTP-Server-Lib) [supports only ACTIVE ftp-mode]
   - Bluetooth-Sink: ESP32-A2DP v1.8.1 by P. Schatzmann (https://github.com/pschatzmann/ESP32-A2DP)
   - AudioTools for Bluetooth-Playback: ArduinoAudioTools v0.9.8 by P. Schatzmann (https://github.com/pschatzmann/arduino-audio-tools)
+
+  Information:
+  ======================================================================
+  As the space in the NINA-W102 module is limited, you can use older versions of
+  ESP32 Board-Libraries (older than 3.0) and use the ESP32-audioI2S in version 2.0
+  This will save several percent of flash space.
 
   License information:
   =====================================================================
@@ -115,11 +121,12 @@ void setup() {
   ledcAttach(LED_BLUE, 2000, 8); // IO-pin, frequency in Hz, Resolution in Bit
 
   // init communication with SAMD21/USB
-  // set to maximum UART-speed of SAMD21: f_baud <= 48MHz/16 = 3 Mbps
-  Serial.begin(3000000, SERIAL_8N1, 3, 1, false, 1000); // BaudRate, Config, RxPin, TxPin, Invert, TimeoutMs, rxfifo_full_thrhd
+  // SAMD21 supports maximum 3Mbps: f_baud <= 48MHz/16. But everything above 921600 baud seems to be instable
+  SerialSamd.begin(921600, SERIAL_8N1, 3, 1, false, 1000); // BaudRate, Config, RxPin, TxPin, Invert, TimeoutMs, rxfifo_full_thrhd
+  //SerialSamd.begin(1228800, SERIAL_8N1, 3, 1, false, 1000); // 1.2288 Mbps results in communication-problems with computer
 
   // init communication with FPGA
-  Serial1.begin(4000000, SERIAL_8N1, 22, 27, false, 1000); // BaudRate, Config, RxPin, TxPin, Invert, TimeoutMs, rxfifo_full_thrhd
+  SerialFpga.begin(4000000, SERIAL_8N1, 22, 27, false, 1000); // BaudRate, Config, RxPin, TxPin, Invert, TimeoutMs, rxfifo_full_thrhd
 
   setX32state(false); // disable X32
 }
@@ -153,18 +160,18 @@ void loop() {
 
 void initSystem() {
   // request identification from SAMD21
-  Serial.println("samd:*IDN?");
+  SerialSamd.println("samd:*IDN?");
 
   #if USE_DISPLAY == 1
     // send version information to SAMD21
-    Serial.println("samd:version:main@" + String(versionstring)); // send MainCtrl version to SAMD21
+    SerialSamd.println("samd:version:main@" + String(versionstring)); // send MainCtrl version to SAMD21
   #endif
   
   // activate passthrough via SAMD21 to USB
-  Serial.println("samd:passthrough:nina@1");
+  SerialSamd.println("samd:passthrough:nina@1");
   delay(100);
   // send welcome-text to USB
-  Serial.println("X-f/bape MainCtrl " + String(versionstring) + " built on " + String(compile_date));
+  SerialSamd.println("X-f/bape MainCtrl " + String(versionstring) + " built on " + String(compile_date));
 
   // init SD-Card
   initStorage();

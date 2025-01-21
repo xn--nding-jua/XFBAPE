@@ -17,14 +17,7 @@
   Used libraries:
   =====================================================================
   only when using OLED display:
-  - MCP23008 v0.3.2 by Rob Tillaart for external GPIO
   - Adafruit SSD1306 v2.5.10 by Adafruit (for I2C Display)
-
-  only for VUmeter / Spectrum View:
-  - arduinoFFT v2.0.2
-  - Adafruit GFX Library v1.11.9
-  - Adafruit NeoMatrix v1.3.2
-  - Adafruit NeoPixel v1.3.2 (non DMA, but maybe DMA works well, too)
 
   License information:
   =====================================================================
@@ -218,11 +211,12 @@ void setup() {
   SerialX32.setTimeout(1000); // Timeout for commands
 
   // Serial2 for communication with NINA-module
-  Serial2.begin(3000000); // set to maximum UART-speed of SAMD21: f_baud <= 48MHz/16 = 3 Mbps
-  Serial2.setTimeout(1000); // Timeout for commands
+  SerialNina.begin(921600); // SAMD21 supports maximum 3Mbps: f_baud <= 48MHz/16. But everything above 921600 baud seems to be instable
+  //SerialNina.begin(1228800); // NINA can be programmed, but communication between SAMD21 and computer is not stable
+  SerialNina.setTimeout(1000); // Timeout for commands
   pinPeripheral(0, PIO_SERCOM); //Assign TX function to pin 0
   pinPeripheral(1, PIO_SERCOM); //Assign RX function to pin 1
-  Serial2.flush();
+  SerialNina.flush();
   delay(1000); // give NINA some time to startup
 
 /*
@@ -245,7 +239,7 @@ void setup() {
 
   // start mainsystem
   Serial.println(F("Init MainCtrl..."));
-  Serial2.println(F("system:init")); // initialize main-system
+  SerialNina.println(F("system:init")); // initialize main-system
 
   #if USE_DISPLAY == 1
     // show main-menu

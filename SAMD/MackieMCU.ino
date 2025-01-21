@@ -174,7 +174,7 @@
         }
 
         // send value to NINA
-        Serial2.println("mixer:solo:ch" + String(channel + 1) + "@" + String(MackieMCU.channel[channel].solo > 0));
+        SerialNina.println("mixer:solo:ch" + String(channel + 1) + "@" + String(MackieMCU.channel[channel].solo > 0));
       }else if ( (note >= 0x10) && (note <= 0x17) ) {
         // mute-button
         uint8_t channel = note - 0x10 + MackieMCU.channelOffset;
@@ -185,7 +185,7 @@
         }
 
         // send value to NINA
-        Serial2.println("mixer:mute:ch" + String(channel + 1) + "@" + String(MackieMCU.channel[channel].mute > 0));
+        SerialNina.println("mixer:mute:ch" + String(channel + 1) + "@" + String(MackieMCU.channel[channel].mute > 0));
       }else if ( (note >= 0x18) && (note <= 0x1f) ) {
         // select-button
 
@@ -202,7 +202,7 @@
         playerinfo.balanceCh[channel] = 128; // we are receiving this value from NINA with a bit delay again
 
         // send value to NINA
-        Serial2.println("mixer:balance:ch" + String(channel + 1) + "@" + String(MackieMCU.channel[channel].encoderValue / 2.55f));
+        SerialNina.println("mixer:balance:ch" + String(channel + 1) + "@" + String(MackieMCU.channel[channel].encoderValue / 2.55f));
       }else if (note == 0x2e) {
         // bank left
         if (MackieMCU.channelOffset >= 8) {
@@ -247,7 +247,7 @@
         // now get the fileName from TOC
         String filename = split(TOC, '|', playerinfo.currentTrackNumber); // name of title0
         // play the file
-        Serial2.println("player:file@" + filename); // load file (and file will be played immediatyl)
+        SerialNina.println("player:file@" + filename); // load file (and file will be played immediatyl)
       }else if (note == 0x5c) {
         // forward
         if (playerinfo.currentTrackNumber < (tocEntries - 1)) {
@@ -256,13 +256,13 @@
         // now get the fileName from TOC
         String filename = split(TOC, '|', playerinfo.currentTrackNumber); // name of title0
         // play the file
-        Serial2.println("player:file@" + filename); // load file (and file will be played immediatyl)
+        SerialNina.println("player:file@" + filename); // load file (and file will be played immediatyl)
       }else if (note == 0x5d) {
         // stop
-        Serial2.println("player:stop");
+        SerialNina.println("player:stop");
       }else if (note == 0x5e) {
         // play
-        Serial2.println("player:pause");
+        SerialNina.println("player:pause");
       }else if (note == 0x5f) {
         // record (switches between Audio and DMX)
         mackieDmxMode = !mackieDmxMode;
@@ -377,7 +377,7 @@
           playerinfo.balanceCh[channel] = MackieMCU.channel[channel].encoderValue; // we are receiving this value from NINA with a bit delay again
 
           // send value to NINA
-          Serial2.println("mixer:balance:ch" + String(channel + 1) + "@" + String(MackieMCU.channel[channel].encoderValue / 2.55f));
+          SerialNina.println("mixer:balance:ch" + String(channel + 1) + "@" + String(MackieMCU.channel[channel].encoderValue / 2.55f));
         }
       }
     }
@@ -395,7 +395,7 @@
           uint8_t newValue = MackieMCU.channelDmx[channel].faderPosition/64.2470588f;
 
           // send new value to NINA
-          Serial2.println("dmx512:output:ch" + String(channel + 1) + "@" + String(newValue));
+          SerialNina.println("dmx512:output:ch" + String(channel + 1) + "@" + String(newValue));
         }
       }else if (midiChannel == 9) {
         MackieMCU.hardwareMainfader.faderPositionHW = value - MIDI_PITCHBEND_MIN;
@@ -417,7 +417,7 @@
           playerinfo.volumeCh[channel] = newVolume; // we are receiving this value from NINA with a bit delay again
 
           // send new value to NINA
-          Serial2.println("mixer:volume:ch" + String(channel + 1) + "@" + String(newVolume, 2));
+          SerialNina.println("mixer:volume:ch" + String(channel + 1) + "@" + String(newVolume, 2));
 
           // reset nameCounter to display current value in displays instead of names for some time
           MackieMCU.hardwareChannel[hardwareFader].nameCounter = 30; // show value for 3 seconds as counter is at 100ms
@@ -430,7 +430,7 @@
           playerinfo.volumeMain = newVolume;
 
           // send new main-value to NINA
-          Serial2.println("mixer:volume:main@" + String(newVolume, 2));
+          SerialNina.println("mixer:volume:main@" + String(newVolume, 2));
         }
       }
     }

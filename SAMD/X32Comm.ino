@@ -126,8 +126,8 @@ String x32ExecCmd(String command) {
       // now get the fileName from TOC
       String filename = split(TOC, '|', playerinfo.currentTrackNumber); // name of title0
       // play the file
-      Serial2.println("player:file@" + filename); // load file (and file will be played immediatyl)
-      Serial2.println("player:pause"); // stop file
+      SerialNina.println("player:file@" + filename); // load file (and file will be played immediatyl)
+      SerialNina.println("player:pause"); // stop file
 
       // prepare Answer
       uint32_t markerCount = 0; // X32 will request markers even when this is set to 0
@@ -139,7 +139,7 @@ String x32ExecCmd(String command) {
       Answer = "*9B000" + intToHex(markerCount, 2) + String(channelCount) + "0" + intToHex(3*60 * 48000, 8) + "0" + intToHex(0, 8) + "#";
     }else if (command.indexOf("*9D#")==0) {
       // play session
-      Serial2.println("player:pause");
+      SerialNina.println("player:pause");
       Answer = "*9D00#";
 
       // during playback, the card should send current position as samples every 85ms:
@@ -147,7 +147,7 @@ String x32ExecCmd(String command) {
       // this is done via the 85ms-timer in the SAMD.ino
     }else if (command.indexOf("*9E#")==0) {
       // pause session
-      Serial2.println("player:pause");
+      SerialNina.println("player:pause");
       Answer = "*9E00#";
 
       // during playback, the card should send current position as samples every 85ms:
@@ -156,7 +156,7 @@ String x32ExecCmd(String command) {
     }else if (command.indexOf("*9F#")==0) {
       // stop playing/recording
 
-      Serial2.println("player:stop");
+      SerialNina.println("player:stop");
 
       Answer = "*9F00#";
 
@@ -180,7 +180,7 @@ String x32ExecCmd(String command) {
 
       //float percent = ((sampleIndex / 48000.0f) / (float)playerinfo.duration) * 100.0f;
       uint32_t position = sampleIndex / 48000;
-      Serial2.println("player:position@" + String(position));
+      SerialNina.println("player:position@" + String(position));
 
       Answer = "*9M00#";
     }else if (command.indexOf("*9AF#")==0) {

@@ -33,8 +33,8 @@ void initWifi() {
 void handleUartCommunication() {
   String command;
 
-  if (Serial.available() > 0) {
-    command = Serial.readStringUntil('\n');
+  if (SerialSamd.available() > 0) {
+    command = SerialSamd.readStringUntil('\n');
     command.trim();
 
     if (command.indexOf("SAMD: OK") > -1) {
@@ -46,18 +46,18 @@ void handleUartCommunication() {
     }else if (command.indexOf("fpga:") == 0) {
       if (command.indexOf("ver?") > -1){
         // return version of fpga
-        Serial.println("v" + FPGA_Version);
+        SerialSamd.println("v" + FPGA_Version);
       }else if (command.indexOf("*IDN?") > -1){
         // return info-string of fpga
-        Serial.println("X-f/bape FPGA v" + String(FPGA_Version));
+        SerialSamd.println("X-f/bape FPGA v" + String(FPGA_Version));
       }else{
         // this is a command for the FPGA
-        Serial1.print(command);
-        Serial.println("OK"); // FPGA will not return values instead of the version up to now
+        SerialFpga.print(command);
+        SerialSamd.println("OK"); // FPGA will not return values instead of the version up to now
       }
     }else{
       // this is a command for our command-processor
-      Serial.println(executeCommand(command));
+      SerialSamd.println(executeCommand(command));
     }
   }
 }
@@ -100,7 +100,7 @@ void fpgaSearchCmd() {
         // newData[0] contains version of FPGA * 100
         if (FPGA_Version.length() == 1) {
           FPGA_Version = String(newData[0]/100.0f, 2);
-          Serial.println("samd:version:fpga@" + FPGA_Version); // send FPGA version to SAMD21
+          SerialSamd.println("samd:version:fpga@" + FPGA_Version); // send FPGA version to SAMD21
         }else{
           FPGA_Version = String(newData[0]/100.0f, 2);
         }
@@ -183,12 +183,12 @@ void fpgaSearchCmd() {
 }
 
 void handleFPGACommunication() {
-  if (Serial1.available() > 0) {
-    uint8_t rxChar = Serial1.read();
+  if (SerialFpga.available() > 0) {
+    uint8_t rxChar = SerialFpga.read();
 
     if (debugRedirectFpgaSerialToUSB) {
       // redirect all incoming bytes to SAMD-processor
-      Serial.write(rxChar);
+      SerialSamd.write(rxChar);
     }
 
     // FPGA sends 20 messages per second
@@ -969,7 +969,7 @@ void sendDataToFPGA(uint8_t cmd, data_64b *data) {
     bitClear(SerialCommand[2], 7);
   }
 
-  Serial1.write(SerialCommand, sizeof(SerialCommand));
+  SerialFpga.write(SerialCommand, sizeof(SerialCommand));
   delay(10); // delay for 10ms
 }
 
@@ -1043,7 +1043,7 @@ void updateSAMD() {
 
 	txString = txString + ",E"; // add a final comma to use the split-function without problem and terminate the command
 
-  Serial.println(txString);
+  SerialSamd.println(txString);
 }
 
 void setX32state(bool state) {

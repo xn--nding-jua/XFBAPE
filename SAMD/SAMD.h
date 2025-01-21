@@ -53,6 +53,7 @@ SerialUSB: USB
 Serial1:   X32
 */
 #define SerialX32 Serial1
+#define SerialNina Serial2
 
 // includes for Serial2 to communicate with NINA. As Serial2 is not within the scope of Arduino,
 // we have to create it using the SERCOM-system of the SAMD21
