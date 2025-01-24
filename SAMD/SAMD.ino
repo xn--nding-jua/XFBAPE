@@ -105,23 +105,19 @@ void ticker100msFcn() {
 
   #if USE_XTOUCH == 1
     if (Ethernet.linkStatus() != LinkOFF) {
-      if (XCtlConnectionTimeout > 0) {
-        XCtlConnectionTimeout -= 1;
-      }else{
-        XCtlWatchdogCounter -= 1;
-        if (XCtlWatchdogCounter == 0) {
-          XCtlWatchdogCounter = 20;
+      for (uint8_t i_xtouch=0; i_xtouch<XTOUCH_COUNT; i_xtouch++) {
+        if (XCtl[i_xtouch].online) {
+          XCtlWatchdogCounter[i_xtouch] -= 1;
+          if (XCtlWatchdogCounter[i_xtouch] == 0) {
+            XCtlWatchdogCounter[i_xtouch] = 20;
 
-          for (uint8_t i_xtouch=0; i_xtouch<XTOUCH_COUNT; i_xtouch++) {
             XCtl_sendWatchDogMessage(i_xtouch);
           }
-        }
 
-        for (uint8_t i_xtouch=0; i_xtouch<XTOUCH_COUNT; i_xtouch++) {
           // count down channel-name-counter to display channel-name after changing a valud
           for (uint8_t i_ch=0; i_ch<8; i_ch++) {
-            if (XCtl[i_xtouch].hardwareChannel[i_ch].nameCounter > 0) {
-              XCtl[i_xtouch].hardwareChannel[i_ch].nameCounter -= 1;
+            if (XCtl[i_xtouch].hardwareChannel[i_ch].showValueCounter > 0) {
+              XCtl[i_xtouch].hardwareChannel[i_ch].showValueCounter -= 1;
             }
           }
 
@@ -139,8 +135,8 @@ void ticker100msFcn() {
 
     // count down channel-name-counter to display channel-name after changing a valud
     for (uint8_t i_ch=0; i_ch<8; i_ch++) {
-      if (MackieMCU.hardwareChannel[i_ch].nameCounter > 0) {
-        MackieMCU.hardwareChannel[i_ch].nameCounter -= 1;
+      if (MackieMCU.hardwareChannel[i_ch].showValueCounter > 0) {
+        MackieMCU.hardwareChannel[i_ch].showValueCounter -= 1;
       }
     }
 
@@ -299,10 +295,8 @@ void loop() {
     handleX32Communication(); // communication through Serial1 with Behringer X32 MainControl
     handleNINACommunication(); // communication through Serial2 with NINA W102
     #if USE_XTOUCH == 1
-      if (XCtlConnectionTimeout == 0) {
-        for (uint8_t i_xtouch=0; i_xtouch<XTOUCH_COUNT; i_xtouch++) {
-          handleXCtlMessages(i_xtouch); // communication via ethernet-jack (UDP)
-        }
+      for (uint8_t i_xtouch=0; i_xtouch<XTOUCH_COUNT; i_xtouch++) {
+        handleXCtlMessages(i_xtouch); // communication via ethernet-jack (UDP)
       }
     #endif
     #if USE_MACKIE_MCU == 1

@@ -172,6 +172,15 @@ String SD_getTOC(uint8_t format) { // 0=json, 1=csv, 2=psv
   return TOC;
 }
 
+uint8_t getNumberOfTocEntries() {
+  uint8_t entries = 0;
+  String TOC = SD_getTOC(2);
+  for (uint8_t i=0; i<TOC.length(); i++) {
+    if (TOC[i] == '|') entries++;
+  }
+  return entries;
+}
+
 String listDir(fs::FS &fs, const char * dirname, uint8_t levels){
   String s;
   s = dirname;

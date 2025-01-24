@@ -178,7 +178,7 @@ void initEeprom() {
   for (uint8_t i_xtouch=0; i_xtouch<XTOUCH_COUNT; i_xtouch++) {
     if ((eeprom_config.xtouchip[i_xtouch][0]==eeprom_config.xtouchip[i_xtouch][1]) && (eeprom_config.xtouchip[i_xtouch][1]==eeprom_config.xtouchip[i_xtouch][2]) && (eeprom_config.xtouchip[i_xtouch][2]==eeprom_config.xtouchip[i_xtouch][3])) {
       // IP-Address is invalid. So the configuration seems to be bad
-      eeprom_config.xtouchip[i_xtouch] = IPAddress(192, 168, 0, 53);
+      eeprom_config.xtouchip[i_xtouch] = IPAddress(192, 168, 0, 53+i_xtouch);
     }
   }
 }

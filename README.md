@@ -22,29 +22,32 @@ Three individual devices are part of this repository:
 - [x] Control via Webinterface (only WiFi and only Audio yet)
 - [x] Control via ASCII-based commands via USB, WiFi and Ethernet (Audio and DMX512)
 - [x] Control via multiple X-Touch-controls via ethernet (Audio and DMX512)
-- [x] Control via X32 using MackieMCU via Card-MIDI (Audio and DMX512)
+- [x] Control via X32-surface using MackieMCU-emulation via Card-MIDI (Audio and DMX512)
 - [x] DMX512-output (adjustable DMX-timings via VHDL)
-- [x] Parametric-Equalizers
+- [x] Parametric-Equalizers (3 to 5, depending on the free space in FPGA)
 - [x] Dynamic Audio-Compression (Stereo)
-- [x] Optional: control card via MQTT
-- [x] Optional: multi-channel analog Audio-Output via PDM
-- [x] Optional: Noise-Gates
-- [x] Optional: Bluetooth-A2DP-Sink
-- [x] Optional: 24dB/oct Linkwitz-Riley Crossover for tweeter and subwoofer
+
+Optional / prepared features:
+- [x] control card via MQTT when using NINA W102 in Client-Mode WiFi
+- [x] multi-channel analog Audio-Output via PDM / sigma-delta-modulation
+- [x] Noise-Gates
+- [x] Bluetooth-A2DP-Sink (larger ESP32 is nescessary)
+- [x] 24dB/oct Linkwitz-Riley Crossover for tweeter and subwoofer (larger FPGA is nescessary)
 
 ## Current status of the project
 This project is ready for smaller events. Audio-processing, audio-effects and DMX512 is working as well as support for MackieMCU-control via X32 or the X-Touch-Control via Ethernet.
 
 However, as this project is a Hobby-project, please be aware, that this software/hardware-combination is not yet tested well. Everything seems to work somehow, but bugs will be here and there.
 
-Some known bugs:
+Some known bugs and limitations:
 - [ ] Medium: EQs crackle on adjusting the frequency -> problem is solved when using a steep low-pass-filter with a cutoff frequency <=24kHz. No solution for the small FPGA within the Vidor4000
+- [ ] Low: MP3 files must have the same samplerate (44,1kHz or 48kHz) as the main-console - otherwise the playback has some minor "hiss/noise". There is not enough space in the used FPGA to implement a samplerate-conversion yet.
 - [ ] Low: Bluetooth is not working together with other features -> optimize code in NINA/ESP32 to save more space to enable BT. Probably not possible with the NINA-W102 on the Vidor4000
 
 Usage of the components:
-- FPGA: Logic Elements 93% of 15,408 LE / 9-bit Multiplier: 61% of 112 Multipliers
-- SAMD21: 30% of 256kB
-- NINA-W102: 76% of 2 MB
+- FPGA: Logic Elements 97% of 15,408 LE / 9-bit Multiplier: 61% of 112 Multipliers
+- SAMD21: 30% of 256kB / 58% of dynamic memory
+- NINA-W102: 83% of 2 MB flash-memory
 
 ## Overview
 The SAMD21 is used as an USB-2-UART converter for controlling and updating the individual devices. The device also controls the small I2C-display and communicates over the W5500-IC with your ethernet.
@@ -55,7 +58,7 @@ The uBlox NINA W102 (ESP32) acts as a WiFi Accesspoint with webserver and implem
 
 As the original routing-functions of the Behringer X32 can still be used to route the individual channels, we are gaining more degree of freedom:
 Using the 32 regular channels of the X32 and routing additional 32 channels from the AES50-connection to the X-f/bape-card, we can mix up to 64 channels in realtime with the X32. The X-f/bape will feed a submix to two of the 32 return-channels, that can be routed to two of the 6 AUX-Channels.
-As the Cyclone 10LP is not the largest FPGA we are a bit limited with the EQing, but a 5-band PEQ with Compression can be added to the sum.
+As the Cyclone 10LP is not the largest FPGA we are a bit limited with the EQing, but a 3-band PEQ with Compression is added to the submix.
 
 ![alt text](Documentation/Images/Routing.jpg)
 
@@ -96,6 +99,12 @@ Then use the Arduino IDE to upload the new software using the built-in uploading
 After uploading the new firmware, please reset the board using the RESET-button.
 
 
+### Some pitfalls
+[x] Don't forget to close the COM-port-connection, when trying to upload the SAMD-firmware
+[x] COM-ports above "9" (hence, two-digit-COM-ports) seem to rise some problems on later Windows 11 releases. The command "echo samd:update:nina > COM10" works under Windows 10, but not under Windows 11 24H2. Same when uploading to NINA W102/ESP32. So switch to a COM-port below 10 if you have problems.
+[x] Sometimes the bootloader of the SAMD21 is not called correctly. If the Arduino IDE seems to wait for a longer time, double-press the RESET-button on the Vidor4000 to call the bootloader manually
+
+
 ## Graphical User Interfaces
 
 There are several options to control this system:
@@ -116,7 +125,7 @@ MP3s can be played using the original X-LIVE-Controls:
 The X-Touch are supported as well:
 ![alt text](Documentation/Images/XTouch-Control.jpg)
 
-The Windows-GUI is available as Windows11-App, Windows 3.11 and OS/2 (yes, I like Retro-Computing)
+The Windows-GUI is available as Windows11-App
 ![alt text](Documentation/Images/GUI.jpg)
 
 As the Ethernet-Contoller is connected only to the SAMD21, the webinterface of the NINA-W102 cannot be accessed. Maybe we can change this in a later design. But for now the ethernet-port is limited to plain ASCII-commands.

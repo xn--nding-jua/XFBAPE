@@ -513,6 +513,34 @@ String executeCommand(String Command) {
             Answer = "ERROR";
           }
         }
+      }else if (Command.indexOf("player:select") > -1){
+        currentTrackNumber = Command.substring(Command.indexOf("@")+1).toInt();
+
+        // now get the fileName from TOC
+        String filename = split(SD_getTOC(2), '|', currentTrackNumber); // name of title0
+        // play the file
+        executeCommand("player:file@" + filename); // load file (and file will be played immediatyl)
+        executeCommand("player:pause"); // stop file
+
+        Answer = "OK";
+      }else if (Command.indexOf("player:next") > -1){
+        if (currentTrackNumber < (getNumberOfTocEntries() - 1)) {
+          currentTrackNumber += 1;
+        }
+        // now get the fileName from TOC
+        String filename = split(SD_getTOC(2), '|', currentTrackNumber); // name of title0
+        // play the file
+        executeCommand("player:file@" + filename); // load file (and file will be played immediatyl)
+        Answer = "OK";
+      }else if (Command.indexOf("player:prev") > -1){
+        if (currentTrackNumber > 0) {
+          currentTrackNumber -= 1;
+        }
+        // now get the fileName from TOC
+        String filename = split(SD_getTOC(2), '|', currentTrackNumber); // name of title0
+        // play the file
+        executeCommand("player:file@" + filename); // load file (and file will be played immediatyl)
+        Answer = "OK";
       }else if (Command.indexOf("player:volume") > -1){
         // player:volume@-140dBfs...0dBfs
         audio.setVolume(pow(10, Command.substring(Command.indexOf("@")+1).toFloat()/20.0f) * 21.0f);
@@ -638,7 +666,7 @@ String executeCommand(String Command) {
       }else{
         Answer = "ERROR: Channel or value out of range!";
       }
-    }else if ((Command.indexOf("mixer:volume:card") > -1) || (Command.indexOf("mixer:volume:sd") > -1)){
+    }else if ((Command.indexOf("mixer:volume:card") > -1) || (Command.indexOf("mixer:volume:sd") > -1) || (Command.indexOf("mixer:volume:sdcard") > -1)){
       // received command "mixer:volume:card@value"
       float value = Command.substring(Command.indexOf("@")+1).toFloat();
 

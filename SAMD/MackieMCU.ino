@@ -108,12 +108,16 @@
         MackieMCU.forceUpdate = true;
       }else if (note == 0x5b) {
         // rewind
+        playbackPrevTitle();
       }else if (note == 0x5c) {
         // forward
+        playbackNextTitle();
       }else if (note == 0x5d) {
         // stop
+        playbackStop();
       }else if (note == 0x5e) {
         // play
+        playbackPlayPause();
       }else if (note == 0x5f) {
         // record (switches between Audio and DMX)
         mackieDmxMode = !mackieDmxMode;
@@ -241,28 +245,16 @@
         MackieMCU.forceUpdate = true;
       }else if (note == 0x5b) {
         // rewind
-        if (playerinfo.currentTrackNumber > 0) {
-          playerinfo.currentTrackNumber -= 1;
-        }
-        // now get the fileName from TOC
-        String filename = split(TOC, '|', playerinfo.currentTrackNumber); // name of title0
-        // play the file
-        SerialNina.println("player:file@" + filename); // load file (and file will be played immediatyl)
+        playbackPrevTitle();
       }else if (note == 0x5c) {
         // forward
-        if (playerinfo.currentTrackNumber < (tocEntries - 1)) {
-          playerinfo.currentTrackNumber += 1;
-        }
-        // now get the fileName from TOC
-        String filename = split(TOC, '|', playerinfo.currentTrackNumber); // name of title0
-        // play the file
-        SerialNina.println("player:file@" + filename); // load file (and file will be played immediatyl)
+        playbackNextTitle();
       }else if (note == 0x5d) {
         // stop
-        SerialNina.println("player:stop");
+        playbackStop();
       }else if (note == 0x5e) {
         // play
-        SerialNina.println("player:pause");
+        playbackPlayPause();
       }else if (note == 0x5f) {
         // record (switches between Audio and DMX)
         mackieDmxMode = !mackieDmxMode;
@@ -396,6 +388,9 @@
 
           // send new value to NINA
           SerialNina.println("dmx512:output:ch" + String(channel + 1) + "@" + String(newValue));
+
+          // reset nameCounter to display current value in displays instead of names for some time
+          MackieMCU.hardwareChannel[hardwareFader].showValueCounter = 20; // show value for 2 seconds as counter is at 100ms
         }
       }else if (midiChannel == 9) {
         MackieMCU.hardwareMainfader.faderPositionHW = value - MIDI_PITCHBEND_MIN;
@@ -420,7 +415,7 @@
           SerialNina.println("mixer:volume:ch" + String(channel + 1) + "@" + String(newVolume, 2));
 
           // reset nameCounter to display current value in displays instead of names for some time
-          MackieMCU.hardwareChannel[hardwareFader].nameCounter = 20; // show value for 2 seconds as counter is at 100ms
+          MackieMCU.hardwareChannel[hardwareFader].showValueCounter = 20; // show value for 2 seconds as counter is at 100ms
         }
       }else if (midiChannel == 9) {
         MackieMCU.hardwareMainfader.faderPositionHW = value - MIDI_PITCHBEND_MIN;
@@ -521,7 +516,13 @@
           MackieMCU_setFader(hardwareFader, MackieMCU.channelDmx[i_ch].faderPosition);
         }
         MackieMCU_setMeter(hardwareFader, MackieMCU.hardwareChannel[hardwareFader].meterLevel);
-        MackieMCU_updateLCDs(hardwareFader, "DMX " + String(i_ch + 1), String(MackieMCU.channelDmx[i_ch].faderPosition/64.24705882352941f, 0) + "/" + String(MackieMCU.channelDmx[i_ch].faderPosition/163.83f, 0) + "%  ");
+        if (MackieMCU.hardwareChannel[hardwareFader].showValueCounter > 0) {
+          // displaying current audio-level in second line
+          MackieMCU_updateLCDs(hardwareFader, "DMX " + String(i_ch + 1), String(MackieMCU.channelDmx[i_ch].faderPosition/64.24705882352941f, 0) + "/" + String(MackieMCU.channelDmx[i_ch].faderPosition/163.83f, 0) + "%  ");
+        }else{
+          // display channel-name in second line
+          MackieMCU_updateLCDs(hardwareFader, "DMX " + String(i_ch + 1), MackieMCU.channelDmx[i_ch].name);
+        }
         MackieMCU_setLedRing(hardwareFader, MackieMCU.channelDmx[i_ch].encoderValue);
       }
 /*
@@ -581,7 +582,7 @@
           MackieMCU_setFader(hardwareFader, MackieMCU.channel[i_ch].faderPosition);
         }
         MackieMCU_setMeter(hardwareFader, MackieMCU.hardwareChannel[hardwareFader].meterLevel);
-        if (MackieMCU.hardwareChannel[hardwareFader].nameCounter > 0) {
+        if (MackieMCU.hardwareChannel[hardwareFader].showValueCounter > 0) {
           // displaying current audio-level in second line
           MackieMCU_updateLCDs(hardwareFader, "Ch" + String(i_ch+1) + MackieMCU_panString(MackieMCU.channel[i_ch].encoderValue), String(playerinfo.volumeCh[i_ch], 2) + "dB    ");
         }else{

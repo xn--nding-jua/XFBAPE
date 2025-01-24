@@ -126,10 +126,10 @@ String executeCommand(String Command) {
     }else if (Command.indexOf(F("samd:debug:x32")) > -1) {
       x32Debug = (Command.substring(Command.indexOf("@")+1).toInt() == 1);
       Answer = "SAMD: OK";
-    }else if (Command.indexOf(F("samd:config:mac")) > -1) {
+    }else if (Command.indexOf(F("samd:config:mac?")) > -1) {
       // requesting the MAC-Address from EEPROM
       Answer = mac2String(config.mac);
-    }else if (Command.indexOf(F("samd:config:ip")) > -1) {
+    }else if (Command.indexOf(F("samd:config:ip?")) > -1) {
       // requesting the current IP-address
       Answer = IpAddress2String(eeprom_config.ip);
     }else if (Command.indexOf("samd:config:set:ip") > -1){
@@ -147,49 +147,75 @@ String executeCommand(String Command) {
       }else if (Command.indexOf("samd:config:set:xtouchip") > -1){
         //samd:config:set:xtouchip1@000.000.000.000
         uint8_t i_xtouch = Command.substring(24, Command.indexOf("@")).toInt() - 1;
-        String ipString = Command.substring(Command.indexOf("@")+1) + '.'; // adding leading dot at the end to ensure function of split()
-        uint8_t ip0 = split(ipString, '.', 0).toInt();
-        uint8_t ip1 = split(ipString, '.', 1).toInt();
-        uint8_t ip2 = split(ipString, '.', 2).toInt();
-        uint8_t ip3 = split(ipString, '.', 3).toInt();
-        IPAddress newIp = IPAddress(ip0, ip1, ip2, ip3);
+        if ((i_xtouch >=0 ) && (i_xtouch < XTOUCH_COUNT)) {
+          String ipString = Command.substring(Command.indexOf("@")+1) + '.'; // adding leading dot at the end to ensure function of split()
+          uint8_t ip0 = split(ipString, '.', 0).toInt();
+          uint8_t ip1 = split(ipString, '.', 1).toInt();
+          uint8_t ip2 = split(ipString, '.', 2).toInt();
+          uint8_t ip3 = split(ipString, '.', 3).toInt();
+          IPAddress newIp = IPAddress(ip0, ip1, ip2, ip3);
 
-        eeprom_config.xtouchip[i_xtouch] = newIp;
-        XCtlUdp[i_xtouch].stop();
-        delay(10);
-        XCtl[i_xtouch].ip = newIp;
-        XCtl_init(i_xtouch);
+          eeprom_config.xtouchip[i_xtouch] = newIp;
+          XCtlUdp[i_xtouch].stop();
+          delay(10);
+          XCtl[i_xtouch].ip = newIp;
+          XCtl_init(i_xtouch);
+          Answer = "SAMD: OK";
+        }else{
+          Answer = "SAMD: ERROR - OUT OF RANGE";
+        }
+      }else if (Command.indexOf("samd:xtouch:reconnect") > -1){
+        for (uint8_t i_xtouch=0; i_xtouch<XTOUCH_COUNT; i_xtouch++) {
+          XCtlWatchdogCounter[i_xtouch] = 5; // 500ms to resend watchdog-message
+          XCtl[i_xtouch].online = true; // enable device-communication
+        }
         Answer = "SAMD: OK";
     #endif
     #if USE_MACKIE_MCU == 1 || USE_XTOUCH == 1
       }else if (Command.indexOf("samd:setname:ch") > -1){
         //samd:setname:ch1@Ch 1
-        uint8_t channel = Command.substring(15, Command.indexOf("@")).toInt();
-        String name = Command.substring(Command.indexOf("@")+1);
-        MackieMCU.channel[channel - 1].name = name;
+        uint8_t channel = Command.substring(15, Command.indexOf("@")).toInt() - 1;
+        if ((channel >= 0) && (channel < 32)) {
+          String name = Command.substring(Command.indexOf("@")+1);
+          MackieMCU.channel[channel].name = name;
 
-        Answer = "SAMD: OK";
+          Answer = "SAMD: OK";
+        }else{
+          Answer = "SAMD: ERROR - OUT OF RANGE";
+        }
       }else if (Command.indexOf("samd:setcolor:ch") > -1){
         //samd:setcolor:ch1@Ch 1
-        uint8_t channel = Command.substring(16, Command.indexOf("@")).toInt();
-        uint8_t color = Command.substring(Command.indexOf("@")+1).toInt();
-        MackieMCU.channel[channel - 1].color = color;
+        uint8_t channel = Command.substring(16, Command.indexOf("@")).toInt() - 1;
+        if ((channel >= 0) && (channel < 32)) {
+          uint8_t color = Command.substring(Command.indexOf("@")+1).toInt();
+          MackieMCU.channel[channel].color = color;
 
-        Answer = "SAMD: OK";
+          Answer = "SAMD: OK";
+        }else{
+          Answer = "SAMD: ERROR - OUT OF RANGE";
+        }
       }else if (Command.indexOf("samd:setname:dmxch") > -1){
         //samd:setname:dmxch1@Ch 1
-        uint16_t dmxChannel = Command.substring(18, Command.indexOf("@")).toInt();
-        String name = Command.substring(Command.indexOf("@")+1);
-        MackieMCU.channelDmx[dmxChannel - 1].name = name;
+        uint16_t dmxChannel = Command.substring(18, Command.indexOf("@")).toInt() - 1;
+        if ((dmxChannel >= 0) && (dmxChannel < 512)) {
+          String name = Command.substring(Command.indexOf("@")+1);
+          MackieMCU.channelDmx[dmxChannel].name = name;
 
-        Answer = "SAMD: OK";
+          Answer = "SAMD: OK";
+        }else{
+          Answer = "SAMD: ERROR - OUT OF RANGE";
+        }
       }else if (Command.indexOf("samd:setcolor:dmxch") > -1){
         //samd:setcolor:dmxch1@Ch 1
-        uint16_t dmxChannel = Command.substring(19, Command.indexOf("@")).toInt();
-        uint8_t color = Command.substring(Command.indexOf("@")+1).toInt();
-        MackieMCU.channelDmx[dmxChannel - 1].color = color;
+        uint16_t dmxChannel = Command.substring(19, Command.indexOf("@")).toInt() - 1;
+        if ((dmxChannel >= 0) && (dmxChannel < 512)) {
+          uint8_t color = Command.substring(Command.indexOf("@")+1).toInt();
+          MackieMCU.channelDmx[dmxChannel].color = color;
 
-        Answer = "SAMD: OK";
+          Answer = "SAMD: OK";
+        }else{
+          Answer = "SAMD: ERROR - OUT OF RANGE";
+        }
     #endif
     }else if (Command.indexOf("samd:config:save") > -1){
       saveConfig();

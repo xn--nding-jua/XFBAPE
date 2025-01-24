@@ -14,7 +14,7 @@ const char compile_date[] = __DATE__ " " __TIME__;
 #define USE_DISPLAY       0      // enables support for SSD1308 display connected to I2C
 #define USE_MACKIE_MCU    1      // support for MackieMCU via MIDI
 #define USE_XTOUCH        1      // support for XTouch via Ethernet
-#define XTOUCH_COUNT      1      // number of XTouch-Devices (max. 4 devices at the moment)
+#define XTOUCH_COUNT      2      // number of supported XTouch-Devices
 #define XTOUCH_COLOR      7      // color to init the channel: 0=BLACK, 1=RED, 2=GREEN, 3=YELLOW, 4=BLUE, 5=PINK, 6=CYAN, 7=WHITE (add 64 to invert)
 #define XTOUCH_COLOR_DMX  3      // color to init the channel: 0=BLACK, 1=RED, 2=GREEN, 3=YELLOW, 4=BLUE, 5=PINK, 6=CYAN, 7=WHITE (add 64 to invert)
 
@@ -179,7 +179,7 @@ uint32_t refreshCounter = 0;
     bool faderTouched = false;
     bool faderNeedsUpdate = false;
     uint8_t meterLevel; // 0...12 for Mackie, 0..8 for X-Touch
-    uint8_t nameCounter = 0; // show value for x seconds as counter is at 100ms
+    uint8_t showValueCounter = 0; // show value for x seconds as counter is at 100ms
   };
 
   struct {
@@ -197,8 +197,7 @@ uint32_t refreshCounter = 0;
 
 #if USE_XTOUCH == 1
   EthernetUDP XCtlUdp[XTOUCH_COUNT];
-  uint16_t XCtlConnectionTimeout = 0; // should stay zero, but will be increased on udp-errors
-  uint16_t XCtlWatchdogCounter = 20; // preload to 2 seconds
+  uint16_t XCtlWatchdogCounter[XTOUCH_COUNT];
 
   uint8_t XCtl_Probe[8] = {0xF0, 0x00, 0x20, 0x32, 0x58, 0x54, 0x00, 0xF7};
   uint8_t XCtl_ProbeResponse[8] = {0xF0, 0x00, 0x20, 0x32, 0x58, 0x54, 0x01, 0xF7};
@@ -208,12 +207,13 @@ uint32_t refreshCounter = 0;
 
   struct sXCtl{
     IPAddress ip;
+    bool online = true;
     uint8_t channelOffset = 0;
     uint16_t channelOffsetDmx = 0; // 0...504
     bool forceUpdate = false;
     sMackieMCU_ChannelHW hardwareChannel[8];
     sMackieMCU_ChannelHW hardwareMainfader;
-    bool showValues = true;
+    bool showNames = true;
     bool dmxMode = false;
     uint8_t jogDialValue = 0;
     uint8_t jogDialValueDmx = 0;

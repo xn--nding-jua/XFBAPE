@@ -101,7 +101,8 @@ String password = "YourVerySafeWiFiPassword"; // password can be changed via USB
 #endif
 
 String currentAudioFile;
-uint32_t currentAudioPosition;
+uint32_t currentAudioPosition = 0;
+uint8_t currentTrackNumber = 0;
 
 #if USE_SDPLAYER == 1
   #define I2S_DOUT            NINA_PIO8

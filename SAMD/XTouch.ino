@@ -42,13 +42,21 @@
         channel = (uint16_t)hardwareFader + XCtl[i_xtouch].channelOffsetDmx;
         color = MackieMCU.channelDmx[channel].color; // 0=BLACK, 1=RED, 2=GREEN, 3=YELLOW, 4=BLUE, 5=PINK, 6=CYAN, 7=WHITE
         topText = "DMX " + String(channel + 1) + "    ";
-        botText = String(MackieMCU.channelDmx[channel].faderPosition/64.247058f, 0) + "/" + String(MackieMCU.channelDmx[channel].faderPosition/163.83f, 0) + "%  ";
+        if ( ((XCtl[i_xtouch].showNames) && (XCtl[i_xtouch].hardwareChannel[hardwareFader].showValueCounter > 0)) || 
+          ((!XCtl[i_xtouch].showNames) && (XCtl[i_xtouch].hardwareChannel[hardwareFader].showValueCounter == 0)) ) {
+          // displaying current audio-level in second line
+          botText = String(MackieMCU.channelDmx[channel].faderPosition/64.247058f, 0) + "/" + String(MackieMCU.channelDmx[channel].faderPosition/163.83f, 0) + "%  ";
+        }else{
+          // display channel-name in second line
+          botText = MackieMCU.channelDmx[channel].name;
+        }
       }else{
         channel = hardwareFader + XCtl[i_xtouch].channelOffset;
         color = MackieMCU.channel[channel].color; // 0=BLACK, 1=RED, 2=GREEN, 3=YELLOW, 4=BLUE, 5=PINK, 6=CYAN, 7=WHITE
         topText = "Ch" + String(channel + 1) + " " + XCtl_panString(MackieMCU.channel[channel].encoderValue);
 
-        if (XCtl[i_xtouch].hardwareChannel[hardwareFader].nameCounter > 0) {
+        if ( ((XCtl[i_xtouch].showNames) && (XCtl[i_xtouch].hardwareChannel[hardwareFader].showValueCounter > 0)) || 
+          ((!XCtl[i_xtouch].showNames) && (XCtl[i_xtouch].hardwareChannel[hardwareFader].showValueCounter == 0)) ) {
           // displaying current audio-level in second line
           botText = String(playerinfo.volumeCh[channel], 2) + "dB    ";
         }else{
@@ -292,6 +300,8 @@
     // we have to send 00 00 66 14 00
 
     if (XCtlUdp[i_xtouch].parsePacket() > 0) {
+      XCtl[i_xtouch].online = true;
+
       uint8_t rxData[18]; //buffer to hold incoming packet,
       uint8_t len = XCtlUdp[i_xtouch].read(rxData, 18);
       uint16_t channel = 0;
@@ -322,13 +332,12 @@
           if ((rxData[0] == 0x90) && (rxData[1] >= 0x68) && (rxData[1] <= 0x70)) {
             hardwareFader = (rxData[1] - 0x68);
 
-/*
             // check if touch is removed from fader and update fader
-            if ((XCtl[i_xtouch].hardwareChannel[hardwareFader].faderTouched) && !(rxData[2] != 0))  {
-              // fader is untouched
-              XCtl[i_xtouch].hardwareChannel[hardwareFader].faderNeedsUpdate = true;
-            }
-*/
+            //if ((XCtl[i_xtouch].hardwareChannel[hardwareFader].faderTouched) && !(rxData[2] != 0))  {
+            //  // fader is untouched
+            //  XCtl[i_xtouch].hardwareChannel[hardwareFader].faderNeedsUpdate = true;
+            //}
+
             XCtl[i_xtouch].hardwareChannel[hardwareFader].faderTouched = rxData[2] != 0;
           }
 
@@ -347,10 +356,13 @@
                 XCtl[i_xtouch].hardwareChannel[hardwareFader].faderPositionHW = value;
                 if (XCtl[i_xtouch].hardwareChannel[hardwareFader].faderTouched) {
                   MackieMCU.channelDmx[channel].faderPosition = value;
-                  
+
                   // send new dmx-value to NINA
                   uint8_t newDmxValue = (value/64.24705882352941f);
                   SerialNina.println("dmx512:output:ch" + String(channel + 1) + "@" + String(newDmxValue));
+
+                  // reset nameCounter to display current value in displays instead of names for some time
+                  XCtl[i_xtouch].hardwareChannel[hardwareFader].showValueCounter = 20; // show value for 2 seconds as counter is at 100ms
                 }
               }else if ((rxData[0] & 0x0F) == 8){
                 // masterfader = fader 9
@@ -378,7 +390,7 @@
                   SerialNina.println("mixer:volume:ch" + String(channel + 1) + "@" + String(newVolume, 2));
 
                   // reset nameCounter to display current value in displays instead of names for some time
-                  XCtl[i_xtouch].hardwareChannel[hardwareFader].nameCounter = 20; // show value for 2 seconds as counter is at 100ms
+                  XCtl[i_xtouch].hardwareChannel[hardwareFader].showValueCounter = 20; // show value for 2 seconds as counter is at 100ms
                 }
               }else if ((rxData[0] & 0x0F) == 8){
                 // masterfader = fader 9
@@ -524,12 +536,11 @@
             // 114 Beats
             // 115 Solo - on 7-seg display
 
-  /*
             // turn on LED for the common buttons on button-press
-            if (buttonState && ((button >= 32) && (button < 102))) {
-              XCtl[i_xtouch].buttonLightOn[button] = 254; // 255=TurnOn, 254=enable with auto-TurnOff, 1=TurnOff
-            }
-  */
+            //if (buttonState && ((button >= 32) && (button < 102))) {
+            //  XCtl[i_xtouch].buttonLightOn[button] = 254; // 255=TurnOn, 254=enable with auto-TurnOff, 1=TurnOff
+            //}
+
             // turn on LED for the common buttons on button-press
             if (((button >= 32) && (button<102)) && !((button>=40) && (button<=45) && !(button==50) && !(button==52) && !(button==95))) { // 40 to 45 - encoder assign buttons (track, send, pan,  plugin, eq, inst)
               if (buttonState) {
@@ -785,43 +796,30 @@
 
             if ((button == 52) && (buttonState)) {
               // button "Display/Name"
-              XCtl[i_xtouch].showValues = !XCtl[i_xtouch].showValues;
+              XCtl[i_xtouch].showNames = !XCtl[i_xtouch].showNames;
               
-              if (XCtl[i_xtouch].showValues) {
-                XCtl[i_xtouch].buttonLightOn[button] = 255;
+              if (XCtl[i_xtouch].showNames) {
+                XCtl[i_xtouch].buttonLightOn[button] = 1; // turn off
               }else{
-                XCtl[i_xtouch].buttonLightOn[button] = 1;
+                XCtl[i_xtouch].buttonLightOn[button] = 255; // turn on
               }
             }
 
             // 91 to 95 - Playback control (rewind, fast-forward, stop, play, record)
             if ((button == 91) && (buttonState)) {
               // button "rewind"
-              if (playerinfo.currentTrackNumber > 0) {
-                playerinfo.currentTrackNumber -= 1;
-              }
-              // now get the fileName from TOC
-              String filename = split(TOC, '|', playerinfo.currentTrackNumber); // name of title0
-              // play the file
-              SerialNina.println("player:file@" + filename); // load file (and file will be played immediatyl)
-            }
+              playbackPrevTitle();            }
             if ((button == 92) && (buttonState)) {
               // button "forward"
-              if (playerinfo.currentTrackNumber < (tocEntries - 1)) {
-                playerinfo.currentTrackNumber += 1;
-              }
-              // now get the fileName from TOC
-              String filename = split(TOC, '|', playerinfo.currentTrackNumber); // name of title0
-              // play the file
-              SerialNina.println("player:file@" + filename); // load file (and file will be played immediatyl)
+              playbackNextTitle();
             }
             if ((button == 93) && (buttonState)) {
               // button "stop"
-              SerialNina.println("player:stop");
+              playbackStop();
             }
             if ((button == 94) && (buttonState)) {
               // button "play"
-              SerialNina.println("player:pause");
+              playbackPlayPause();
             }
 
             if (((button == 50) || (button == 95)) && (buttonState)) {
@@ -980,6 +978,10 @@
       MackieMCU.channel[i_ch].name = "Ch " + String(i_ch + 1) + "   ";
     }
 
+    for (uint8_t i_xtouch=0; i_xtouch<XTOUCH_COUNT; i_xtouch++) {
+      XCtlWatchdogCounter[i_xtouch] = 20;
+    }
+
     XCtlUdp[i_xtouch].begin(10111);
   }
 
@@ -992,15 +994,15 @@
       if (writtenBytes > 0) {
         // connection was OK, so close it gracefully
         if (!XCtlUdp[i_xtouch].endPacket()) {
-          XCtlConnectionTimeout = 50;
+          XCtl[i_xtouch].online = false; // disable this X-Touch-device, otherwise we jeopardize the usability of the system 
         }
       }else{
-        // we have a connection-problem -> reduce transmission-rate
-        XCtlConnectionTimeout = 50; // transmit only every 5 seconds
+        // we have a connection-problem -> disable this X-Touch-device, otherwise we jeopardize the usability of the system 
+        XCtl[i_xtouch].online = false;
       }
     }else{
-      // we have a connection-problem -> reduce transmission-rate
-      XCtlConnectionTimeout = 50; // transmit only every 5 seconds
+      // we have a connection-problem -> disable this X-Touch-device, otherwise we jeopardize the usability of the system 
+      XCtl[i_xtouch].online = false;
     }
   }
 
