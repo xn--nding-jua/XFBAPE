@@ -32,7 +32,6 @@
     String topText;
     String botText;
     uint8_t color;
-    bool inverted;
 
     for (uint8_t i_ch=0; i_ch<8; i_ch++) {
       uint8_t hardwareFader = i_ch;
@@ -41,14 +40,12 @@
       // prepare values
       if (XCtl[i_xtouch].dmxMode) {
         channel = (uint16_t)hardwareFader + XCtl[i_xtouch].channelOffsetDmx;
-        inverted = XTOUCH_COLOR_INVERT_DMX;
-        color = XTOUCH_COLOR_DMX; // 0=BLACK, 1=RED, 2=GREEN, 3=YELLOW, 4=BLUE, 5=PINK, 6=CYAN, 7=WHITE
+        color = MackieMCU.channelDmx[channel].color; // 0=BLACK, 1=RED, 2=GREEN, 3=YELLOW, 4=BLUE, 5=PINK, 6=CYAN, 7=WHITE
         topText = "DMX " + String(channel + 1) + "    ";
         botText = String(MackieMCU.channelDmx[channel].faderPosition/64.247058f, 0) + "/" + String(MackieMCU.channelDmx[channel].faderPosition/163.83f, 0) + "%  ";
       }else{
         channel = hardwareFader + XCtl[i_xtouch].channelOffset;
-        inverted = XTOUCH_COLOR_INVERT;
-        color = XTOUCH_COLOR; // 0=BLACK, 1=RED, 2=GREEN, 3=YELLOW, 4=BLUE, 5=PINK, 6=CYAN, 7=WHITE
+        color = MackieMCU.channel[channel].color; // 0=BLACK, 1=RED, 2=GREEN, 3=YELLOW, 4=BLUE, 5=PINK, 6=CYAN, 7=WHITE
         topText = "Ch" + String(channel + 1) + " " + XCtl_panString(MackieMCU.channel[channel].encoderValue);
 
         if (XCtl[i_xtouch].hardwareChannel[hardwareFader].nameCounter > 0) {
@@ -59,14 +56,10 @@
           botText = MackieMCU.channel[channel].name;
         }
       }      
-
-      // prepare color
-      if (inverted) {
-        XCtl_TxMessage[6] = 0x40 + color;
-      }else{
-        XCtl_TxMessage[6] = color;
-      }
       
+      // set color
+      XCtl_TxMessage[6] = color;
+
       // prepare text
       for (uint8_t i=0; i<7; i++) {
         XCtl_TxMessage[7+i] = topText[i];
@@ -385,7 +378,7 @@
                   SerialNina.println("mixer:volume:ch" + String(channel + 1) + "@" + String(newVolume, 2));
 
                   // reset nameCounter to display current value in displays instead of names for some time
-                  XCtl[i_xtouch].hardwareChannel[hardwareFader].nameCounter = 30; // show value for 3 seconds as counter is at 100ms
+                  XCtl[i_xtouch].hardwareChannel[hardwareFader].nameCounter = 20; // show value for 2 seconds as counter is at 100ms
                 }
               }else if ((rxData[0] & 0x0F) == 8){
                 // masterfader = fader 9
@@ -684,10 +677,11 @@
                 // solo-buttons
                 if (buttonState) {
                   // pressed
-                  if (MackieMCU.channel[(button-8) + XCtl[i_xtouch].channelOffset].solo == 0) {
-                    MackieMCU.channel[(button-8) + XCtl[i_xtouch].channelOffset].solo = 2;
+                  channel = (button-8) + XCtl[i_xtouch].channelOffset;
+                  if (MackieMCU.channel[channel].solo == 0) {
+                    MackieMCU.channel[channel].solo = 2;
                   }else{
-                    MackieMCU.channel[(button-8) + XCtl[i_xtouch].channelOffset].solo = 0;
+                    MackieMCU.channel[channel].solo = 0;
                   }
 
                   // send value to NINA
@@ -701,7 +695,7 @@
                 // mute-buttons
                 if (buttonState) {
                   // pressed
-                  uint8_t channel = (button-16) + XCtl[i_xtouch].channelOffset;
+                  channel = (button-16) + XCtl[i_xtouch].channelOffset;
                   if (MackieMCU.channel[channel].mute == 0) {
                     MackieMCU.channel[channel].mute = 2;
                   }else{
@@ -739,7 +733,7 @@
                 if (buttonState) {
                   // pressed
                   // reset panning to 50%
-                  uint8_t channel = (button-32) + XCtl[i_xtouch].channelOffset;
+                  channel = (button-32) + XCtl[i_xtouch].channelOffset;
                   MackieMCU.channel[channel].encoderValue = 128;
                   playerinfo.balanceCh[channel] = 128; // we are receiving this value from NINA with a bit delay again
                   SerialNina.println("mixer:balance:ch" + String(channel + 1) + "@" + String(MackieMCU.channel[channel].encoderValue / 2.55f));

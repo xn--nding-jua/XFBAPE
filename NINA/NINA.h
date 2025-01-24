@@ -1,4 +1,4 @@
-const char* versionstring = "v3.1.0";
+const char* versionstring = "v3.1.2";
 const char compile_date[] = __DATE__ " " __TIME__;
 
 String hostname = "xfbape";
@@ -193,6 +193,7 @@ File configFile;
 // includes for Ticker
 #include <Ticker.h>
 Ticker TimerSeconds;
+Ticker Timer100ms;
 
 // general variables
 #define SerialSamd Serial

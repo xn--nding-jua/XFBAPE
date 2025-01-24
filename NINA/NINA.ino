@@ -1,8 +1,8 @@
 /*
   X-f/bape MainCtrl for Arduino MKR Vidor4000 Device
-  v3.1.0 built on 23.12.2024
+  v3.1.2 built on 23.01.2025
   Infos: https://www.github.com/xn--nding-jua/xfbape
-  Copyright (c) 2023-2024 Dr.-Ing. Christian Nöding
+  Copyright (c) 2023-2025 Dr.-Ing. Christian Nöding
 
   Target-Board: uBlox NINA W10-series (ESP32)
   Board-package: https://espressif.github.io/arduino-esp32/package_esp32_index.json
@@ -111,7 +111,11 @@ void timerSecondsFcn() {
     mqttPublish();
   #endif
   
-  updateSAMD(); // update the display of the SAMD with current information
+  updateSamdInfo(); // update the display of the SAMD with current information
+}
+
+void timer100msFcn() {
+  updateSamdChannel(); // update the display of the SAMD with current information
 }
 
 void setup() {
@@ -218,6 +222,7 @@ void initSystem() {
 
   // Initiate the timers
   TimerSeconds.attach_ms(1000, timerSecondsFcn);
+  Timer100ms.attach_ms(100, timer100msFcn);
 
   #if USE_DMX512 == 1
     initDmx512();

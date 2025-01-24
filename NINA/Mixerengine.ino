@@ -72,11 +72,11 @@ void sendVolumeToFPGA(int8_t channel) {
 
     // send data to FPGA
     fpga_data.u32[0] = trunc(volume_left);
-    sendDataToFPGA(FPGA_IDX_MAIN_VOL, &fpga_data);
+    sendDataToFPGA(FPGA_IDX_MAIN_VOL, &fpga_data); // left
     fpga_data.u32[0] = trunc(volume_right);
-    sendDataToFPGA(FPGA_IDX_MAIN_VOL+1, &fpga_data);
+    sendDataToFPGA(FPGA_IDX_MAIN_VOL+1, &fpga_data); // right
     fpga_data.u32[0] = trunc(volume_sub);
-    sendDataToFPGA(FPGA_IDX_MAIN_VOL+2, &fpga_data);
+    sendDataToFPGA(FPGA_IDX_MAIN_VOL+2, &fpga_data); // sub
   }else if (channel > 0) {
     // send regular volume to FPGA
 
@@ -86,15 +86,15 @@ void sendVolumeToFPGA(int8_t channel) {
     volume_right = (pow(10, audiomixer.volumeCh[channel - 1]/20.0f) * 128.0f) * limitMax(audiomixer.balanceCh[channel - 1] * 2, 100) / 100.0f;
 
     fpga_data.u32[0] = trunc(volume_left);
-    sendDataToFPGA(FPGA_IDX_CH_VOL + (channel - 1) * 2, &fpga_data); // send data for this channel to main left
+    sendDataToFPGA(FPGA_IDX_CH_VOL + (channel - 1) * 2, &fpga_data); // left
     fpga_data.u32[0] = trunc(volume_right);
-    sendDataToFPGA(FPGA_IDX_CH_VOL + (channel - 1) * 2 + 1, &fpga_data); // send data for this channel to main right
+    sendDataToFPGA(FPGA_IDX_CH_VOL + (channel - 1) * 2 + 1, &fpga_data); // right
   }else{
-    // mute this specific channel without changing the volume-information in the fpga
+    // mute this specific channel without changing the volume-information within NINA
     fpga_data.u32[0] = 0;
-    sendDataToFPGA(FPGA_IDX_CH_VOL + (channel - 1) * 2, &fpga_data); // send data for this channel to main left
+    sendDataToFPGA(FPGA_IDX_CH_VOL + (abs(channel) - 1) * 2, &fpga_data); // left
     fpga_data.u32[0] = 0;
-    sendDataToFPGA(FPGA_IDX_CH_VOL + (channel - 1) * 2 + 1, &fpga_data); // send data for this channel to main right
+    sendDataToFPGA(FPGA_IDX_CH_VOL + (abs(channel) - 1) * 2 + 1, &fpga_data); // right
   }
 }
 

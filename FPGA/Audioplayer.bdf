@@ -4,7 +4,7 @@ editor if you plan to continue editing the block that represents it in
 the Block Editor! File corruption is VERY likely to occur.
 */
 /*
-Copyright (C) 2024  Intel Corporation. All rights reserved.
+Copyright (C) 2022  Intel Corporation. All rights reserved.
 Your use of Intel Corporation's design tools, logic functions 
 and other software and tools, and any partner logic 
 functions, and any output files from any of the foregoing 
@@ -2412,37 +2412,6 @@ https://fpgasoftware.intel.com/eula.
 	)
 )
 (symbol
-	(rect -1784 1592 -1672 1640)
-	(text "LPM_CONSTANT" (rect 4 0 125 16)(font "Arial" (font_size 10)))
-	(text "fpga_version" (rect 3 37 78 51)(font "Arial" (font_size 8)))
-	(port
-		(pt 112 32)
-		(output)
-		(text "result[LPM_WIDTH-1..0]" (rect 75 19 208 33)(font "Arial" (font_size 8)))
-		(text "result[]" (rect 75 19 113 33)(font "Arial" (font_size 8)))
-		(line (pt 64 32)(pt 112 32)(line_width 3))
-	)
-	(parameter
-		"LPM_CVALUE"
-		"108"
-		"Unsigned value to which outputs will be set"
-		(type "PARAMETER_UNSIGNED_DEC")	)
-	(parameter
-		"LPM_WIDTH"
-		"8"
-		"Width of output, any integer > 0"
-		" 1" " 2" " 3" " 4" " 5" " 6" " 7" " 8" " 9" "10" "11" "12" "13" "14" "15" "16" "20" "24" "28" "32" 
-	)
-	(drawing
-		(text "(cvalue)" (rect 21 26 68 40)(font "Arial" (font_size 8)))
-		(line (pt 16 24)(pt 64 24))
-		(line (pt 16 40)(pt 64 40))
-		(line (pt 64 40)(pt 64 24))
-		(line (pt 16 40)(pt 16 24))
-	)
-	(annotation_block (parameter)(rect -1784 1528 -1585 1585))
-)
-(symbol
 	(rect 6176 -80 6384 0)
 	(text "ddfs_amplitude" (rect 5 0 80 12)(font "Arial" ))
 	(text "inst" (rect 8 64 25 76)(font "Arial" ))
@@ -3431,35 +3400,6 @@ https://fpgasoftware.intel.com/eula.
 	)
 	(drawing
 		(rectangle (rect 16 16 168 192))
-	)
-)
-(symbol
-	(rect 64 232 208 312)
-	(text "edge_detector" (rect 5 0 74 12)(font "Arial" ))
-	(text "inst37" (rect 8 64 37 76)(font "Arial" ))
-	(port
-		(pt 0 32)
-		(input)
-		(text "clk" (rect 0 0 14 12)(font "Arial" ))
-		(text "clk" (rect 21 27 35 39)(font "Arial" ))
-		(line (pt 0 32)(pt 16 32))
-	)
-	(port
-		(pt 0 48)
-		(input)
-		(text "input" (rect 0 0 23 12)(font "Arial" ))
-		(text "input" (rect 21 43 44 55)(font "Arial" ))
-		(line (pt 0 48)(pt 16 48))
-	)
-	(port
-		(pt 144 32)
-		(output)
-		(text "output" (rect 0 0 30 12)(font "Arial" ))
-		(text "output" (rect 98 27 128 39)(font "Arial" ))
-		(line (pt 144 32)(pt 128 32))
-	)
-	(drawing
-		(rectangle (rect 16 16 128 64))
 	)
 )
 (symbol
@@ -6308,6 +6248,37 @@ https://fpgasoftware.intel.com/eula.
 	)
 	(annotation_block (parameter)(rect -1440 1480 -1235 1537))
 )
+(symbol
+	(rect -1784 1592 -1672 1640)
+	(text "LPM_CONSTANT" (rect 4 0 125 16)(font "Arial" (font_size 10)))
+	(text "fpga_version" (rect 3 37 78 51)(font "Arial" (font_size 8)))
+	(port
+		(pt 112 32)
+		(output)
+		(text "result[LPM_WIDTH-1..0]" (rect 75 19 208 33)(font "Arial" (font_size 8)))
+		(text "result[]" (rect 75 19 113 33)(font "Arial" (font_size 8)))
+		(line (pt 64 32)(pt 112 32)(line_width 3))
+	)
+	(parameter
+		"LPM_CVALUE"
+		"109"
+		"Unsigned value to which outputs will be set"
+		(type "PARAMETER_UNSIGNED_DEC")	)
+	(parameter
+		"LPM_WIDTH"
+		"8"
+		"Width of output, any integer > 0"
+		" 1" " 2" " 3" " 4" " 5" " 6" " 7" " 8" " 9" "10" "11" "12" "13" "14" "15" "16" "20" "24" "28" "32" 
+	)
+	(drawing
+		(text "(cvalue)" (rect 21 26 68 40)(font "Arial" (font_size 8)))
+		(line (pt 16 24)(pt 64 24))
+		(line (pt 16 40)(pt 64 40))
+		(line (pt 64 40)(pt 64 24))
+		(line (pt 16 40)(pt 16 24))
+	)
+	(annotation_block (parameter)(rect -1784 1528 -1585 1585))
+)
 (connector
 	(text "clk_48MHz" (rect -1326 1360 -1273 1377)(font "Intel Clear" ))
 	(pt -1336 1376)
@@ -6449,11 +6420,6 @@ https://fpgasoftware.intel.com/eula.
 	(text "clk_100MHz" (rect 1634 368 1693 385)(font "Intel Clear" ))
 	(pt 1600 384)
 	(pt 1704 384)
-)
-(connector
-	(pt 1584 400)
-	(pt 1704 400)
-	(bus)
 )
 (connector
 	(text "clk_100MHz" (rect 2442 336 2501 353)(font "Intel Clear" ))
@@ -6695,20 +6661,6 @@ https://fpgasoftware.intel.com/eula.
 	(pt 320 688)
 	(pt 440 688)
 	(bus)
-)
-(connector
-	(pt 720 432)
-	(pt 888 432)
-	(bus)
-)
-(connector
-	(pt 888 448)
-	(pt 720 448)
-	(bus)
-)
-(connector
-	(pt 720 464)
-	(pt 888 464)
 )
 (connector
 	(text "x32_ch17_out[23..0]" (rect 330 688 425 705)(font "Intel Clear" ))
@@ -7266,53 +7218,6 @@ https://fpgasoftware.intel.com/eula.
 	(pt 344 2176)
 	(pt 440 2176)
 	(bus)
-)
-(connector
-	(pt 1584 416)
-	(pt 1704 416)
-	(bus)
-)
-(connector
-	(pt 1584 432)
-	(pt 1704 432)
-)
-(connector
-	(pt 3280 336)
-	(pt 3472 336)
-	(bus)
-)
-(connector
-	(pt 3280 352)
-	(pt 3472 352)
-	(bus)
-)
-(connector
-	(pt 3280 368)
-	(pt 3472 368)
-	(bus)
-)
-(connector
-	(pt 3280 384)
-	(pt 3472 384)
-)
-(connector
-	(pt 3856 320)
-	(pt 4176 320)
-	(bus)
-)
-(connector
-	(pt 3856 336)
-	(pt 4176 336)
-	(bus)
-)
-(connector
-	(pt 3856 352)
-	(pt 4176 352)
-	(bus)
-)
-(connector
-	(pt 3856 368)
-	(pt 4176 368)
 )
 (connector
 	(pt 4512 304)
@@ -8015,21 +7920,6 @@ https://fpgasoftware.intel.com/eula.
 	(bus)
 )
 (connector
-	(pt 5784 160)
-	(pt 6416 160)
-	(bus)
-)
-(connector
-	(pt 6384 -48)
-	(pt 6416 -48)
-	(bus)
-)
-(connector
-	(pt 6416 -48)
-	(pt 6416 160)
-	(bus)
-)
-(connector
 	(pt 5832 72)
 	(pt 5880 72)
 	(bus)
@@ -8334,10 +8224,6 @@ https://fpgasoftware.intel.com/eula.
 	(pt 5968 576)
 )
 (connector
-	(pt 6144 560)
-	(pt 6160 560)
-)
-(connector
 	(text "tdm_bitclk" (rect 5898 544 5948 561)(font "Intel Clear" ))
 	(pt 5888 560)
 	(pt 5968 560)
@@ -8348,10 +8234,6 @@ https://fpgasoftware.intel.com/eula.
 	(pt 5968 792)
 )
 (connector
-	(pt 6144 776)
-	(pt 6160 776)
-)
-(connector
 	(text "tdm_bitclk" (rect 5898 760 5948 777)(font "Intel Clear" ))
 	(pt 5888 776)
 	(pt 5968 776)
@@ -8360,10 +8242,6 @@ https://fpgasoftware.intel.com/eula.
 	(text "tdm_fsync" (rect 5898 992 5947 1009)(font "Intel Clear" ))
 	(pt 5888 1008)
 	(pt 5968 1008)
-)
-(connector
-	(pt 6144 992)
-	(pt 6160 992)
 )
 (connector
 	(text "tdm_bitclk" (rect 5898 976 5948 993)(font "Intel Clear" ))
@@ -8491,52 +8369,6 @@ https://fpgasoftware.intel.com/eula.
 	(text "bt_ch2_out[23..0]" (rect 5874 440 5956 457)(font "Intel Clear" ))
 	(pt 5968 456)
 	(pt 5864 456)
-	(bus)
-)
-(connector
-	(pt 5784 488)
-	(pt 5784 160)
-	(bus)
-)
-(connector
-	(pt 5784 488)
-	(pt 5968 488)
-	(bus)
-)
-(connector
-	(pt 88 480)
-	(pt 232 480)
-)
-(connector
-	(pt 232 320)
-	(pt 232 480)
-)
-(connector
-	(text "sync_audio" (rect 218 248 271 265)(font "Intel Clear" ))
-	(pt 208 264)
-	(pt 272 264)
-)
-(connector
-	(text "clk_100MHz" (rect 2 248 61 265)(font "Intel Clear" ))
-	(pt -8 264)
-	(pt 64 264)
-)
-(connector
-	(pt 232 320)
-	(pt 48 320)
-)
-(connector
-	(pt 48 320)
-	(pt 48 280)
-)
-(connector
-	(pt 64 280)
-	(pt 48 280)
-)
-(connector
-	(text "x32_ch7_out[23..0]" (rect 5874 456 5963 473)(font "Intel Clear" ))
-	(pt 5968 472)
-	(pt 5864 472)
 	(bus)
 )
 (connector
@@ -9388,76 +9220,6 @@ https://fpgasoftware.intel.com/eula.
 	(bus)
 )
 (connector
-	(pt 2824 352)
-	(pt 2992 352)
-	(bus)
-)
-(connector
-	(pt 2824 272)
-	(pt 2824 352)
-	(bus)
-)
-(connector
-	(pt 2816 368)
-	(pt 2816 280)
-	(bus)
-)
-(connector
-	(pt 2816 368)
-	(pt 2992 368)
-	(bus)
-)
-(connector
-	(pt 1992 384)
-	(pt 2032 384)
-	(bus)
-)
-(connector
-	(pt 2032 272)
-	(pt 2032 384)
-	(bus)
-)
-(connector
-	(pt 2032 272)
-	(pt 2824 272)
-	(bus)
-)
-(connector
-	(pt 1992 400)
-	(pt 2040 400)
-	(bus)
-)
-(connector
-	(pt 2040 280)
-	(pt 2040 400)
-	(bus)
-)
-(connector
-	(pt 2040 280)
-	(pt 2816 280)
-	(bus)
-)
-(connector
-	(pt 1992 416)
-	(pt 2048 416)
-)
-(connector
-	(pt 2048 288)
-	(pt 2048 416)
-)
-(connector
-	(pt 2808 288)
-	(pt 2048 288)
-)
-(connector
-	(pt 2808 384)
-	(pt 2808 288)
-)
-(connector
-	(pt 2808 384)
-	(pt 2992 384)
-)
-(connector
 	(pt -928 1624)
 	(pt -928 2312)
 )
@@ -9878,6 +9640,185 @@ https://fpgasoftware.intel.com/eula.
 (connector
 	(pt -1224 1624)
 	(pt -1176 1624)
+)
+(connector
+	(pt 6144 560)
+	(pt 6160 560)
+)
+(connector
+	(pt 6144 776)
+	(pt 6160 776)
+)
+(connector
+	(pt 6144 992)
+	(pt 6160 992)
+)
+(connector
+	(pt 2400 368)
+	(pt 2512 368)
+	(bus)
+)
+(connector
+	(pt 2512 384)
+	(pt 2400 384)
+	(bus)
+)
+(connector
+	(pt 2400 400)
+	(pt 2512 400)
+)
+(connector
+	(pt 1704 432)
+	(pt 1584 432)
+)
+(connector
+	(pt 1704 416)
+	(pt 1584 416)
+	(bus)
+)
+(connector
+	(pt 1704 400)
+	(pt 1584 400)
+	(bus)
+)
+(connector
+	(text "sync_audio" (rect 98 464 151 481)(font "Intel Clear" ))
+	(pt 88 480)
+	(pt 152 480)
+)
+(connector
+	(pt 720 432)
+	(pt 888 432)
+	(bus)
+)
+(connector
+	(pt 888 448)
+	(pt 720 448)
+	(bus)
+)
+(connector
+	(pt 720 464)
+	(pt 888 464)
+)
+(connector
+	(pt 3856 320)
+	(pt 4176 320)
+	(bus)
+)
+(connector
+	(pt 4176 336)
+	(pt 3856 336)
+	(bus)
+)
+(connector
+	(pt 3856 352)
+	(pt 4176 352)
+	(bus)
+)
+(connector
+	(pt 4176 368)
+	(pt 3856 368)
+)
+(connector
+	(pt 1992 384)
+	(pt 2032 384)
+	(bus)
+)
+(connector
+	(pt 2032 264)
+	(pt 2032 384)
+	(bus)
+)
+(connector
+	(pt 1992 400)
+	(pt 2048 400)
+	(bus)
+)
+(connector
+	(pt 2048 280)
+	(pt 2048 400)
+	(bus)
+)
+(connector
+	(pt 1992 416)
+	(pt 2064 416)
+)
+(connector
+	(pt 2064 296)
+	(pt 2064 416)
+)
+(connector
+	(pt 3472 336)
+	(pt 3280 336)
+	(bus)
+)
+(connector
+	(pt 3280 352)
+	(pt 3472 352)
+	(bus)
+)
+(connector
+	(pt 3472 368)
+	(pt 3280 368)
+	(bus)
+)
+(connector
+	(pt 3280 384)
+	(pt 3472 384)
+)
+(connector
+	(pt 2840 296)
+	(pt 2064 296)
+)
+(connector
+	(pt 2840 296)
+	(pt 2840 384)
+)
+(connector
+	(pt 2840 384)
+	(pt 2992 384)
+)
+(connector
+	(pt 2848 280)
+	(pt 2048 280)
+	(bus)
+)
+(connector
+	(pt 2848 368)
+	(pt 2848 280)
+	(bus)
+)
+(connector
+	(pt 2848 368)
+	(pt 2992 368)
+	(bus)
+)
+(connector
+	(pt 2864 264)
+	(pt 2032 264)
+	(bus)
+)
+(connector
+	(pt 2864 352)
+	(pt 2864 264)
+	(bus)
+)
+(connector
+	(pt 2864 352)
+	(pt 2992 352)
+	(bus)
+)
+(connector
+	(text "x32_ch8_out[23..0]" (rect 5874 472 5963 489)(font "Intel Clear" ))
+	(pt 5968 488)
+	(pt 5864 488)
+	(bus)
+)
+(connector
+	(text "main_out_sub[23..0]" (rect 5874 456 5970 473)(font "Intel Clear" ))
+	(pt 5864 472)
+	(pt 5968 472)
+	(bus)
 )
 (text "Read I2S-Data into std_logic_vectors" (rect -48 1272 171 1291)(font "Intel Clear" (font_size 8)))
 (text "Clock-Generations derived from 48MHz main-clock" (rect -968 208 -534 231)(font "Intel Clear" (color 255 0 0)(font_size 12)))

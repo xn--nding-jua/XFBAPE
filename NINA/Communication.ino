@@ -998,7 +998,7 @@ void sendDataToFPGA(uint8_t cmd) {
   sendDataToFPGA(cmd, &data64);
 }
 
-void updateSAMD() {
+void updateSamdInfo() {
   uint32_t audioTime = audio.getAudioCurrentTime();
   uint32_t audioDuration = audio.getAudioFileDuration();
 
@@ -1021,25 +1021,36 @@ void updateSAMD() {
 	String(audiomixer.volumeCard, 1) + "," + // value 7
 	String(audiomixer.volumeBt, 1) + "," + // value 8
 	String(audioStatusInfo) + "," + // value 9
-	SD_getTOC(2) + "|,"; // request TOC in PSV-format. We need a trailing "|" so that the split() function in SAMD can work correctly
+	SD_getTOC(2) + "|,E"; // request TOC in PSV-format. We need a trailing "|" so that the split() function in SAMD can work correctly
 
-  // send 32 volumeCh[] values as Float-Strings to ensure high accuracy between the faders of MackieMCU and XTouch
+  SerialSamd.println(txString);
+}
+
+void updateSamdChannel() {
+  // send updatepacket
+  String txString;
+  txString = "samd:update:ch@";
+
+  // send 32 vuMeterCh[] values as concatenated HEX-STRINGs
   for (uint8_t i=0; i<32; i++) {
-    // "-48.4," uses 6 bytes per value, the raw float-value would use only 4 bytes. So we are loosing 32*2 = 64 bytes here using Strings
-    // maybe we can change the communication to a binary-communication to reduce the overload to a minimum?
-    txString = txString + String(audiomixer.volumeCh[i], 1) + ",";
+    // we are using HEX here, to use only 2 bytes per value
+    txString = txString + intToHex(audiomixer.vuMeterCh[i], 2);
   }
+/*
+  txString = txString + ",";
   // send 32 balanceCh[] values as concatenated HEX-STRINGs
   for (uint8_t i=0; i<32; i++) {
     // we are using HEX here, to use only 2 bytes per value
     txString = txString + intToHex(audiomixer.balanceCh[i], 2);
   }
   txString = txString + ",";
-  // send 32 vuMeterCh[] values as concatenated HEX-STRINGs
+  // send 32 volumeCh[] values as Float-Strings to ensure high accuracy between the faders of MackieMCU and XTouch
   for (uint8_t i=0; i<32; i++) {
-    // we are using HEX here, to use only 2 bytes per value
-    txString = txString + intToHex(audiomixer.vuMeterCh[i], 2);
+    // "-48.4," uses 6 bytes per value, the raw float-value would use only 4 bytes. So we are loosing 32*2 = 64 bytes here using Strings
+    // maybe we can change the communication to a binary-communication to reduce the overload to a minimum?
+    txString = txString + String(audiomixer.volumeCh[i], 1) + ",";
   }
+*/
 
 	txString = txString + ",E"; // add a final comma to use the split-function without problem and terminate the command
 

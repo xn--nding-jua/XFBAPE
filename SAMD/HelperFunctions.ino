@@ -170,15 +170,15 @@ void initEeprom() {
   eeprom.readBlock(0xFA, (uint8_t *) &config.mac, sizeof(config.mac)); // MAC address is in a non-writable ROM-part of this EEPROM
 
   // check if we have a valid IP-Address
-  if ((eeprom_config.ip[0]==0) && (eeprom_config.ip[1]==0) && (eeprom_config.ip[2]==0) && (eeprom_config.ip[3]==0)) {
-    // IP-Address is zero. So the configuration seems to be bad
-    eeprom_config.ip = IPAddress(192, 168, 0, 42);
+  if ((eeprom_config.ip[0]==eeprom_config.ip[1]) && (eeprom_config.ip[1]==eeprom_config.ip[2]) && (eeprom_config.ip[2]==eeprom_config.ip[3])) {
+    // IP-Address is invalid. So the configuration seems to be bad
+    eeprom_config.ip = IPAddress(192, 168, 0, 52);
   }
 
   for (uint8_t i_xtouch=0; i_xtouch<XTOUCH_COUNT; i_xtouch++) {
-    if ((eeprom_config.xtouchip[i_xtouch][0]==0) && (eeprom_config.xtouchip[i_xtouch][1]==0) && (eeprom_config.xtouchip[i_xtouch][2]==0) && (eeprom_config.xtouchip[i_xtouch][3]==0)) {
-      // IP-Address is zero. So the configuration seems to be bad
-      eeprom_config.xtouchip[i_xtouch] = IPAddress(192, 168, 0, 43);
+    if ((eeprom_config.xtouchip[i_xtouch][0]==eeprom_config.xtouchip[i_xtouch][1]) && (eeprom_config.xtouchip[i_xtouch][1]==eeprom_config.xtouchip[i_xtouch][2]) && (eeprom_config.xtouchip[i_xtouch][2]==eeprom_config.xtouchip[i_xtouch][3])) {
+      // IP-Address is invalid. So the configuration seems to be bad
+      eeprom_config.xtouchip[i_xtouch] = IPAddress(192, 168, 0, 53);
     }
   }
 }

@@ -1,4 +1,4 @@
-const char* versionstring = "v3.1.0";
+const char* versionstring = "v3.1.2";
 const char compile_date[] = __DATE__ " " __TIME__;
 
 // the following defines will overwrite the standard arduino-defines from https://github.com/arduino/ArduinoCore-samd/blob/84c09b3265e2a8b548a29b141f0c9281b1baf154/variants/mkrvidor4000/variant.h
@@ -15,10 +15,8 @@ const char compile_date[] = __DATE__ " " __TIME__;
 #define USE_MACKIE_MCU    1      // support for MackieMCU via MIDI
 #define USE_XTOUCH        1      // support for XTouch via Ethernet
 #define XTOUCH_COUNT      1      // number of XTouch-Devices (max. 4 devices at the moment)
-#define XTOUCH_COLOR      7      // 0=BLACK, 1=RED, 2=GREEN, 3=YELLOW, 4=BLUE, 5=PINK, 6=CYAN, 7=WHITE
-#define XTOUCH_COLOR_DMX  3      // 0=BLACK, 1=RED, 2=GREEN, 3=YELLOW, 4=BLUE, 5=PINK, 6=CYAN, 7=WHITE
-#define XTOUCH_COLOR_INVERT false // invert the display
-#define XTOUCH_COLOR_INVERT_DMX false // invert the display
+#define XTOUCH_COLOR      7      // color to init the channel: 0=BLACK, 1=RED, 2=GREEN, 3=YELLOW, 4=BLUE, 5=PINK, 6=CYAN, 7=WHITE (add 64 to invert)
+#define XTOUCH_COLOR_DMX  3      // color to init the channel: 0=BLACK, 1=RED, 2=GREEN, 3=YELLOW, 4=BLUE, 5=PINK, 6=CYAN, 7=WHITE (add 64 to invert)
 
 // includes for FPGA
 #include <wiring_private.h>
@@ -83,6 +81,7 @@ Uart Serial4(&sercom5, PIN_SERIAL4_RX, PIN_SERIAL4_TX, PAD_SERIAL4_RX, PAD_SERIA
 */
 
 bool passthroughNINA = false;
+bool passthroughNINADebug = false;
 #define X32_RINGBUF_LEN 32 //longest command seems to be 22 chars
 uint8_t x32RingBuffer[X32_RINGBUF_LEN];
 uint16_t x32RingBufferPointer = 0;
@@ -140,8 +139,8 @@ struct {
   float volumeSub;
   float volumeCard;
   float volumeBt;
-  float volumeCh[32];
-  uint8_t balanceCh[32];
+  float volumeCh[32] = {-48.0f, -48.0f, -48.0f, -48.0f, -48.0f, -48.0f, -48.0f, -48.0f, -48.0f, -48.0f, -48.0f, -48.0f, -48.0f, -48.0f, -48.0f, -48.0f, -48.0f, -48.0f, -48.0f, -48.0f, -48.0f, -48.0f, -48.0f, -48.0f, -48.0f, -48.0f, -48.0f, -48.0f, -48.0f, -48.0f, -48.0f, -48.0f};
+  uint8_t balanceCh[32] = {50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, 50, };
   uint8_t vuMeterCh[32];
   uint8_t audioStatusInfo;
 
@@ -172,6 +171,7 @@ uint32_t refreshCounter = 0;
     uint8_t mute = 0; // 0=OFF, 1=FLASHING, 127=ON
     uint8_t select = 0; // 0=OFF, 1=FLASHING, 127=ON (function unused at the moment)
     String name;
+    uint8_t color = XTOUCH_COLOR; // init the color with desired color for audio-channels (dmx-channels are set in setup())
   };
 
   struct sMackieMCU_ChannelHW{
@@ -179,7 +179,7 @@ uint32_t refreshCounter = 0;
     bool faderTouched = false;
     bool faderNeedsUpdate = false;
     uint8_t meterLevel; // 0...12 for Mackie, 0..8 for X-Touch
-    uint8_t nameCounter = 0; // 
+    uint8_t nameCounter = 0; // show value for x seconds as counter is at 100ms
   };
 
   struct {

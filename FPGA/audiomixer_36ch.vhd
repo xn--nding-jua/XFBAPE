@@ -429,6 +429,11 @@ begin
 				
 				sync_out <= '1';
 				state <= state + 1;
+			
+			-- TDM uses 12.288MHz clock-domain at 48kHz, but we use 100MHz here
+			-- as we need 19 steps here, the sync-signal is low again
+			-- but if the states are close to 8, use the following line:
+			-- elsif (sync_in = '0' and state = 19) then
 			elsif (state = 19) then
 				sync_out <= '0';
 				state <= 0;

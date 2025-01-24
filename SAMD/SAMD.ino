@@ -1,8 +1,8 @@
 /*
   X-f/bape USBCtrl for Arduino MKR Vidor4000 Device
-  v3.1.0 built on 21.12.2024
+  v3.1.2 built on 23.01.2025
   Infos: https://www.github.com/xn--nding-jua/xfbape
-  Copyright (c) 2023-2024 Dr.-Ing. Christian Nöding
+  Copyright (c) 2023-2025 Dr.-Ing. Christian Nöding
 
   Target-Board: Arduino MKR Vidor 4000 (Atmel SAMD21 32-bit CortexM0+ controller)
   Board-package: http://downloads.arduino.cc/Hourly/samd/package_samd-hourly-build_index.json
@@ -248,6 +248,11 @@ void setup() {
 
   #if USE_XTOUCH == 1
     Serial.println(F("Init X-TOUCH-devices..."));
+
+    // init colors for DMX-channels
+    for (uint16_t channel=0; channel<513; channel++) {
+      MackieMCU.channelDmx[channel].color = XTOUCH_COLOR_DMX;
+    }
 
     for (uint8_t i_xtouch=0; i_xtouch<XTOUCH_COUNT; i_xtouch++) {
       XCtl[i_xtouch].ip = eeprom_config.xtouchip[i_xtouch];

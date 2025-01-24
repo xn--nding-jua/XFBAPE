@@ -420,7 +420,7 @@
           SerialNina.println("mixer:volume:ch" + String(channel + 1) + "@" + String(newVolume, 2));
 
           // reset nameCounter to display current value in displays instead of names for some time
-          MackieMCU.hardwareChannel[hardwareFader].nameCounter = 30; // show value for 3 seconds as counter is at 100ms
+          MackieMCU.hardwareChannel[hardwareFader].nameCounter = 20; // show value for 2 seconds as counter is at 100ms
         }
       }else if (midiChannel == 9) {
         MackieMCU.hardwareMainfader.faderPositionHW = value - MIDI_PITCHBEND_MIN;

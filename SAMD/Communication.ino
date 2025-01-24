@@ -19,31 +19,21 @@ void handleUSBCommunication() {
 void handleNINACommunication() {
   // passthrough all incoming data to USB-serial
   if (SerialNina.available() > 0) {
-    if (passthroughNINA) {
-      //Serial.write(SerialNina.read()); // this prevents us from receiving commands from NINA
-      String command = SerialNina.readStringUntil('\n');
-      command.trim();
+    String command = SerialNina.readStringUntil('\n');
+    command.trim();
+
+    if (command.indexOf(F("samd:")) == 0) {
+      // command begins with "samd:" so we have to interprete it
+      SerialNina.println(executeCommand(command));
       
-      if (command.indexOf(F("samd:")) == 0) {
-        // command begins with "samd:" so we have to interprete it
-        SerialNina.println(executeCommand(command));
-      }else{
-        // passthrough command to USB
-        Serial.println(command);
+      if (passthroughNINADebug) {
+        Serial.println(command); // regular commands to samd will be filtered by default
       }
     }else{
-      String command = SerialNina.readStringUntil('\n');
-      command.trim();
-
-      if (command.indexOf("OK") > -1) {
-        // received "OK" from NINA -> last command is OK
-      }else if (command.indexOf("ERROR") > -1) {
-        // received "ERROR" from NINA -> last command had an error
-      }else if (command.indexOf("UNKNOWN_CMD") > -1) {
-        // NINA received some garbage or communication-problem -> ignore it for the moment
-      }else{
-        // this is a command for our command-processor
-        SerialNina.println(executeCommand(command));
+      // received some status-infos
+      if (passthroughNINADebug || (passthroughNINA && ((command.indexOf("OK") == -1) && (command.indexOf("ERROR") == -1) && (command.indexOf("UNKNOWN_CMD") == -1)))) {
+        // passthrough to USB
+        Serial.println(command);
       }
     }
   }
@@ -72,24 +62,31 @@ String executeCommand(String Command) {
       TOC = split(ParameterString, ',', 10);
       tocEntries = getNumberOfTocEntries('|');
 
-      // receive volumeCh[] as parameters 11 to 42 as float-values
-      for (uint8_t i=0; i<32; i++) {
-        playerinfo.volumeCh[i] = split(ParameterString, ',', 11 + i).toFloat();
-      }
-
-      String balanceInfo = split(ParameterString, ',', 43); // 64-char HEX-String containing 32 values for balance
-      String vuMeterInfo = split(ParameterString, ',', 44); // 64-char HEX-String containing 32 values for vuMeter
-      for (uint8_t i=0; i<32; i++) {
-        // receive balance[] as parameter 44 as concatenated HEX-Strings
-        playerinfo.balanceCh[i] = hexToInt((String)balanceInfo[i * 2] + (String)balanceInfo[i * 2 + 1]);
-
-        // receive vuMeterCh[] as parameter 45 as concatenated HEX-Strings
-        playerinfo.vuMeterCh[i] = hexToInt((String)vuMeterInfo[i * 2] + (String)vuMeterInfo[i * 2 + 1]);
-      }
-
       // send time to X32 when progress is above 0
       x32Playback = (playerinfo.progress > 0);
 
+      Answer = "SAMD: OK";
+    }else if (Command.indexOf(F("samd:update:ch")) > -1){
+      String ParameterString = Command.substring(Command.indexOf("@")+1);
+
+      String vuMeterInfo = split(ParameterString, ',', 0); // 64-char HEX-String containing 32 values for vuMeter
+      for (uint8_t i=0; i<32; i++) {
+        // receive vuMeterCh[] as parameter 0 as concatenated HEX-Strings
+        playerinfo.vuMeterCh[i] = hexToInt((String)vuMeterInfo[i * 2] + (String)vuMeterInfo[i * 2 + 1]); // 64 bytes
+      }
+
+/*
+      String balanceInfo = split(ParameterString, ',', 1); // 64-char HEX-String containing 32 values for balance
+      for (uint8_t i=0; i<32; i++) {
+        // receive balance[] as parameter 1 as concatenated HEX-Strings
+        playerinfo.balanceCh[i] = hexToInt((String)balanceInfo[i * 2] + (String)balanceInfo[i * 2 + 1]); // 64 bytes
+      }
+
+      // receive volumeCh[] as parameters 2 to 33 as float-values
+      for (uint8_t i=0; i<32; i++) {
+        playerinfo.volumeCh[i] = split(ParameterString, ',', 2 + i).toFloat(); // max. 192 bytes
+      }
+*/
       Answer = "SAMD: OK";
     #if USE_DISPLAY == 1
       }else if (Command.indexOf(F("samd:player:updatedisplay")) > -1){
@@ -122,6 +119,9 @@ String executeCommand(String Command) {
       Answer = "SAMD: OK";
     }else if (Command.indexOf("samd:passthrough:nina") > -1){
       passthroughNINA = (Command.substring(Command.indexOf("@")+1).toInt() == 1);
+      Answer = "SAMD: OK";
+    }else if (Command.indexOf("samd:debug:nina") > -1){
+      passthroughNINADebug = (Command.substring(Command.indexOf("@")+1).toInt() == 1);
       Answer = "SAMD: OK";
     }else if (Command.indexOf(F("samd:debug:x32")) > -1) {
       x32Debug = (Command.substring(Command.indexOf("@")+1).toInt() == 1);
@@ -164,9 +164,30 @@ String executeCommand(String Command) {
     #if USE_MACKIE_MCU == 1 || USE_XTOUCH == 1
       }else if (Command.indexOf("samd:setname:ch") > -1){
         //samd:setname:ch1@Ch 1
-        uint16_t channel = Command.substring(15, Command.indexOf("@")).toInt();
+        uint8_t channel = Command.substring(15, Command.indexOf("@")).toInt();
         String name = Command.substring(Command.indexOf("@")+1);
-        MackieMCU.channel[channel].name = name;
+        MackieMCU.channel[channel - 1].name = name;
+
+        Answer = "SAMD: OK";
+      }else if (Command.indexOf("samd:setcolor:ch") > -1){
+        //samd:setcolor:ch1@Ch 1
+        uint8_t channel = Command.substring(16, Command.indexOf("@")).toInt();
+        uint8_t color = Command.substring(Command.indexOf("@")+1).toInt();
+        MackieMCU.channel[channel - 1].color = color;
+
+        Answer = "SAMD: OK";
+      }else if (Command.indexOf("samd:setname:dmxch") > -1){
+        //samd:setname:dmxch1@Ch 1
+        uint16_t dmxChannel = Command.substring(18, Command.indexOf("@")).toInt();
+        String name = Command.substring(Command.indexOf("@")+1);
+        MackieMCU.channelDmx[dmxChannel - 1].name = name;
+
+        Answer = "SAMD: OK";
+      }else if (Command.indexOf("samd:setcolor:dmxch") > -1){
+        //samd:setcolor:dmxch1@Ch 1
+        uint16_t dmxChannel = Command.substring(19, Command.indexOf("@")).toInt();
+        uint8_t color = Command.substring(Command.indexOf("@")+1).toInt();
+        MackieMCU.channelDmx[dmxChannel - 1].color = color;
 
         Answer = "SAMD: OK";
     #endif
@@ -212,10 +233,10 @@ void resetNina() {
 }
 
 void enterNinaUpdateMode(bool performReset) {
-  if (!performReset) {
+  //if (!performReset) {
     // stop mainCtrl
     SerialNina.println(F("system:stop"));
-  }
+  //}
 
   #if USE_DISPLAY == 1
     // disable ticker that access I2C
