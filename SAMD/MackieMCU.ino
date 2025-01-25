@@ -108,16 +108,16 @@
         MackieMCU.forceUpdate = true;
       }else if (note == 0x5b) {
         // rewind
-        playbackPrevTitle();
+        SerialNina.println("player:prev");
       }else if (note == 0x5c) {
         // forward
-        playbackNextTitle();
+        SerialNina.println("player:next");
       }else if (note == 0x5d) {
         // stop
-        playbackStop();
+        SerialNina.println("player:stop");
       }else if (note == 0x5e) {
         // play
-        playbackPlayPause();
+        SerialNina.println("player:pause");
       }else if (note == 0x5f) {
         // record (switches between Audio and DMX)
         mackieDmxMode = !mackieDmxMode;
@@ -245,16 +245,16 @@
         MackieMCU.forceUpdate = true;
       }else if (note == 0x5b) {
         // rewind
-        playbackPrevTitle();
+        SerialNina.println("player:prev");
       }else if (note == 0x5c) {
         // forward
-        playbackNextTitle();
+        SerialNina.println("player:next");
       }else if (note == 0x5d) {
         // stop
-        playbackStop();
+        SerialNina.println("player:stop");
       }else if (note == 0x5e) {
         // play
-        playbackPlayPause();
+        SerialNina.println("player:pause");
       }else if (note == 0x5f) {
         // record (switches between Audio and DMX)
         mackieDmxMode = !mackieDmxMode;

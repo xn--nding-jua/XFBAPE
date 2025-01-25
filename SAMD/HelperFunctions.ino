@@ -1,5 +1,5 @@
 // saturates a value to a specific minimum and maximum value
-float saturate(float value, float min, float max) {
+int16_t saturate(int16_t value, int16_t min, int16_t max) {
   if (value>max) {
     return max;
   }else if (value<min) {

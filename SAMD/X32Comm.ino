@@ -121,7 +121,7 @@ String x32ExecCmd(String command) {
       // select session: *9B582100A0#Q#
       String sessionname = command.substring(3, 3+8); // 8 hex-characters after *9B are the session-name. ignore #Q# at the end
 
-      playbackSelectTitle(x32TimecodeToTracknumber(sessionname));
+      SerialNina.println("player:select@" + String(x32TimecodeToTracknumber(sessionname)));
 
       // prepare Answer
       uint32_t markerCount = 0; // X32 will request markers even when this is set to 0
@@ -133,7 +133,7 @@ String x32ExecCmd(String command) {
       Answer = "*9B000" + intToHex(markerCount, 2) + String(channelCount) + "0" + intToHex(3*60 * 48000, 8) + "0" + intToHex(0, 8) + "#";
     }else if (command.indexOf("*9D#")==0) {
       // play session
-      playbackPlayPause();
+      SerialNina.println("player:pause");
       Answer = "*9D00#";
 
       // during playback, the card should send current position as samples every 85ms:
@@ -141,7 +141,7 @@ String x32ExecCmd(String command) {
       // this is done via the 85ms-timer in the SAMD.ino
     }else if (command.indexOf("*9E#")==0) {
       // pause session
-      playbackPlayPause();
+      SerialNina.println("player:pause");
       Answer = "*9E00#";
 
       // during playback, the card should send current position as samples every 85ms:
@@ -150,7 +150,7 @@ String x32ExecCmd(String command) {
     }else if (command.indexOf("*9F#")==0) {
       // stop playing/recording
 
-      playbackStop();
+      SerialNina.println("player:stop");
       Answer = "*9F00#";
 
       /*

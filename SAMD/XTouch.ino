@@ -42,8 +42,7 @@
         channel = (uint16_t)hardwareFader + XCtl[i_xtouch].channelOffsetDmx;
         color = MackieMCU.channelDmx[channel].color; // 0=BLACK, 1=RED, 2=GREEN, 3=YELLOW, 4=BLUE, 5=PINK, 6=CYAN, 7=WHITE
         topText = "DMX " + String(channel + 1) + "    ";
-        if ( ((XCtl[i_xtouch].showNames) && (XCtl[i_xtouch].hardwareChannel[hardwareFader].showValueCounter > 0)) || 
-          ((!XCtl[i_xtouch].showNames) && (XCtl[i_xtouch].hardwareChannel[hardwareFader].showValueCounter == 0)) ) {
+        if ( ((XCtl[i_xtouch].showNames) && (XCtl[i_xtouch].hardwareChannel[hardwareFader].showValueCounter > 0)) || (!XCtl[i_xtouch].showNames) ) {
           // displaying current audio-level in second line
           botText = String(MackieMCU.channelDmx[channel].faderPosition/64.247058f, 0) + "/" + String(MackieMCU.channelDmx[channel].faderPosition/163.83f, 0) + "%  ";
         }else{
@@ -55,8 +54,7 @@
         color = MackieMCU.channel[channel].color; // 0=BLACK, 1=RED, 2=GREEN, 3=YELLOW, 4=BLUE, 5=PINK, 6=CYAN, 7=WHITE
         topText = "Ch" + String(channel + 1) + " " + XCtl_panString(MackieMCU.channel[channel].encoderValue);
 
-        if ( ((XCtl[i_xtouch].showNames) && (XCtl[i_xtouch].hardwareChannel[hardwareFader].showValueCounter > 0)) || 
-          ((!XCtl[i_xtouch].showNames) && (XCtl[i_xtouch].hardwareChannel[hardwareFader].showValueCounter == 0)) ) {
+        if ( ((XCtl[i_xtouch].showNames) && (XCtl[i_xtouch].hardwareChannel[hardwareFader].showValueCounter > 0)) || (!XCtl[i_xtouch].showNames) ) {
           // displaying current audio-level in second line
           botText = String(playerinfo.volumeCh[channel], 2) + "dB    ";
         }else{
@@ -194,6 +192,7 @@
         XCtl_TxMessage[4 + i_ch*4] = (encoderLevelRaw >> 7) & 0x7F;
       }
     }else{
+      /*
       for (uint8_t i_ch=0; i_ch<8; i_ch++) {
         // render as pan-level = single-mark
         channel = i_ch + XCtl[i_xtouch].channelOffset;
@@ -204,6 +203,33 @@
         XCtl_TxMessage[2 + i_ch*4] = encoderLevelRaw & 0x7F;
         XCtl_TxMessage[3 + i_ch*4] = 0x38 + i_ch;
         XCtl_TxMessage[4 + i_ch*4] = (encoderLevelRaw >> 7) & 0x7F;
+      }
+      */
+      for (uint8_t i_ch=0; i_ch<8; i_ch++) {
+        // render as pan-level = growing bars to left or right
+        encoderLevelRaw = 0;
+        channel = i_ch + XCtl[i_xtouch].channelOffset;
+        uint8_t panLeft = saturate(MackieMCU.channel[channel].encoderValue-21, 0, 127); // make sure, that center-led is on
+        uint8_t panRight = saturate(MackieMCU.channel[channel].encoderValue-128, 0, 128);
+
+        uint8_t encoderLevelRawLeft = 0;
+        if (panLeft>0) {
+          for (uint16_t i=0; i<=(int16_t)(panLeft/21.25f); i++){
+            encoderLevelRawLeft += (1 << i);
+          }
+        }
+
+        uint8_t encoderLevelRawRight = 0;
+        if (panRight>0) {
+          for (uint16_t i=0; i<=(int16_t)(panRight/21.25f); i++){
+            encoderLevelRawRight += (1 << i);
+          }
+        }
+
+        XCtl_TxMessage[1 + i_ch*4] = 0x30 + i_ch;
+        XCtl_TxMessage[2 + i_ch*4] = (~encoderLevelRawLeft) & 0x7F;
+        XCtl_TxMessage[3 + i_ch*4] = 0x38 + i_ch;
+        XCtl_TxMessage[4 + i_ch*4] = (encoderLevelRawRight) & 0x7F;
       }
     }
     XCtl_sendUdpPacket(i_xtouch, XCtl_TxMessage, 34); //send 34 bytes (Ctl_TxMessage[0..33]) to port 10111
@@ -292,18 +318,30 @@
     }
   }
 
-  void handleXCtlMessages(uint8_t i_xtouch) {
+  void handleXCtlMessages(uint8_t udpDevice) {
     // message start: F0
     // message terminator: F7
 
     // every 2 seconds XTouch sends 00 20 32 58 54 00
     // we have to send 00 00 66 14 00
 
-    if (XCtlUdp[i_xtouch].parsePacket() > 0) {
+    if (XCtlUdp[udpDevice].parsePacket() > 0) {
+      // it seems, that the Arduino Ethernet library is routing all incoming traffic to
+      // the first udpObject, when two udpServers are using the same UdpPort
+      // so first check for which device we are receiving based on the remoteIP
+      uint8_t i_xtouch = 0;
+      for (uint8_t i=0; i<XTOUCH_COUNT; i++) {
+        if (XCtlUdp[udpDevice].remoteIP().toString().indexOf(XCtl[i].ip.toString()) > -1) {
+          i_xtouch = i; // we found the sender. So route all incoming data to this device
+          break;
+        }
+      }
+
+      // enable this device as we are receiving from it
       XCtl[i_xtouch].online = true;
 
       uint8_t rxData[18]; //buffer to hold incoming packet,
-      uint8_t len = XCtlUdp[i_xtouch].read(rxData, 18);
+      uint8_t len = XCtlUdp[udpDevice].read(rxData, 18);
       uint16_t channel = 0;
       int16_t value = 0;
       uint8_t hardwareFader = 0;
@@ -808,18 +846,18 @@
             // 91 to 95 - Playback control (rewind, fast-forward, stop, play, record)
             if ((button == 91) && (buttonState)) {
               // button "rewind"
-              playbackPrevTitle();            }
+              SerialNina.println("player:prev");          }
             if ((button == 92) && (buttonState)) {
               // button "forward"
-              playbackNextTitle();
+              SerialNina.println("player:next");
             }
             if ((button == 93) && (buttonState)) {
               // button "stop"
-              playbackStop();
+              SerialNina.println("player:stop");
             }
             if ((button == 94) && (buttonState)) {
               // button "play"
-              playbackPlayPause();
+              SerialNina.println("player:pause");
             }
 
             if (((button == 50) || (button == 95)) && (buttonState)) {
@@ -978,11 +1016,13 @@
       MackieMCU.channel[i_ch].name = "Ch " + String(i_ch + 1) + "   ";
     }
 
-    for (uint8_t i_xtouch=0; i_xtouch<XTOUCH_COUNT; i_xtouch++) {
-      XCtlWatchdogCounter[i_xtouch] = 20;
-    }
+    XCtlWatchdogCounter[i_xtouch] = 20;
 
     XCtlUdp[i_xtouch].begin(10111);
+  }
+
+  void XCtl_stop(uint8_t i_xtouch) {
+    XCtlUdp[i_xtouch].stop();
   }
 
   void XCtl_sendUdpPacket(uint8_t i_xtouch, const uint8_t *buffer, uint16_t size) {

@@ -50,16 +50,17 @@ String executeCommand(String Command) {
       String ParameterString = Command.substring(Command.indexOf("@")+1);
 
       playerinfo.title = split(ParameterString, ',', 0);
-      playerinfo.time = split(ParameterString, ',', 1).toInt();
-      playerinfo.duration = split(ParameterString, ',', 2).toInt();
-      playerinfo.progress = split(ParameterString, ',', 3).toInt();
-      playerinfo.volumeMain = split(ParameterString, ',', 4).toFloat();
-      playerinfo.balanceMain = split(ParameterString, ',', 5).toInt();
-      playerinfo.volumeSub = split(ParameterString, ',', 6).toFloat();
-      playerinfo.volumeCard = split(ParameterString, ',', 7).toFloat();
-      playerinfo.volumeBt = split(ParameterString, ',', 8).toFloat();
-      playerinfo.audioStatusInfo = split(ParameterString, ',', 9).toInt(); // contains infos about noisegate, clip (L/R/S) and compression (LR/S)
-      TOC = split(ParameterString, ',', 10);
+      playerinfo.currentTrackNumber = split(ParameterString, ',', 1).toInt();
+      playerinfo.time = split(ParameterString, ',', 2).toInt();
+      playerinfo.duration = split(ParameterString, ',', 3).toInt();
+      playerinfo.progress = split(ParameterString, ',', 4).toInt();
+      playerinfo.volumeMain = split(ParameterString, ',', 5).toFloat();
+      playerinfo.balanceMain = split(ParameterString, ',', 6).toInt();
+      playerinfo.volumeSub = split(ParameterString, ',', 7).toFloat();
+      playerinfo.volumeCard = split(ParameterString, ',', 8).toFloat();
+      playerinfo.volumeBt = split(ParameterString, ',', 9).toFloat();
+      playerinfo.audioStatusInfo = split(ParameterString, ',', 10).toInt(); // contains infos about noisegate, clip (L/R/S) and compression (LR/S)
+      TOC = split(ParameterString, ',', 11);
       tocEntries = getNumberOfTocEntries('|');
 
       // send time to X32 when progress is above 0
@@ -112,7 +113,7 @@ String executeCommand(String Command) {
       setup_fpga();
       Answer = "SAMD: OK";
     }else if (Command.indexOf(F("samd:update:nina")) > -1){
-      enterNinaUpdateMode(true);
+      enterNinaUpdateMode();
       Answer = F("Entered NINA-Update-Mode...\nPlease close serial-port and upload new firmware via Arduino or esptool.py.\n\nReboot system to return to normal mode.");
     }else if (Command.indexOf("samd:reset:nina") > -1){
       resetNina();
@@ -144,6 +145,14 @@ String executeCommand(String Command) {
       initEthernet();
       Answer = "SAMD: OK";
     #if USE_XTOUCH == 1
+      }else if (Command.indexOf(F("samd:config:xtouchip?")) > -1) {
+        // samd:config:xtouchip?
+        // requesting the current IP-address of specific xtouch
+        String ips = IpAddress2String(XCtl[0].ip);
+        for (uint8_t i=1; i<XTOUCH_COUNT; i++) {
+          ips = ips + ", " + IpAddress2String(XCtl[i].ip);
+        }
+        Answer = ips;
       }else if (Command.indexOf("samd:config:set:xtouchip") > -1){
         //samd:config:set:xtouchip1@000.000.000.000
         uint8_t i_xtouch = Command.substring(24, Command.indexOf("@")).toInt() - 1;
@@ -258,11 +267,8 @@ void resetNina() {
   //pinMode(NINA_RESET_N, INPUT);
 }
 
-void enterNinaUpdateMode(bool performReset) {
-  //if (!performReset) {
-    // stop mainCtrl
-    SerialNina.println(F("system:stop"));
-  //}
+void enterNinaUpdateMode() {
+  SerialNina.println(F("system:stop"));
 
   #if USE_DISPLAY == 1
     // disable ticker that access I2C
@@ -288,14 +294,12 @@ void enterNinaUpdateMode(bool performReset) {
   digitalWrite(NINA_PIO27, LOW); // PIO27 = LOW = Bootstrap pin for NINA-W102 -> put into Bootloader-Mode (Factory Boot)
   digitalWrite(NINA_RESET_N, HIGH);
 
-  if (performReset) {
-    // perform a reset of the NINA-module
-    delay(100);
-    digitalWrite(NINA_RESET_N, LOW);
-    delay(100);
-    digitalWrite(NINA_RESET_N, HIGH);
-    delay(100);
-  }
+  // perform a reset of the NINA-module
+  delay(100);
+  digitalWrite(NINA_RESET_N, LOW);
+  delay(100);
+  digitalWrite(NINA_RESET_N, HIGH);
+  delay(100);
 
   firmwareUpdateMode = true; // entering NINA-Update-Mode
 }

@@ -1040,15 +1040,16 @@ void updateSamdInfo() {
   // send updatepacket
   String txString;
   txString = "samd:update:info@" + currentAudioFile + "," + // value 0
-	String(audioTime) + "," + // value 1
-	String(audioDuration) + "," + // value 2
-	audioProgress_s + "," + // value 3
-	String(audiomixer.volumeMain, 1) + "," + // value 4
-	String(audiomixer.balanceMain) + "," + // value 5
-	String(audiomixer.volumeSub, 1) + "," + // value 6
-	String(audiomixer.volumeCard, 1) + "," + // value 7
-	String(audiomixer.volumeBt, 1) + "," + // value 8
-	String(audioStatusInfo) + "," + // value 9
+	String(currentTrackNumber) + "," + // value 1
+	String(audioTime) + "," + // value 2
+	String(audioDuration) + "," + // value 3
+	audioProgress_s + "," + // value 4
+	String(audiomixer.volumeMain, 1) + "," + // value 5
+	String(audiomixer.balanceMain) + "," + // value 6
+	String(audiomixer.volumeSub, 1) + "," + // value 7
+	String(audiomixer.volumeCard, 1) + "," + // value 8
+	String(audiomixer.volumeBt, 1) + "," + // value 9
+	String(audioStatusInfo) + "," + // value 10
 	SD_getTOC(2) + "|,E"; // request TOC in PSV-format. We need a trailing "|" so that the split() function in SAMD can work correctly
 
   SerialSamd.println(txString);
