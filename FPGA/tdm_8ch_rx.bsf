@@ -34,16 +34,23 @@ https://fpgasoftware.intel.com/eula.
 	(port
 		(pt 0 48)
 		(input)
-		(text "fsync" (rect 0 0 23 12)(font "Arial" ))
-		(text "fsync" (rect 21 43 44 55)(font "Arial" ))
+		(text "bclk" (rect 0 0 15 12)(font "Arial" ))
+		(text "bclk" (rect 21 43 36 55)(font "Arial" ))
 		(line (pt 0 48)(pt 16 48)(line_width 1))
 	)
 	(port
 		(pt 0 64)
 		(input)
-		(text "sdata" (rect 0 0 21 12)(font "Arial" ))
-		(text "sdata" (rect 21 59 42 71)(font "Arial" ))
+		(text "fsync" (rect 0 0 23 12)(font "Arial" ))
+		(text "fsync" (rect 21 59 44 71)(font "Arial" ))
 		(line (pt 0 64)(pt 16 64)(line_width 1))
+	)
+	(port
+		(pt 0 80)
+		(input)
+		(text "sdata" (rect 0 0 21 12)(font "Arial" ))
+		(text "sdata" (rect 21 75 42 87)(font "Arial" ))
+		(line (pt 0 80)(pt 16 80)(line_width 1))
 	)
 	(port
 		(pt 184 32)

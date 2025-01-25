@@ -270,6 +270,12 @@ void resetNina() {
 void enterNinaUpdateMode() {
   SerialNina.println(F("system:stop"));
 
+  // switch back to 115200 baud to communicate with the ESP32 bootloader
+  SerialNina.flush();
+  SerialNina.begin(115200);
+  pinPeripheral(0, PIO_SERCOM); //Assign TX function to pin 0
+  pinPeripheral(1, PIO_SERCOM); //Assign RX function to pin 1
+
   #if USE_DISPLAY == 1
     // disable ticker that access I2C
     ticker100ms.stop();

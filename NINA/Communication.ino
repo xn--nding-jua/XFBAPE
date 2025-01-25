@@ -607,7 +607,15 @@ String executeCommand(String Command) {
 
       if ((channel>=1) && (channel<=MAX_AUDIO_CHANNELS) && (value>=-140) && (value<=6)) {
         audiomixer.volumeCh[channel-1] = value;
-        sendVolumeToFPGA(channel);
+
+        // only send new volume to FPGA, when channel is unmuted
+        if (!audiomixer.muteCh[channel-1]) {
+          // send only if no solo is used or this channel is soloed
+          if ((!audiomixer.soloInUse) || (audiomixer.soloCh[channel-1])) {
+            // send volume only when the channel is unmuted, and soloed or no solo used at all
+            sendVolumeToFPGA(channel);
+          }
+        }
         Answer = "OK";
       }else{
         Answer = "ERROR: Channel or value out of range!";
@@ -641,19 +649,18 @@ String executeCommand(String Command) {
 
         audiomixer.soloCh[channel - 1] = solo; // keep track of soloed channels
 
-        // check if at least one channel is soloed
-        bool soloInUse = false;
+        // update soloInUse-setting
         for (uint8_t i=0; i<MAX_AUDIO_CHANNELS; i++) {
           if (audiomixer.soloCh[i]) {
             // at least one single channel in solo-mode
-            soloInUse = true;
+            audiomixer.soloInUse = true;
             break;
           }
         }
 
         for (uint8_t i=0; i<MAX_AUDIO_CHANNELS; i++) {
           // mute all channels except soloed channels if solo is in use. Otherwise unmute all channels
-          if ((audiomixer.soloCh[i]) || (!soloInUse)) {
+          if ((!audiomixer.soloInUse) || (audiomixer.soloCh[i])) {
             // channel is soloed -> enable it or no solo at all
             sendVolumeToFPGA(i + 1); // positive number sets the channel to the current volume again (= unmute)
           }else{

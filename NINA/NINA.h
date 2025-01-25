@@ -336,6 +336,7 @@ struct {
   uint8_t vuMeterCh[MAX_AUDIO_CHANNELS];
   bool muteCh[MAX_AUDIO_CHANNELS];
   bool soloCh[MAX_AUDIO_CHANNELS];
+  bool soloInUse = false;
 
   // equalizers
   sPEQ peq[MAX_EQUALIZERS];

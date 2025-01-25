@@ -207,7 +207,7 @@ uint32_t refreshCounter = 0;
 
   struct sXCtl{
     IPAddress ip;
-    bool online = true;
+    bool online = false;
     uint8_t channelOffset = 0;
     uint16_t channelOffsetDmx = 0; // 0...504
     bool forceUpdate = false;
