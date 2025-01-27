@@ -13,7 +13,61 @@
     uint16_t buttonCounter = 0;
     uint16_t channel;
 
-    // for the XTouch we are not checking the DMX-flag at the moment. Maybe this will be changed in a future release
+    // prepare data for display
+    if (XCtl[i_xtouch].dmxMode) {
+      String playtime = secondsToHMS_B(playerinfo.time); // 00:00:00
+      XCtl[i_xtouch].segmentDisplay[0] = '0';
+      XCtl[i_xtouch].segmentDisplay[1] = 49 + i_xtouch; // 49 = ASCII '1'
+      XCtl[i_xtouch].segmentDisplay[2] = '-';
+      XCtl[i_xtouch].segmentDisplay[3] = '-';
+      XCtl[i_xtouch].segmentDisplay[4] = '-';
+      XCtl[i_xtouch].segmentDisplay[5] = '-';
+      XCtl[i_xtouch].segmentDisplay[6] = '-';
+      XCtl[i_xtouch].segmentDisplay[7] = '-';
+      XCtl[i_xtouch].segmentDisplay[8] = '-';
+
+      String valueString = String(XCtl[i_xtouch].jogDialValueDmx);
+      if (XCtl[i_xtouch].jogDialValueDmx < 10) {
+        XCtl[i_xtouch].segmentDisplay[9] = '0';
+        XCtl[i_xtouch].segmentDisplay[10] = '0';
+        XCtl[i_xtouch].segmentDisplay[11] = valueString[0];
+      }else if (XCtl[i_xtouch].jogDialValueDmx < 100) {
+        XCtl[i_xtouch].segmentDisplay[9] = '0';
+        XCtl[i_xtouch].segmentDisplay[10] = valueString[0];
+        XCtl[i_xtouch].segmentDisplay[11] = valueString[1];
+      }else{
+        XCtl[i_xtouch].segmentDisplay[9] = valueString[0];
+        XCtl[i_xtouch].segmentDisplay[10] = valueString[1];
+        XCtl[i_xtouch].segmentDisplay[11] = valueString[2];
+      }
+    }else{
+      String playtime = secondsToHMS_B(playerinfo.time); // 00:00:00
+      XCtl[i_xtouch].segmentDisplay[0] = '0';
+      XCtl[i_xtouch].segmentDisplay[1] = 49 + i_xtouch; // 49 = ASCII '1'
+      XCtl[i_xtouch].segmentDisplay[2] = ' ';
+      XCtl[i_xtouch].segmentDisplay[3] = playtime[0]; // h
+      XCtl[i_xtouch].segmentDisplay[4] = playtime[1]; // h
+      XCtl[i_xtouch].segmentDisplay[5] = playtime[3]; // min
+      XCtl[i_xtouch].segmentDisplay[6] = playtime[4]; // min
+      XCtl[i_xtouch].segmentDisplay[7] = playtime[6]; // s
+      XCtl[i_xtouch].segmentDisplay[8] = playtime[7]; // s
+
+      String valueString = String(XCtl[i_xtouch].jogDialValue);
+      if (XCtl[i_xtouch].jogDialValue < 10) {
+        XCtl[i_xtouch].segmentDisplay[9] = '0';
+        XCtl[i_xtouch].segmentDisplay[10] = '0';
+        XCtl[i_xtouch].segmentDisplay[11] = valueString[0];
+      }else if (XCtl[i_xtouch].jogDialValue < 100) {
+        XCtl[i_xtouch].segmentDisplay[9] = '0';
+        XCtl[i_xtouch].segmentDisplay[10] = valueString[0];
+        XCtl[i_xtouch].segmentDisplay[11] = valueString[1];
+      }else{
+        XCtl[i_xtouch].segmentDisplay[9] = valueString[0];
+        XCtl[i_xtouch].segmentDisplay[10] = valueString[1];
+        XCtl[i_xtouch].segmentDisplay[11] = valueString[2];
+      }
+    }
+
     // handle button-light-counter
     for (uint8_t i=0; i<103; i++) {
       if ((XCtl[i_xtouch].buttonLightOn[i] < 254) && (XCtl[i_xtouch].buttonLightOn[i] > 1)) {
@@ -259,6 +313,27 @@
     uint16_t channel;
 
     if (XCtl[i_xtouch].dmxMode) {
+      // update all faders and buttons for the current channel-selection
+      for (uint16_t i_ch=XCtl[i_xtouch].channelOffsetDmx; i_ch<(8+XCtl[i_xtouch].channelOffsetDmx); i_ch++) {
+        uint8_t hardwareFader = i_ch - XCtl[i_xtouch].channelOffsetDmx;
+        XCtl[i_xtouch].hardwareChannel[hardwareFader].faderNeedsUpdate = xctlCheckIfFaderNeedsUpdate(MackieMCU.channelDmx[i_ch].faderPosition, XCtl[i_xtouch].hardwareChannel[hardwareFader].faderPositionHW) && (!XCtl[i_xtouch].hardwareChannel[hardwareFader].faderTouched);
+        if (!XCtl[i_xtouch].hardwareChannel[hardwareFader].faderTouched) {
+          XCtl[i_xtouch].hardwareChannel[hardwareFader].faderPositionHW = MackieMCU.channelDmx[i_ch].faderPosition;
+        }
+        XCtl[i_xtouch].hardwareChannel[hardwareFader].meterLevel = MackieMCU.channelDmx[i_ch].faderPosition/2047;
+      }
+
+      /*
+      // we are not using the master-fader at the moment - maybe in a later revision
+      // update Masterfader
+      uint16_t newFaderValue = ...;
+      XCtl[i_xtouch].hardwareMainfader.faderNeedsUpdate = xctlCheckIfFaderNeedsUpdate(newFaderValue, MackieMCU.channel[512].faderPosition);
+      if (!XCtl[i_xtouch].hardwareMainfader.faderTouched) {
+        XCtl[i_xtouch].hardwareMainfader.faderPositionHW = newFaderValue; // this prevents the fader to snap to desired position after untouching it!
+      }
+      MackieMCU.channel[512].faderPosition = newFaderValue; // convert volumeMain from dBfs to 0...16388 but keep logarithmic scale
+      */
+
       // update channel-faders
       for (uint8_t i_ch=0; i_ch<8; i_ch++) {
         channel = (uint16_t)i_ch + XCtl[i_xtouch].channelOffsetDmx;
@@ -288,6 +363,27 @@
       }
       xctlSendUdpPacket(i_xtouch, XCtl_TxMessage, 9); //send 9 bytes (Ctl_TxMessage[0..8]) to port 10111
     }else{
+      // update all faders and buttons for the current channel-selection
+      uint16_t newFaderValue;
+      for (uint8_t i_ch=XCtl[i_xtouch].channelOffset; i_ch<(8+XCtl[i_xtouch].channelOffset); i_ch++) {
+        uint8_t hardwareFader = i_ch - XCtl[i_xtouch].channelOffset;
+        newFaderValue = round(((playerinfo.volumeCh[i_ch] + 48.0f)/54.0f) * 16383.0f);
+        XCtl[i_xtouch].hardwareChannel[hardwareFader].faderNeedsUpdate = xctlCheckIfFaderNeedsUpdate(newFaderValue, XCtl[i_xtouch].hardwareChannel[hardwareFader].faderPositionHW) && (!XCtl[i_xtouch].hardwareChannel[hardwareFader].faderTouched);
+        MackieMCU.channel[i_ch].faderPosition = newFaderValue; // 0..16383
+        if (!XCtl[i_xtouch].hardwareChannel[hardwareFader].faderTouched) {
+          XCtl[i_xtouch].hardwareChannel[hardwareFader].faderPositionHW = newFaderValue;
+        }
+        XCtl[i_xtouch].hardwareChannel[hardwareFader].meterLevel = ((uint16_t)playerinfo.vuMeterCh[i_ch] * 8) / 255; // scale 0..255 -> 0..8 (with CLIP-LED)
+      }
+
+      // update Masterfader
+      newFaderValue = round(((playerinfo.volumeMain + 48.0f)/54.0f) * 16383.0f);
+      XCtl[i_xtouch].hardwareMainfader.faderNeedsUpdate = xctlCheckIfFaderNeedsUpdate(newFaderValue, XCtl[i_xtouch].hardwareMainfader.faderPositionHW) && (!XCtl[i_xtouch].hardwareMainfader.faderTouched);
+      if (!XCtl[i_xtouch].hardwareMainfader.faderTouched) {
+        XCtl[i_xtouch].hardwareMainfader.faderPositionHW = newFaderValue;
+      }
+      MackieMCU.channel[32].faderPosition = newFaderValue; // convert volumeMain from dBfs to 0...16388 but keep logarithmic scale
+
       // update channel-faders
       for (uint8_t i_ch=0; i_ch<8; i_ch++) {
         if (XCtl[i_xtouch].hardwareChannel[i_ch].faderNeedsUpdate || XCtl[i_xtouch].forceUpdate) {
@@ -400,7 +496,7 @@
                   SerialNina.println("dmx512:output:ch" + String(channel + 1) + "@" + String(newDmxValue));
 
                   // reset nameCounter to display current value in displays instead of names for some time
-                  XCtl[i_xtouch].hardwareChannel[hardwareFader].showValueCounter = 20; // show value for 2 seconds as counter is at 100ms
+                  XCtl[i_xtouch].hardwareChannel[hardwareFader].showValueCounter = 30; // show value for 1.5 seconds as counter is at 50ms
                 }
               }else if ((rxData[0] & 0x0F) == 8){
                 // masterfader = fader 9
@@ -422,13 +518,10 @@
                 XCtl[i_xtouch].hardwareChannel[hardwareFader].faderPositionHW = value;
                 if (XCtl[i_xtouch].hardwareChannel[hardwareFader].faderTouched) {
                   float newVolume = ((value/16383.0f) * 54.0f) - 48.0f;
-                  playerinfo.volumeCh[channel] = newVolume; // we are receiving this value from NINA with a bit delay again
-
-                  // send new channel-volume to NINA
-                  SerialNina.println("mixer:volume:ch" + String(channel + 1) + "@" + String(newVolume, 2));
+                  mixerSetVolume(channel, newVolume);
 
                   // reset nameCounter to display current value in displays instead of names for some time
-                  XCtl[i_xtouch].hardwareChannel[hardwareFader].showValueCounter = 20; // show value for 2 seconds as counter is at 100ms
+                  XCtl[i_xtouch].hardwareChannel[hardwareFader].showValueCounter = 30; // show value for 1.5 seconds as counter is at 50ms
                 }
               }else if ((rxData[0] & 0x0F) == 8){
                 // masterfader = fader 9
@@ -437,10 +530,7 @@
                 XCtl[i_xtouch].hardwareMainfader.faderPositionHW = value;
                 if (XCtl[i_xtouch].hardwareMainfader.faderTouched) {
                   float newVolume = ((value/16383.0f) * 54.0f) - 48.0f;
-                  playerinfo.volumeMain = newVolume;
-
-                  // send new main-volume
-                  SerialNina.println("mixer:volume:main@" + String(newVolume, 2));
+                  mixerSetMainVolume(newVolume);
                 }
               }
             }
@@ -508,8 +598,7 @@
                     MackieMCU.channel[channel].encoderValue += value;
                   }
                   // set balance
-                  playerinfo.balanceCh[channel] = MackieMCU.channel[channel].encoderValue; // we are receiving this value from NINA with a bit delay again
-                  SerialNina.println("mixer:balance:ch" + String(channel + 1) + "@" + String(MackieMCU.channel[channel].encoderValue / 2.55f));
+                  mixerSetBalance(channel, MackieMCU.channel[channel].encoderValue / 2.55f);
                 }else{
                   // turn left
                   channel = (rxData[1] - 16) + XCtl[i_xtouch].channelOffset;
@@ -519,8 +608,7 @@
                     MackieMCU.channel[channel].encoderValue += value;
                   }
                   // set balance
-                  playerinfo.balanceCh[channel] = MackieMCU.channel[channel].encoderValue; // we are receiving this value from NINA with a bit delay again
-                  SerialNina.println("mixer:balance:ch" + String(channel + 1) + "@" + String(MackieMCU.channel[channel].encoderValue / 2.55f));
+                  mixerSetBalance(channel, MackieMCU.channel[channel].encoderValue / 2.55f);
                 }
               }else if (rxData[1] == 60) {
                 // large jog-dial
@@ -727,14 +815,7 @@
                 if (buttonState) {
                   // pressed
                   channel = (button-8) + XCtl[i_xtouch].channelOffset;
-                  if (MackieMCU.channel[channel].solo == 0) {
-                    MackieMCU.channel[channel].solo = 2;
-                  }else{
-                    MackieMCU.channel[channel].solo = 0;
-                  }
-
-                  // send value to NINA
-                  SerialNina.println("mixer:solo:ch" + String(channel + 1) + "@" + String(MackieMCU.channel[channel].solo > 0));
+                  mixerSetSolo(channel, !(MackieMCU.channel[channel].solo > 0));
                 }else{
                   // released
                 }
@@ -745,14 +826,7 @@
                 if (buttonState) {
                   // pressed
                   channel = (button-16) + XCtl[i_xtouch].channelOffset;
-                  if (MackieMCU.channel[channel].mute == 0) {
-                    MackieMCU.channel[channel].mute = 2;
-                  }else{
-                    MackieMCU.channel[channel].mute = 0;
-                  }
-
-                  // send value to NINA
-                  SerialNina.println("mixer:mute:ch" + String(channel + 1) + "@" + String(MackieMCU.channel[channel].mute > 0));
+                  mixerSetMute(channel, !(MackieMCU.channel[channel].mute > 0));
                 }else{
                   // released
                 }
@@ -784,8 +858,7 @@
                   // reset panning to 50%
                   channel = (button-32) + XCtl[i_xtouch].channelOffset;
                   MackieMCU.channel[channel].encoderValue = 128;
-                  playerinfo.balanceCh[channel] = 128; // we are receiving this value from NINA with a bit delay again
-                  SerialNina.println("mixer:balance:ch" + String(channel + 1) + "@" + String(MackieMCU.channel[channel].encoderValue / 2.55f));
+                  mixerSetBalance(channel, 50);
                 }else{
                   // released
                 }
@@ -875,105 +948,6 @@
           }
         }
       }
-    }
-  }
-
-  void xctlPrepareData(uint8_t i_xtouch) {
-    // Update Segment Display
-    if (XCtl[i_xtouch].dmxMode) {
-      String playtime = secondsToHMS_B(playerinfo.time); // 00:00:00
-      XCtl[i_xtouch].segmentDisplay[0] = '0';
-      XCtl[i_xtouch].segmentDisplay[1] = 49 + i_xtouch; // 49 = ASCII '1'
-      XCtl[i_xtouch].segmentDisplay[2] = '-';
-      XCtl[i_xtouch].segmentDisplay[3] = '-';
-      XCtl[i_xtouch].segmentDisplay[4] = '-';
-      XCtl[i_xtouch].segmentDisplay[5] = '-';
-      XCtl[i_xtouch].segmentDisplay[6] = '-';
-      XCtl[i_xtouch].segmentDisplay[7] = '-';
-      XCtl[i_xtouch].segmentDisplay[8] = '-';
-
-      String valueString = String(XCtl[i_xtouch].jogDialValueDmx);
-      if (XCtl[i_xtouch].jogDialValueDmx < 10) {
-        XCtl[i_xtouch].segmentDisplay[9] = '0';
-        XCtl[i_xtouch].segmentDisplay[10] = '0';
-        XCtl[i_xtouch].segmentDisplay[11] = valueString[0];
-      }else if (XCtl[i_xtouch].jogDialValueDmx < 100) {
-        XCtl[i_xtouch].segmentDisplay[9] = '0';
-        XCtl[i_xtouch].segmentDisplay[10] = valueString[0];
-        XCtl[i_xtouch].segmentDisplay[11] = valueString[1];
-      }else{
-        XCtl[i_xtouch].segmentDisplay[9] = valueString[0];
-        XCtl[i_xtouch].segmentDisplay[10] = valueString[1];
-        XCtl[i_xtouch].segmentDisplay[11] = valueString[2];
-      }
-
-      // update all faders and buttons for the current channel-selection
-      for (uint16_t i_ch=XCtl[i_xtouch].channelOffsetDmx; i_ch<(8+XCtl[i_xtouch].channelOffsetDmx); i_ch++) {
-        uint8_t hardwareFader = i_ch - XCtl[i_xtouch].channelOffsetDmx;
-        XCtl[i_xtouch].hardwareChannel[hardwareFader].faderNeedsUpdate = xctlCheckIfFaderNeedsUpdate(MackieMCU.channelDmx[i_ch].faderPosition, XCtl[i_xtouch].hardwareChannel[hardwareFader].faderPositionHW) && (!XCtl[i_xtouch].hardwareChannel[hardwareFader].faderTouched);
-        if (!XCtl[i_xtouch].hardwareChannel[hardwareFader].faderTouched) {
-          XCtl[i_xtouch].hardwareChannel[hardwareFader].faderPositionHW = MackieMCU.channelDmx[i_ch].faderPosition;
-        }
-        XCtl[i_xtouch].hardwareChannel[hardwareFader].meterLevel = MackieMCU.channelDmx[i_ch].faderPosition/2047;
-      }
-
-      /*
-      // we are not using the master-fader at the moment - maybe in a later revision
-      // update Masterfader
-      uint16_t newFaderValue = ...;
-      XCtl[i_xtouch].hardwareMainfader.faderNeedsUpdate = xctlCheckIfFaderNeedsUpdate(newFaderValue, MackieMCU.channel[512].faderPosition);
-      if (!XCtl[i_xtouch].hardwareMainfader.faderTouched) {
-        XCtl[i_xtouch].hardwareMainfader.faderPositionHW = newFaderValue; // this prevents the fader to snap to desired position after untouching it!
-      }
-      MackieMCU.channel[512].faderPosition = newFaderValue; // convert volumeMain from dBfs to 0...16388 but keep logarithmic scale
-      */
-    }else{
-      String playtime = secondsToHMS_B(playerinfo.time); // 00:00:00
-      XCtl[i_xtouch].segmentDisplay[0] = '0';
-      XCtl[i_xtouch].segmentDisplay[1] = 49 + i_xtouch; // 49 = ASCII '1'
-      XCtl[i_xtouch].segmentDisplay[2] = ' ';
-      XCtl[i_xtouch].segmentDisplay[3] = playtime[0]; // h
-      XCtl[i_xtouch].segmentDisplay[4] = playtime[1]; // h
-      XCtl[i_xtouch].segmentDisplay[5] = playtime[3]; // min
-      XCtl[i_xtouch].segmentDisplay[6] = playtime[4]; // min
-      XCtl[i_xtouch].segmentDisplay[7] = playtime[6]; // s
-      XCtl[i_xtouch].segmentDisplay[8] = playtime[7]; // s
-
-      String valueString = String(XCtl[i_xtouch].jogDialValue);
-      if (XCtl[i_xtouch].jogDialValue < 10) {
-        XCtl[i_xtouch].segmentDisplay[9] = '0';
-        XCtl[i_xtouch].segmentDisplay[10] = '0';
-        XCtl[i_xtouch].segmentDisplay[11] = valueString[0];
-      }else if (XCtl[i_xtouch].jogDialValue < 100) {
-        XCtl[i_xtouch].segmentDisplay[9] = '0';
-        XCtl[i_xtouch].segmentDisplay[10] = valueString[0];
-        XCtl[i_xtouch].segmentDisplay[11] = valueString[1];
-      }else{
-        XCtl[i_xtouch].segmentDisplay[9] = valueString[0];
-        XCtl[i_xtouch].segmentDisplay[10] = valueString[1];
-        XCtl[i_xtouch].segmentDisplay[11] = valueString[2];
-      }
-
-      // update all faders and buttons for the current channel-selection
-      uint16_t newFaderValue;
-      for (uint8_t i_ch=XCtl[i_xtouch].channelOffset; i_ch<(8+XCtl[i_xtouch].channelOffset); i_ch++) {
-        uint8_t hardwareFader = i_ch - XCtl[i_xtouch].channelOffset;
-        newFaderValue = round(((playerinfo.volumeCh[i_ch] + 48.0f)/54.0f) * 16383.0f);
-        XCtl[i_xtouch].hardwareChannel[hardwareFader].faderNeedsUpdate = xctlCheckIfFaderNeedsUpdate(newFaderValue, XCtl[i_xtouch].hardwareChannel[hardwareFader].faderPositionHW) && (!XCtl[i_xtouch].hardwareChannel[hardwareFader].faderTouched);
-        MackieMCU.channel[i_ch].faderPosition = newFaderValue; // 0..16383
-        if (!XCtl[i_xtouch].hardwareChannel[hardwareFader].faderTouched) {
-          XCtl[i_xtouch].hardwareChannel[hardwareFader].faderPositionHW = newFaderValue;
-        }
-        XCtl[i_xtouch].hardwareChannel[hardwareFader].meterLevel = ((uint16_t)playerinfo.vuMeterCh[i_ch] * 8) / 255; // scale 0..255 -> 0..8 (with CLIP-LED)
-      }
-
-      // update Masterfader
-      newFaderValue = round(((playerinfo.volumeMain + 48.0f)/54.0f) * 16383.0f);
-      XCtl[i_xtouch].hardwareMainfader.faderNeedsUpdate = xctlCheckIfFaderNeedsUpdate(newFaderValue, XCtl[i_xtouch].hardwareMainfader.faderPositionHW) && (!XCtl[i_xtouch].hardwareMainfader.faderTouched);
-      if (!XCtl[i_xtouch].hardwareMainfader.faderTouched) {
-        XCtl[i_xtouch].hardwareMainfader.faderPositionHW = newFaderValue;
-      }
-      MackieMCU.channel[32].faderPosition = newFaderValue; // convert volumeMain from dBfs to 0...16388 but keep logarithmic scale
     }
   }
 

@@ -14,10 +14,10 @@
     xremoteUdp.begin(10023);
   }
 
-  void xremoteUpdate() {
+  void xremoteUpdateAll() {
     for(uint8_t i=0; i<32; i++) {
-      // some test-data
       /*
+      // some test-data
       MackieMCU.channel[i].faderPosition = random(0, 16383);
       MackieMCU.channel[i].encoderValue = random(0, 255);
       MackieMCU.channel[i].color = random(0, 15);
@@ -25,16 +25,12 @@
       MackieMCU.channel[i].solo = random(0, 2);
       playerinfo.vuMeterCh[i] = random(0, 255);
       */
-
       xremoteSetFader(i+1, MackieMCU.channel[i].faderPosition/16383.0f);
       xremoteSetPan(i+1, MackieMCU.channel[i].encoderValue/255.0f);
       xremoteSetMute(i+1, MackieMCU.channel[i].mute);
       xremoteSetSolo(i+1, MackieMCU.channel[i].solo);
-      /*
-      // the following functions will be called if name or color is changed or when /xremote is received
       xremoteSetColor(i+1, MackieMCU.channel[i].color);
       xremoteSetName(i+1, MackieMCU.channel[i].name);
-      */
     }
     xremoteUpdateMeter();
   }
@@ -77,7 +73,12 @@
           // send routing, names and colors
           for (uint8_t i=0; i<32; i++) {
             xremoteSetName(i+1, MackieMCU.channel[i].name);
-            xremoteSetColor(i+1, MackieMCU.channel[i].color);
+            if (MackieMCU.channel[i].color > 63) {
+              xremoteSetColor(i+1, MackieMCU.channel[i].color - 64 + 8);
+            }else{
+              xremoteSetColor(i+1, MackieMCU.channel[i].color);
+            }
+            
             xremoteSetSource(i+1, i+1);
           }
           xremoteSetCard(10); // X-LIVE
@@ -102,10 +103,7 @@
                 value32bit.u8[3] = rxData[24];
 
                 float newVolume = (value32bit.f * 54.0f) - 48.0f;
-                playerinfo.volumeCh[channel] = newVolume; // we are receiving this value from NINA with a bit delay again
-
-                // send new main-volume
-                SerialNina.println("mixer:volume:ch" + String(channel + 1) + "@" + String(newVolume, 2));
+                mixerSetVolume(channel, newVolume);
               }else if ((rxData[11] == 'p') && (rxData[12] == 'a') && (rxData[13] == 'n')) {
                 // get pan-value
                 value32bit.u8[0] = rxData[23];
@@ -113,16 +111,11 @@
                 value32bit.u8[2] = rxData[21];
                 value32bit.u8[3] = rxData[20];
 
-                playerinfo.balanceCh[channel] = round(value32bit.f * 255.0f); // we are receiving this value from NINA with a bit delay again
-                SerialNina.println("mixer:balance:ch" + String(channel + 1) + "@" + String(value32bit.f * 100.0f));
+                MackieMCU.channel[channel].encoderValue = value32bit.f * 255.0f;
+                mixerSetBalance(channel,  value32bit.f * 100.0f);
               }else if ((rxData[11] == 'o') && (rxData[12] == 'n')) {
-                // get mute-state
-                if ((rxData[20+3]) > 0) {
-                  MackieMCU.channel[channel].mute = 2;
-                }else{
-                  MackieMCU.channel[channel].mute = 0;
-                }
-                SerialNina.println("mixer:mute:ch" + String(channel + 1) + "@" + String(MackieMCU.channel[channel].mute > 0));
+                // get mute-state (caution: here it is "mixer-on"-state)
+                mixerSetMute(channel, (rxData[20+3] == 0));
               }
             }else if ((rxData[7] == 'c') && (rxData[8] == 'o') && (rxData[9] == 'n')) {
               // config
@@ -172,10 +165,7 @@
                 value32bit.u8[3] = rxData[24];
 
                 float newVolume = (value32bit.f * 54.0f) - 48.0f;
-                playerinfo.volumeMain = newVolume;
-
-                // send new main-volume
-                SerialNina.println("mixer:volume:main@" + String(newVolume, 2));
+                mixerSetMainVolume(newVolume);
               }else if ((rxData[13] == 'p') && (rxData[14] == 'a') && (rxData[15] == 'n')) {
                 // get pan-value
                 value32bit.u8[0] = rxData[27];
@@ -183,8 +173,7 @@
                 value32bit.u8[2] = rxData[25];
                 value32bit.u8[3] = rxData[24];
 
-                playerinfo.balanceMain = round(value32bit.f * 255.0f);
-                SerialNina.println("mixer:balance:main@" + String(value32bit.f * 100.0f));
+                mixerSetMainBalance(value32bit.f * 100);
               }else if ((rxData[13] == 'o') && (rxData[14] == 'n')) {
                 // get mute-state
                 // /main/st/mix/on~,i~~~
@@ -205,15 +194,7 @@
 
             // we receive solo-values for 80 channels
             if ((channel>=0) && (channel<32)) {
-              if (value32bit.u32 == 1) {
-                // solo this channel
-                MackieMCU.channel[channel].solo = 127;
-              }else{
-                // solo this channel
-                MackieMCU.channel[channel].solo = 0;
-              }
-              // send value to NINA
-              SerialNina.println("mixer:solo:ch" + String(channel + 1) + "@" + String(MackieMCU.channel[channel].solo > 0));
+              mixerSetSolo(channel, (value32bit.u32 == 1));
             }
           }else if ((rxData[7] == 'u') && (rxData[8] == 'r') && (rxData[9] == 'e') && (rxData[10] == 'c')) {
             value32bit.u8[0] = rxData[27];
@@ -284,6 +265,14 @@
     char cmd[32];
     sprintf(cmd, "/ch/%02i/mix/pan", ch);
     xremoteSendBasicMessage(cmd, 'f', 'b', (char*)&value_pu);
+  }
+
+  void xremoteSetMainFader(float value_pu) {
+    xremoteSendBasicMessage("/main/st/mix/fader", 'f', 'b', (char*)&value_pu);
+  }
+
+  void xremoteSetMainPan(float value_pu) {
+    xremoteSendBasicMessage("/main/st/mix/pan", 'f', 'b', (char*)&value_pu);
   }
 
   void xremoteSetName(uint8_t ch, String name) {

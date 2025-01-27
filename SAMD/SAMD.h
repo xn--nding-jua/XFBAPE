@@ -11,15 +11,16 @@ const char compile_date[] = __DATE__ " " __TIME__;
 //#define PIN_I2S_FS 03 // pin for FrameSelect / Wordclock (= D3)
 
 // configure this software
-#define USE_DISPLAY       0      // enables support for SSD1308 display connected to I2C
-#define USE_MACKIE_MCU    1      // support for MackieMCU via MIDI
-#define USE_XREMOTE       1      // support for XEdit via Ethernet
-#define XREMOTE_DEVICE    "X32"  // XEdit will check this value and display the related picture
-#define XREMOTE_FW_VER    "4.13" // XEdit will check this version
-#define USE_XTOUCH        1      // support for XTouch via Ethernet
-#define XTOUCH_COUNT      2      // number of supported XTouch-Devices
-#define XTOUCH_COLOR      7      // color to init the channel: 0=BLACK, 1=RED, 2=GREEN, 3=YELLOW, 4=BLUE, 5=PINK, 6=CYAN, 7=WHITE (add 64 to invert)
-#define XTOUCH_COLOR_DMX  3      // color to init the channel: 0=BLACK, 1=RED, 2=GREEN, 3=YELLOW, 4=BLUE, 5=PINK, 6=CYAN, 7=WHITE (add 64 to invert)
+#define USE_DISPLAY             0      // enables support for SSD1308 display connected to I2C
+#define USE_MACKIE_MCU          1      // support for MackieMCU via MIDI
+#define USE_ALL_MACKIE_FEATURES 0      // enable support for LED-rings, master-fader and 7-seg.-displays (all not supported by X32)
+#define USE_XREMOTE             1      // support for XEdit via Ethernet
+#define XREMOTE_DEVICE          "X32"  // XEdit will check this value and display the related picture
+#define XREMOTE_FW_VER          "4.13" // XEdit will check this version
+#define USE_XTOUCH              1      // support for XTouch via Ethernet
+#define XTOUCH_COUNT            2      // number of supported XTouch-Devices
+#define XTOUCH_COLOR            7      // color to init the channel: 0=BLACK, 1=RED, 2=GREEN, 3=YELLOW, 4=BLUE, 5=PINK, 6=CYAN, 7=WHITE (add 64 to invert)
+#define XTOUCH_COLOR_DMX        3      // color to init the channel: 0=BLACK, 1=RED, 2=GREEN, 3=YELLOW, 4=BLUE, 5=PINK, 6=CYAN, 7=WHITE (add 64 to invert)
 
 // includes for FPGA
 #include <wiring_private.h>
@@ -158,6 +159,7 @@ unsigned long baud = 115200;
 int rts = -1;
 int dtr = -1;
 bool firmwareUpdateMode = false;
+uint8_t ledCounter = 10; // 500ms
 
 // general variables
 uint32_t refreshCounter = 0;
@@ -200,6 +202,7 @@ uint32_t refreshCounter = 0;
 
 #if USE_XTOUCH == 1
   EthernetUDP XCtlUdp[XTOUCH_COUNT];
+  uint8_t XCtl_UpdateCounter = 4;
   uint16_t XCtlWatchdogCounter[XTOUCH_COUNT];
 
   uint8_t XCtl_Probe[8] = {0xF0, 0x00, 0x20, 0x32, 0x58, 0x54, 0x00, 0xF7};
@@ -227,6 +230,7 @@ uint32_t refreshCounter = 0;
 
 #if USE_XREMOTE == 1
   EthernetUDP xremoteUdp;
+  uint8_t xremoteUpdateCounter = 1;
   char xremote_TxMessage[350]; // the largest binary blob will take up to 20+(70+1))*4 bytes = 408 bytes
 
   typedef union 

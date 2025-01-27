@@ -97,23 +97,34 @@
 
 #include "SAMD.h"
 
-void ticker100msFcn() {
+void ticker50msFcn() {
+  ledCounter -= 1;
+  if (ledCounter == 0) {
+    ledCounter = 10; // preload to 500ms
+    digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+  }
+
   #if USE_DISPLAY == 1
     // do menu/GUI-relevant stuff
     displayDrawMenu();
   #endif
 
   #if USE_XREMOTE == 1
-    xremoteUpdate();
+    xremoteUpdateCounter -= 1;
+    if (xremoteUpdateCounter == 0) {
+      xremoteUpdateCounter = 2; // 100ms update rate
+      xremoteUpdateMeter();
+    }
   #endif
   
   #if USE_XTOUCH == 1
     if (Ethernet.linkStatus() != LinkOFF) {
+      XCtl_UpdateCounter -= 1;
       for (uint8_t i_xtouch=0; i_xtouch<XTOUCH_COUNT; i_xtouch++) {
         if (XCtl[i_xtouch].online) {
           XCtlWatchdogCounter[i_xtouch] -= 1;
           if (XCtlWatchdogCounter[i_xtouch] == 0) {
-            XCtlWatchdogCounter[i_xtouch] = 20;
+            XCtlWatchdogCounter[i_xtouch] = 40; // 2 seconds
 
             xctlSendWatchDogMessage(i_xtouch);
           }
@@ -126,31 +137,37 @@ void ticker100msFcn() {
           }
 
           // send data
-          xctlPrepareData(i_xtouch); // prepare values to send to device
-          xctlSendGeneralData(i_xtouch); // update buttons and displays
+          if (XCtl_UpdateCounter == 0) {
+            xctlSendGeneralData(i_xtouch); // update buttons and displays
+          }
           xctlSendFaderData(i_xtouch); // update fader
         }
+      }
+      if (XCtl_UpdateCounter == 0) {
+        XCtl_UpdateCounter = 3; // 150ms update-rate
       }
     }
   #endif
 
-  #if USE_MACKIE_MCU == 1
-    mackieUpdateCounter -= 1;
-
+  #if USE_MACKIE_MCU == 1 || USE_XTOUCH == 1
     // count down channel-name-counter to display channel-name after changing a valud
     for (uint8_t i_ch=0; i_ch<8; i_ch++) {
       if (MackieMCU.hardwareChannel[i_ch].showValueCounter > 0) {
         MackieMCU.hardwareChannel[i_ch].showValueCounter -= 1;
       }
     }
+  #endif
 
+  #if USE_MACKIE_MCU == 1
+    mackieUpdateCounter -= 1;
     if (mackieUpdateCounter == 0) {
-      mackieUpdateCounter = 2; // 200ms update-rate
-      mackieMcuSendData();
+      mackieUpdateCounter = 3; // 150ms update-rate
+      mackieMcuSendGeneralData();
     }
+    mackieMcuSendFaderData();
   #endif
 }
-Ticker ticker100ms(ticker100msFcn, 100, 0, MILLIS);
+Ticker ticker50ms(ticker50msFcn, 50, 0, MILLIS);
 
 void ticker85msFcn() {
   x32AliveCounter--;
@@ -271,7 +288,7 @@ void setup() {
 
   // start ticker
   Serial.println(F("Init timers..."));
-  ticker100ms.start();
+  ticker50ms.start();
   ticker85ms.start();
   Serial.println(F("Ready."));
 }
@@ -289,11 +306,6 @@ void loop() {
 
     ninaHandleUpdate();
   }else{
-    if (refreshCounter == 24000) { // medium-fast blinking to indicate standby
-      refreshCounter = 0;
-      digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
-    }
-
     // handle ethernet clients
     ethernetHandleHTTPClients();
     ethernetHandleCMDClients();
@@ -314,7 +326,7 @@ void loop() {
       mackieMcuHandleCommunication(); // communication via Serial/MIDI
     #endif
 
-    ticker100ms.update();
+    ticker50ms.update();
     ticker85ms.update();
   }
 }
