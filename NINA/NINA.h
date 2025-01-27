@@ -1,4 +1,4 @@
-const char* versionstring = "v3.1.2";
+const char* versionstring = "v3.1.4";
 const char compile_date[] = __DATE__ " " __TIME__;
 
 String hostname = "xfbape";

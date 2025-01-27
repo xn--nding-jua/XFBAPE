@@ -650,6 +650,7 @@ String executeCommand(String Command) {
         audiomixer.soloCh[channel - 1] = solo; // keep track of soloed channels
 
         // update soloInUse-setting
+        audiomixer.soloInUse = false;
         for (uint8_t i=0; i<MAX_AUDIO_CHANNELS; i++) {
           if (audiomixer.soloCh[i]) {
             // at least one single channel in solo-mode

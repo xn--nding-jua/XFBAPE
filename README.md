@@ -20,9 +20,10 @@ Three individual devices are part of this repository:
 - [x] MP3-Playback via SD-Card
 - [x] Card-playback can be controlled via original X32-Card-interface
 - [x] Control via Webinterface (only WiFi and only Audio yet)
-- [x] Control via ASCII-based commands via USB, WiFi and Ethernet (Audio and DMX512)
 - [x] Control via multiple X-Touch-controls via ethernet (Audio and DMX512)
+- [x] Control via original Behringer X32Edit (via ethernet)
 - [x] Control via X32-surface using MackieMCU-emulation via Card-MIDI (Audio and DMX512)
+- [x] Control via ASCII-based commands via USB, WiFi and Ethernet (Audio and DMX512)
 - [x] DMX512-output (adjustable DMX-timings via VHDL)
 - [x] Parametric-Equalizers (3 to 5, depending on the free space in FPGA)
 - [x] Dynamic Audio-Compression (Stereo)
