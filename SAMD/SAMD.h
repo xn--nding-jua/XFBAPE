@@ -1,4 +1,4 @@
-const char* versionstring = "v3.1.2";
+const char* versionstring = "v3.1.4";
 const char compile_date[] = __DATE__ " " __TIME__;
 
 // the following defines will overwrite the standard arduino-defines from https://github.com/arduino/ArduinoCore-samd/blob/84c09b3265e2a8b548a29b141f0c9281b1baf154/variants/mkrvidor4000/variant.h
@@ -13,6 +13,9 @@ const char compile_date[] = __DATE__ " " __TIME__;
 // configure this software
 #define USE_DISPLAY       0      // enables support for SSD1308 display connected to I2C
 #define USE_MACKIE_MCU    1      // support for MackieMCU via MIDI
+#define USE_XREMOTE       1      // support for XEdit via Ethernet
+#define XREMOTE_DEVICE    "X32"  // XEdit will check this value and display the related picture
+#define XREMOTE_FW_VER    "4.13" // XEdit will check this version
 #define USE_XTOUCH        1      // support for XTouch via Ethernet
 #define XTOUCH_COUNT      2      // number of supported XTouch-Devices
 #define XTOUCH_COLOR      7      // color to init the channel: 0=BLACK, 1=RED, 2=GREEN, 3=YELLOW, 4=BLUE, 5=PINK, 6=CYAN, 7=WHITE (add 64 to invert)
@@ -220,4 +223,29 @@ uint32_t refreshCounter = 0;
     char segmentDisplay[12];
     uint8_t buttonLightOn[103];
   }XCtl[XTOUCH_COUNT];
+#endif
+
+#if USE_XREMOTE == 1
+  EthernetUDP xremoteUdp;
+  char xremote_TxMessage[350]; // the largest binary blob will take up to 20+(70+1))*4 bytes = 408 bytes
+
+  typedef union 
+  {
+      uint32_t u32;
+      int32_t s32;
+      uint16_t u16[2];
+      int16_t s16[2];
+      uint8_t u8[4];
+      int8_t s8[4];
+      float   f;
+  }data_32b;
+
+  char xremote_cmd_info[4]   = {'/', 'i', 'n', 'f'};
+  char xremote_cmd_xinfo[4]   = {'/', 'x', 'i', 'n'};
+  char xremote_cmd_status[4] = {'/', 's', 't', 'a'};
+  char xremote_cmd_xremote[4]   = {'/', 'x', 'r', 'e'};
+  char xremote_cmd_unsubscribe[4]   = {'/', 'u', 'n', 's'};
+  char xremote_cmd_channel[4]   = {'/', 'c', 'h', '/'};
+  char xremote_cmd_main[4]   = {'/', 'm', 'a', 'i'};
+  char xremote_cmd_stat[4]   = {'/', '-', 's', 't'};
 #endif

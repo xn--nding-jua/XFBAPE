@@ -197,3 +197,12 @@ uint32_t hexToInt(String hexString){
   hexString.toCharArray(c, hexString.length() + 1);
   return strtol(c, NULL, 16); 
 }
+
+void charToString(char *data, String &s)
+{
+  uint8_t ptr = 0;
+  s = ""; // init string
+  while (data[ptr]) {
+    s.concat(data[ptr++]);
+  }
+}

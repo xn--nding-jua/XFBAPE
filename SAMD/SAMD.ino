@@ -1,6 +1,6 @@
 /*
   X-f/bape USBCtrl for Arduino MKR Vidor4000 Device
-  v3.1.2 built on 23.01.2025
+  v3.1.4 built on 27.01.2025
   Infos: https://www.github.com/xn--nding-jua/xfbape
   Copyright (c) 2023-2025 Dr.-Ing. Christian Nöding
 
@@ -103,6 +103,10 @@ void ticker100msFcn() {
     displayDrawMenu();
   #endif
 
+  #if USE_XREMOTE == 1
+    xremoteUpdate();
+  #endif
+  
   #if USE_XTOUCH == 1
     if (Ethernet.linkStatus() != LinkOFF) {
       for (uint8_t i_xtouch=0; i_xtouch<XTOUCH_COUNT; i_xtouch++) {
@@ -111,7 +115,7 @@ void ticker100msFcn() {
           if (XCtlWatchdogCounter[i_xtouch] == 0) {
             XCtlWatchdogCounter[i_xtouch] = 20;
 
-            XCtl_sendWatchDogMessage(i_xtouch);
+            xctlSendWatchDogMessage(i_xtouch);
           }
 
           // count down channel-name-counter to display channel-name after changing a valud
@@ -122,14 +126,14 @@ void ticker100msFcn() {
           }
 
           // send data
-          XCtl_prepareData(i_xtouch); // prepare values to send to device
-          XCtl_sendGeneralData(i_xtouch); // update buttons and displays
-          XCtl_sendFaderData(i_xtouch); // update fader
+          xctlPrepareData(i_xtouch); // prepare values to send to device
+          xctlSendGeneralData(i_xtouch); // update buttons and displays
+          xctlSendFaderData(i_xtouch); // update fader
         }
       }
     }
   #endif
-  
+
   #if USE_MACKIE_MCU == 1
     mackieUpdateCounter -= 1;
 
@@ -142,7 +146,7 @@ void ticker100msFcn() {
 
     if (mackieUpdateCounter == 0) {
       mackieUpdateCounter = 2; // 200ms update-rate
-      MackieMCU_sendData();
+      mackieMcuSendData();
     }
   #endif
 }
@@ -227,7 +231,7 @@ void setup() {
   Serial.println(F("Init EEPROM..."));
   initEeprom();
   Serial.println(F("Init Ethernet..."));
-  initEthernet();
+  ethernetInit();
 
   // initialize the X32
   Serial.println(F("Init X32..."));
@@ -242,6 +246,10 @@ void setup() {
     displayDrawMenu();
   #endif
 
+  #if USE_XREMOTE == 1
+    xremoteInit();
+  #endif
+
   #if USE_XTOUCH == 1
     Serial.println(F("Init X-TOUCH-devices..."));
 
@@ -252,13 +260,13 @@ void setup() {
 
     for (uint8_t i_xtouch=0; i_xtouch<XTOUCH_COUNT; i_xtouch++) {
       XCtl[i_xtouch].ip = eeprom_config.xtouchip[i_xtouch];
-      XCtl_init(i_xtouch);
+      xctlInit(i_xtouch);
     }
   #endif
 
   #if USE_MACKIE_MCU == 1
     Serial.println(F("Init MackieMCU..."));
-    MackieMCU_init();
+    mackieMcuInit();
   #endif
 
   // start ticker
@@ -279,7 +287,7 @@ void loop() {
       digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
     }
 
-    handleNINAUpdate();
+    ninaHandleUpdate();
   }else{
     if (refreshCounter == 24000) { // medium-fast blinking to indicate standby
       refreshCounter = 0;
@@ -287,20 +295,23 @@ void loop() {
     }
 
     // handle ethernet clients
-    handleHTTPClients();
-    handleCMDClients();
+    ethernetHandleHTTPClients();
+    ethernetHandleCMDClients();
 
     // handle serial communication
-    handleUSBCommunication(); // communication through Serial (USB) with connected computer
-    handleX32Communication(); // communication through Serial1 with Behringer X32 MainControl
-    handleNINACommunication(); // communication through Serial2 with NINA W102
+    usbHandleCommunication(); // communication through Serial (USB) with connected computer
+    ninaHandleCommunication(); // communication through Serial2 with NINA W102
+    x32HandleCommunication(); // communication through Serial1 with Behringer X32 MainControl
+    #if USE_XREMOTE == 1
+      xremoteHandleCommunication();
+    #endif
     #if USE_XTOUCH == 1
       for (uint8_t i_xtouch=0; i_xtouch<XTOUCH_COUNT; i_xtouch++) {
-        handleXCtlMessages(i_xtouch); // communication via ethernet-jack (UDP)
+        xctlHandleCommunication(i_xtouch); // communication via ethernet-jack (UDP)
       }
     #endif
     #if USE_MACKIE_MCU == 1
-      handleMackieMCUCommunication(); // communication via Serial/MIDI
+      mackieMcuHandleCommunication(); // communication via Serial/MIDI
     #endif
 
     ticker100ms.update();

@@ -21,7 +21,7 @@
 */
 
 // Serial-CMD-Receiver
-void handleX32Communication() {
+void x32HandleCommunication() {
   if (SerialX32.available() > 0) {
     // read all characters. The individual commands can be distributed over several chunks.
     // so we have to fill everything into a buffer and scan the buffer for "*" and "#"

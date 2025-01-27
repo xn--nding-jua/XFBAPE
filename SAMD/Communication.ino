@@ -1,5 +1,5 @@
 // USB-CMD-Receiver
-void handleUSBCommunication() {
+void usbHandleCommunication() {
   if (Serial.available() > 0) {
     String command = Serial.readStringUntil('\n'); // we are using both CR/LF but we have to read until LF
     command.trim();
@@ -16,7 +16,7 @@ void handleUSBCommunication() {
 }
 
 // NINA-CMD-Receiver
-void handleNINACommunication() {
+void ninaHandleCommunication() {
   // passthrough all incoming data to USB-serial
   if (SerialNina.available() > 0) {
     String command = SerialNina.readStringUntil('\n');
@@ -113,10 +113,10 @@ String executeCommand(String Command) {
       setup_fpga();
       Answer = "SAMD: OK";
     }else if (Command.indexOf(F("samd:update:nina")) > -1){
-      enterNinaUpdateMode();
+      ninaEnterUpdateMode();
       Answer = F("Entered NINA-Update-Mode...\nPlease close serial-port and upload new firmware via Arduino or esptool.py.\n\nReboot system to return to normal mode.");
     }else if (Command.indexOf("samd:reset:nina") > -1){
-      resetNina();
+      ninaReset();
       Answer = "SAMD: OK";
     }else if (Command.indexOf("samd:passthrough:nina") > -1){
       passthroughNINA = (Command.substring(Command.indexOf("@")+1).toInt() == 1);
@@ -142,7 +142,7 @@ String executeCommand(String Command) {
       uint8_t ip3 = split(ipString, '.', 3).toInt();
 
       eeprom_config.ip = IPAddress(ip0, ip1, ip2, ip3);
-      initEthernet();
+      ethernetInit();
       Answer = "SAMD: OK";
     #if USE_XTOUCH == 1
       }else if (Command.indexOf(F("samd:config:xtouchip?")) > -1) {
@@ -168,7 +168,7 @@ String executeCommand(String Command) {
           XCtlUdp[i_xtouch].stop();
           delay(10);
           XCtl[i_xtouch].ip = newIp;
-          XCtl_init(i_xtouch);
+          xctlInit(i_xtouch);
           Answer = "SAMD: OK";
         }else{
           Answer = "SAMD: ERROR - OUT OF RANGE";
@@ -187,6 +187,9 @@ String executeCommand(String Command) {
         if ((channel >= 0) && (channel < 32)) {
           String name = Command.substring(Command.indexOf("@")+1);
           MackieMCU.channel[channel].name = name;
+          #if USE_XREMOTE == 1
+            xremoteSetName(channel+1, MackieMCU.channel[channel].name);
+          #endif
 
           Answer = "SAMD: OK";
         }else{
@@ -198,6 +201,9 @@ String executeCommand(String Command) {
         if ((channel >= 0) && (channel < 32)) {
           uint8_t color = Command.substring(Command.indexOf("@")+1).toInt();
           MackieMCU.channel[channel].color = color;
+          #if USE_XREMOTE == 1
+            xremoteSetColor(channel+1, MackieMCU.channel[channel].color);
+          #endif
 
           Answer = "SAMD: OK";
         }else{
@@ -254,7 +260,7 @@ void SERCOM5_Handler()
 }
 */
 
-void resetNina() {
+void ninaReset() {
   pinMode(NINA_RESET_N, OUTPUT);
 
   digitalWrite(NINA_RESET_N, HIGH);
@@ -267,7 +273,7 @@ void resetNina() {
   //pinMode(NINA_RESET_N, INPUT);
 }
 
-void enterNinaUpdateMode() {
+void ninaEnterUpdateMode() {
   SerialNina.println(F("system:stop"));
 
   // switch back to 115200 baud to communicate with the ESP32 bootloader
@@ -310,7 +316,7 @@ void enterNinaUpdateMode() {
   firmwareUpdateMode = true; // entering NINA-Update-Mode
 }
 
-void handleNINAUpdate() {
+void ninaHandleUpdate() {
   // use RTS to RESET the NINA-module
   if (rts != Serial.rts()) {
     digitalWrite(NINA_RESET_N, (Serial.rts() == 1) ? LOW : HIGH);

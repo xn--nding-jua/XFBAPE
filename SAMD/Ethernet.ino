@@ -1,4 +1,4 @@
-void initEthernet() {
+void ethernetInit() {
   Ethernet.init(7);
   Ethernet.begin(config.mac, eeprom_config.ip);
   
@@ -23,7 +23,7 @@ void initEthernet() {
 }
 
 // Webserver
-void handleHTTPClients() {
+void ethernetHandleHTTPClients() {
   // listen for incoming clients
   EthernetClient client = server.available();
   if (client) {
@@ -65,7 +65,7 @@ void handleHTTPClients() {
 }
 
 // Command-Server
-void handleCMDClients() {
+void ethernetHandleCMDClients() {
   // listen for incoming clients
   EthernetClient client = cmdserver.available();
   if (client) {

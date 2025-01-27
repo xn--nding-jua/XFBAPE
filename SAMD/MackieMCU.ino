@@ -27,7 +27,7 @@
 
 #if USE_MACKIE_MCU == 1
   // =========================== RECEIVING MIDI DATA ==========================
-  void MackieMCU_handleNoteOn(uint8_t midiChannel, uint8_t note, uint8_t velocity) {
+  void mackieMcuHandleNoteOn(uint8_t midiChannel, uint8_t note, uint8_t velocity) {
     if (mackieDmxMode) {
       // DMX512 MODE
       if ( (note >= 0x00) && (note <= 0x07) ) {
@@ -297,7 +297,7 @@
     }
   }
 
-  void MackieMCU_handleNoteOff(uint8_t midiChannel, uint8_t note, uint8_t velocity) {
+  void mackieMcuHandleNoteOff(uint8_t midiChannel, uint8_t note, uint8_t velocity) {
     if (mackieDmxMode) {
       if ((note >= 0x68) && (note <= 0x6f)) {
         // Faderuntouch 1-8
@@ -317,7 +317,7 @@
     }
   }
 
-  void MackieMCU_handleControlChange(uint8_t midiChannel, uint8_t data1, uint8_t data2) {
+  void mackieMcuHandleControlChange(uint8_t midiChannel, uint8_t data1, uint8_t data2) {
     if (mackieDmxMode) {
       if (midiChannel == 1) {
         if ((data1 >= 0x10) && (data1 <= 0x17)) {
@@ -375,7 +375,7 @@
     }
   }
 
-  void MackieMCU_handlePitchBendChange(uint8_t midiChannel, int value) {
+  void mackieMcuHandlePitchBendChange(uint8_t midiChannel, int value) {
     if (mackieDmxMode) {
       if ((midiChannel >= 1) && (midiChannel <= 8)) {
         uint8_t hardwareFader = midiChannel - 1;
@@ -431,11 +431,11 @@
     }
   }
 
-  void MackieMCU_handleProgramChange(uint8_t midiChannel, uint8_t data1) {
+  void mackieMcuHandleProgramChange(uint8_t midiChannel, uint8_t data1) {
     // nothing to do here at the moment
   }
 
-  void MackieMCU_handleSysEx(unsigned char* sysExArray, unsigned int sysExSize) {
+  void mackieMcuHandleSysEx(unsigned char* sysExArray, unsigned int sysExSize) {
     uint8_t data[20];
 
     if ((sysExArray[0] == 0xF0) && (sysExArray[3] == 0x66) && (sysExArray[sysExSize - 1] == 0xF7)) {
@@ -480,28 +480,28 @@
     }
   }
 
-  void MackieMCU_init() {
+  void mackieMcuInit() {
     // set default names for all 32 channels. Can be changed via UART lateron
     for (uint8_t i_ch=0; i_ch<32; i_ch++) {
       MackieMCU.channel[i_ch].name = "Ch " + String(i_ch + 1) + "   ";
     }
 
-    MIDI.setHandleNoteOn(MackieMCU_handleNoteOn);
-    MIDI.setHandleNoteOff(MackieMCU_handleNoteOff);
-    MIDI.setHandleControlChange(MackieMCU_handleControlChange);
-    MIDI.setHandlePitchBend(MackieMCU_handlePitchBendChange);
-    MIDI.setHandleProgramChange(MackieMCU_handleProgramChange);
-    MIDI.setHandleSystemExclusive(MackieMCU_handleSysEx);
+    MIDI.setHandleNoteOn(mackieMcuHandleNoteOn);
+    MIDI.setHandleNoteOff(mackieMcuHandleNoteOff);
+    MIDI.setHandleControlChange(mackieMcuHandleControlChange);
+    MIDI.setHandlePitchBend(mackieMcuHandlePitchBendChange);
+    MIDI.setHandleProgramChange(mackieMcuHandleProgramChange);
+    MIDI.setHandleSystemExclusive(mackieMcuHandleSysEx);
     MIDI.begin(MIDI_CHANNEL_OMNI);  // Listen to all incoming messages
 
     pinPeripheral(4, PIO_SERCOM_ALT); //Assign TX function to pin 4
     pinPeripheral(5, PIO_SERCOM_ALT); //Assign RX function to pin 5
   }
 
-  void MackieMCU_sendData() {
+  void mackieMcuSendData() {
     if (mackieDmxMode) {
       // update small LC-displays
-      MackieMCU_updateTimecodeDisplay("------------"); // send all 12 LC-displays at once
+      mackieMcuUpdateTimecodeDisplay("------------"); // send all 12 LC-displays at once
 
       // update all faders and buttons for the current channel-selection
       uint32_t newFaderValue;
@@ -513,17 +513,17 @@
         // send values to device
         if ((MackieMCU.hardwareChannel[hardwareFader].faderNeedsUpdate || MackieMCU.forceUpdate) && (!MackieMCU.hardwareChannel[hardwareFader].faderTouched)) {
           MackieMCU.hardwareChannel[hardwareFader].faderNeedsUpdate = false;
-          MackieMCU_setFader(hardwareFader, MackieMCU.channelDmx[i_ch].faderPosition);
+          mackieMcuSetFader(hardwareFader, MackieMCU.channelDmx[i_ch].faderPosition);
         }
-        MackieMCU_setMeter(hardwareFader, MackieMCU.hardwareChannel[hardwareFader].meterLevel);
+        mackieMcuSetMeter(hardwareFader, MackieMCU.hardwareChannel[hardwareFader].meterLevel);
         if (MackieMCU.hardwareChannel[hardwareFader].showValueCounter > 0) {
           // displaying current audio-level in second line
-          MackieMCU_updateLCDs(hardwareFader, "DMX " + String(i_ch + 1), String(MackieMCU.channelDmx[i_ch].faderPosition/64.24705882352941f, 0) + "/" + String(MackieMCU.channelDmx[i_ch].faderPosition/163.83f, 0) + "%  ");
+          mackieMcuUpdateLCDs(hardwareFader, "DMX " + String(i_ch + 1), String(MackieMCU.channelDmx[i_ch].faderPosition/64.24705882352941f, 0) + "/" + String(MackieMCU.channelDmx[i_ch].faderPosition/163.83f, 0) + "%  ");
         }else{
           // display channel-name in second line
-          MackieMCU_updateLCDs(hardwareFader, "DMX " + String(i_ch + 1), MackieMCU.channelDmx[i_ch].name);
+          mackieMcuUpdateLCDs(hardwareFader, "DMX " + String(i_ch + 1), MackieMCU.channelDmx[i_ch].name);
         }
-        MackieMCU_setLedRing(hardwareFader, MackieMCU.channelDmx[i_ch].encoderValue);
+        mackieMcuSetLedRing(hardwareFader, MackieMCU.channelDmx[i_ch].encoderValue);
       }
 /*
       // we are not using the masterfader in DMX512-mode at the moment
@@ -534,25 +534,25 @@
       MackieMCU.channelDmx[512].faderPosition = newFaderValue; // convert volumeMain from dBfs to 0...16388 but keep logarithmic scale
       if ((MackieMCU.hardwareMainfader.faderNeedsUpdate || MackieMCU.forceUpdate) && (!MackieMCU.hardwareMainfader.faderTouched)) {
         MackieMCU.hardwareMainfader.faderNeedsUpdate = false;
-        MackieMCU_setFader(512, MackieMCU.channelDmx[512].faderPosition);
+        mackieMcuSetFader(512, MackieMCU.channelDmx[512].faderPosition);
       }
 */
       MackieMCU.forceUpdate = false;
 
       // set button-leds
-      MackieMCU_updateButtons(0x5b, 0); // rewind - we are not using this function in DMX-mode yet
-      MackieMCU_updateButtons(0x5c, 0); // forward - we are not using this function in DMX-mode yet
-      MackieMCU_updateButtons(0x5d, 0); // stop - we are not using this function in DMX-mode yet
-      MackieMCU_updateButtons(0x5e, 0); // play - we are not using this function in DMX-mode yet
-      MackieMCU_updateButtons(0x32, 127); // flip on = we are in DMX-Mode
-      MackieMCU_updateButtons(0x5f, 127); // record on = we are in DMX-Mode
+      mackieMcuUpdateButtons(0x5b, 0); // rewind - we are not using this function in DMX-mode yet
+      mackieMcuUpdateButtons(0x5c, 0); // forward - we are not using this function in DMX-mode yet
+      mackieMcuUpdateButtons(0x5d, 0); // stop - we are not using this function in DMX-mode yet
+      mackieMcuUpdateButtons(0x5e, 0); // play - we are not using this function in DMX-mode yet
+      mackieMcuUpdateButtons(0x32, 127); // flip on = we are in DMX-Mode
+      mackieMcuUpdateButtons(0x5f, 127); // record on = we are in DMX-Mode
 
       for (uint8_t i_ch=0; i_ch<8; i_ch++) {
         uint16_t channel = (uint16_t)(i_ch) + MackieMCU.channelOffsetDmx;
-        MackieMCU_updateButtons(i_ch, MackieMCU.channelDmx[channel].rec);
-        MackieMCU_updateButtons(i_ch + 0x08, MackieMCU.channelDmx[channel].solo);
-        MackieMCU_updateButtons(i_ch + 0x10, MackieMCU.channelDmx[channel].mute);
-        MackieMCU_updateButtons(i_ch + 0x18, MackieMCU.channelDmx[channel].select);
+        mackieMcuUpdateButtons(i_ch, MackieMCU.channelDmx[channel].rec);
+        mackieMcuUpdateButtons(i_ch + 0x08, MackieMCU.channelDmx[channel].solo);
+        mackieMcuUpdateButtons(i_ch + 0x10, MackieMCU.channelDmx[channel].mute);
+        mackieMcuUpdateButtons(i_ch + 0x18, MackieMCU.channelDmx[channel].select);
       }
     }else{
       // update small LC-displays
@@ -565,7 +565,7 @@
       }else{
         valueString = String(MackieMCU.jogDialValue);
       }
-      MackieMCU_updateTimecodeDisplay("10  " + playtime[0] + valueString); // send all 12 LC-displays at once
+      mackieMcuUpdateTimecodeDisplay("10  " + playtime[0] + valueString); // send all 12 LC-displays at once
 
       // update all faders and buttons for the current channel-selection
       uint32_t newFaderValue;
@@ -579,17 +579,17 @@
         // send values to device
         if ((MackieMCU.hardwareChannel[hardwareFader].faderNeedsUpdate || MackieMCU.forceUpdate) && (!MackieMCU.hardwareChannel[i_ch - MackieMCU.channelOffset].faderTouched)) {
           MackieMCU.hardwareChannel[hardwareFader].faderNeedsUpdate = false;
-          MackieMCU_setFader(hardwareFader, MackieMCU.channel[i_ch].faderPosition);
+          mackieMcuSetFader(hardwareFader, MackieMCU.channel[i_ch].faderPosition);
         }
-        MackieMCU_setMeter(hardwareFader, MackieMCU.hardwareChannel[hardwareFader].meterLevel);
+        mackieMcuSetMeter(hardwareFader, MackieMCU.hardwareChannel[hardwareFader].meterLevel);
         if (MackieMCU.hardwareChannel[hardwareFader].showValueCounter > 0) {
           // displaying current audio-level in second line
-          MackieMCU_updateLCDs(hardwareFader, "Ch" + String(i_ch+1) + MackieMCU_panString(MackieMCU.channel[i_ch].encoderValue), String(playerinfo.volumeCh[i_ch], 2) + "dB    ");
+          mackieMcuUpdateLCDs(hardwareFader, "Ch" + String(i_ch+1) + mackieMcuPanString(MackieMCU.channel[i_ch].encoderValue), String(playerinfo.volumeCh[i_ch], 2) + "dB    ");
         }else{
           // display channel-name in second line
-          MackieMCU_updateLCDs(hardwareFader, "Ch" + String(i_ch+1) + MackieMCU_panString(MackieMCU.channel[i_ch].encoderValue), MackieMCU.channel[i_ch].name);
+          mackieMcuUpdateLCDs(hardwareFader, "Ch" + String(i_ch+1) + mackieMcuPanString(MackieMCU.channel[i_ch].encoderValue), MackieMCU.channel[i_ch].name);
         }
-        MackieMCU_setLedRing(hardwareFader, MackieMCU.channel[i_ch].encoderValue);
+        mackieMcuSetLedRing(hardwareFader, MackieMCU.channel[i_ch].encoderValue);
       }
       // MasterFader
       newFaderValue = ((playerinfo.volumeMain + 48.0f)/54.0f) * 16383.0f;
@@ -597,23 +597,23 @@
       MackieMCU.channel[32].faderPosition = newFaderValue; // convert volumeMain from dBfs to 0...16388 but keep logarithmic scale
       if ((MackieMCU.hardwareMainfader.faderNeedsUpdate || MackieMCU.forceUpdate) && (!MackieMCU.hardwareMainfader.faderTouched)) {
         MackieMCU.hardwareMainfader.faderNeedsUpdate = false;
-        MackieMCU_setFader(32, MackieMCU.channel[32].faderPosition);
+        mackieMcuSetFader(32, MackieMCU.channel[32].faderPosition);
       }
       MackieMCU.forceUpdate = false;
 
       // set button-leds
-      MackieMCU_updateButtons(0x5b, (playerinfo.currentTrackNumber > 0) ? 127 : 0); // rewind
-      MackieMCU_updateButtons(0x5c, (playerinfo.currentTrackNumber < (tocEntries - 1)) ? 127 : 0); // forward
-      MackieMCU_updateButtons(0x5d, 127); // stop
-      MackieMCU_updateButtons(0x5e, 127); // play
-      MackieMCU_updateButtons(0x32, 0); // flip off
-      MackieMCU_updateButtons(0x5f, 0); // record off
+      mackieMcuUpdateButtons(0x5b, (playerinfo.currentTrackNumber > 0) ? 127 : 0); // rewind
+      mackieMcuUpdateButtons(0x5c, (playerinfo.currentTrackNumber < (tocEntries - 1)) ? 127 : 0); // forward
+      mackieMcuUpdateButtons(0x5d, 127); // stop
+      mackieMcuUpdateButtons(0x5e, 127); // play
+      mackieMcuUpdateButtons(0x32, 0); // flip off
+      mackieMcuUpdateButtons(0x5f, 0); // record off
 
       for (uint8_t i_ch=0; i_ch<8; i_ch++) {
-        MackieMCU_updateButtons(i_ch, MackieMCU.channel[i_ch + MackieMCU.channelOffset].rec);
-        MackieMCU_updateButtons(i_ch + 0x08, MackieMCU.channel[i_ch + MackieMCU.channelOffset].solo);
-        MackieMCU_updateButtons(i_ch + 0x10, MackieMCU.channel[i_ch + MackieMCU.channelOffset].mute);
-        MackieMCU_updateButtons(i_ch + 0x18, MackieMCU.channel[i_ch + MackieMCU.channelOffset].select);
+        mackieMcuUpdateButtons(i_ch, MackieMCU.channel[i_ch + MackieMCU.channelOffset].rec);
+        mackieMcuUpdateButtons(i_ch + 0x08, MackieMCU.channel[i_ch + MackieMCU.channelOffset].solo);
+        mackieMcuUpdateButtons(i_ch + 0x10, MackieMCU.channel[i_ch + MackieMCU.channelOffset].mute);
+        mackieMcuUpdateButtons(i_ch + 0x18, MackieMCU.channel[i_ch + MackieMCU.channelOffset].select);
       }
     }
   }
@@ -621,12 +621,12 @@
 
 
   // =========================== SERVICE FUNCTIONS ==========================
-  void handleMackieMCUCommunication() {
+  void mackieMcuHandleCommunication() {
     // Read incoming messages
     MIDI.read();
   }
 
-  void MackieMCU_updateTimecodeDisplay(uint8_t position, char c) {
+  void mackieMcuUpdateTimecodeDisplay(uint8_t position, char c) {
     /*
       ASSIGNMENT          HOURS             MINUTES         SECONDS          FRAMES
       0x4b 0x4a       0x49 0x48 0x47       0x46 0x45       0x44 0x43       0x42 0x41 0x40
@@ -636,7 +636,7 @@
     MIDI.send(midi::MidiType::ControlChange, 0x40 + (11-position), c, 1); // type, data1, data2, channel
   }
   
-  void MackieMCU_updateTimecodeDisplay(String text) {
+  void mackieMcuUpdateTimecodeDisplay(String text) {
     uint8_t data[18];
     data[0] = 0xF0; // SysEx startcode
     data[1] = 0x00; // SysEx header
@@ -652,7 +652,7 @@
     MIDI.sendSysEx(18, data);
   }
 
-  void MackieMCU_updateLCDs(uint8_t channel, String top, String bot) {
+  void mackieMcuUpdateLCDs(uint8_t channel, String top, String bot) {
     /*
       Writing to LCD:
       F0 <HDR> 12 pp cc cc .. cc F7
@@ -691,7 +691,7 @@
     MIDI.sendSysEx(15, data);
   }
 
-  void MackieMCU_updateButtons(uint8_t button, uint8_t value) {
+  void mackieMcuUpdateButtons(uint8_t button, uint8_t value) {
     /*
       Velocity:
       0x00 = OFF
@@ -703,7 +703,7 @@
     MIDI.send(midi::MidiType::NoteOn, button, value, 1);
   }
 
-  void MackieMCU_setLedRing(uint8_t channel, uint8_t value) {
+  void mackieMcuSetLedRing(uint8_t channel, uint8_t value) {
     // value 0..6..11 -> 0=off, 1=left, 6=Center, 11=right
     uint8_t mode = 1; // 0=single led, 1=pan, 2=incrementing, 3=spread
 
@@ -713,7 +713,7 @@
     MIDI.send(midi::MidiType::ControlChange, 0x30 + channel, valueRaw, 1); // value between 0 and 16383
   }
 
-  void MackieMCU_setFader(uint8_t channel, int16_t value) {
+  void mackieMcuSetFader(uint8_t channel, int16_t value) {
     // send PitchBend = 0xE0
     if (!MackieMCU.hardwareChannel[channel].faderTouched) {
       MackieMCU.hardwareChannel[channel].faderPositionHW = value; // X32 has no TouchFader, so we force the position everytime
@@ -721,12 +721,12 @@
     MIDI.send(midi::MidiType::PitchBend, (value & 0x7f), (value >> 7) & 0x7f, channel+1); // value between 0 and 16383
   }
 
-  void MackieMCU_setMeter(uint8_t channel, uint8_t value) {
+  void mackieMcuSetMeter(uint8_t channel, uint8_t value) {
     // send AfterTouchChannel = 0xD0
     MIDI.send(midi::MidiType::AfterTouchChannel, (channel << 4) + value, 0, 1); // type, data1, data2, channel
   }
 
-  void MackieMCU_requestFirmwareVersion() {
+  void mackieMcuRequestFirmwareVersion() {
     uint8_t data[8]; // 7 chars per channel
     data[0] = 0xF0; // SysEx startcode
     data[1] = 0x00; // SysEx header
@@ -739,7 +739,7 @@
     MIDI.sendSysEx(8, data);
   }
   
-  String MackieMCU_panString(uint8_t value) {
+  String mackieMcuPanString(uint8_t value) {
     if (value == 128) {
       return "<C>";
     }else if (value <128) {

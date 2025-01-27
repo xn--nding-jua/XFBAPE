@@ -8,7 +8,7 @@
 */
 
 #if USE_XTOUCH == 1
-  void XCtl_sendGeneralData(uint8_t i_xtouch) {
+  void xctlSendGeneralData(uint8_t i_xtouch) {
     uint8_t XCtl_TxMessage[300]; // we are using at least 78 bytes. The other bytes are for button-updates depending on button state
     uint16_t buttonCounter = 0;
     uint16_t channel;
@@ -73,7 +73,7 @@
       }
 
       // send data
-      XCtl_sendUdpPacket(i_xtouch, XCtl_TxMessage, 22); // send 22 bytes (Ctl_TxMessage[0..21]) to port 10111
+      xctlSendUdpPacket(i_xtouch, XCtl_TxMessage, 22); // send 22 bytes (Ctl_TxMessage[0..21]) to port 10111
     }
 
     // update all buttons
@@ -172,7 +172,7 @@
         XCtl_TxMessage[78 + (buttonCounter-1)*2] = 0; // turnOff Button
       }
     }
-    XCtl_sendUdpPacket(i_xtouch, XCtl_TxMessage, 77+(buttonCounter*2)); //send 77+(buttonCounter*2) bytes (Ctl_TxMessage[0..77+(buttonCounter*2)]) to port 10111
+    xctlSendUdpPacket(i_xtouch, XCtl_TxMessage, 77+(buttonCounter*2)); //send 77+(buttonCounter*2) bytes (Ctl_TxMessage[0..77+(buttonCounter*2)]) to port 10111
 
     // Update encoderLevels around PanKnob
     XCtl_TxMessage[0] = 0xB0;
@@ -232,7 +232,7 @@
         XCtl_TxMessage[4 + i_ch*4] = (encoderLevelRawRight) & 0x7F;
       }
     }
-    XCtl_sendUdpPacket(i_xtouch, XCtl_TxMessage, 34); //send 34 bytes (Ctl_TxMessage[0..33]) to port 10111
+    xctlSendUdpPacket(i_xtouch, XCtl_TxMessage, 34); //send 34 bytes (Ctl_TxMessage[0..33]) to port 10111
 
     // Set 7-Segment-Displays
     XCtl_TxMessage[0] = 0xB0;
@@ -249,12 +249,12 @@
       // 0x69-0x6B - Ticks digits
       // 0x70-0x7B - same as above but with . also lit
       // Value: 7-bit bitmap of segments to illuminate
-      XCtl_TxMessage[2 + i*2] = XCtl_getSegmentBitmap(XCtl[i_xtouch].segmentDisplay[i]);
+      XCtl_TxMessage[2 + i*2] = xctlGetSegmentBitmap(XCtl[i_xtouch].segmentDisplay[i]);
     }
-    XCtl_sendUdpPacket(i_xtouch, XCtl_TxMessage, 25); //send 25 bytes (Ctl_TxMessage[0..24]) to port 10111
+    xctlSendUdpPacket(i_xtouch, XCtl_TxMessage, 25); //send 25 bytes (Ctl_TxMessage[0..24]) to port 10111
   }
 
-  void XCtl_sendFaderData(uint8_t i_xtouch) {
+  void xctlSendFaderData(uint8_t i_xtouch) {
     uint8_t XCtl_TxMessage[9]; // we are using at least 78 bytes. The other bytes are for button-updates depending on button state
     uint16_t channel;
 
@@ -267,7 +267,7 @@
           XCtl_TxMessage[0] = 0xE0 + i_ch;
           XCtl_TxMessage[1] = MackieMCU.channelDmx[channel].faderPosition & 0x7F; // MIDI-Values between 0 and 127
           XCtl_TxMessage[2] = (MackieMCU.channelDmx[channel].faderPosition >> 7) & 0x7F;
-          XCtl_sendUdpPacket(i_xtouch, XCtl_TxMessage, 3); //send 3 bytes (Ctl_TxMessage[0..2]) to port 10111
+          xctlSendUdpPacket(i_xtouch, XCtl_TxMessage, 3); //send 3 bytes (Ctl_TxMessage[0..2]) to port 10111
         }
       }
       // update masterfader
@@ -276,7 +276,7 @@
         XCtl_TxMessage[0] = 0xE8; // E8=Masterfader
         XCtl_TxMessage[1] = MackieMCU.channelDmx[512].faderPosition & 0x7F; // MIDI-Values between 0 and 127
         XCtl_TxMessage[2] = (MackieMCU.channelDmx[512].faderPosition >> 7) & 0x7F;
-        XCtl_sendUdpPacket(i_xtouch, XCtl_TxMessage, 3); //send 3 bytes (Ctl_TxMessage[0..2]) to port 10111
+        xctlSendUdpPacket(i_xtouch, XCtl_TxMessage, 3); //send 3 bytes (Ctl_TxMessage[0..2]) to port 10111
       }
       XCtl[i_xtouch].forceUpdate = false;
 
@@ -286,7 +286,7 @@
         channel = (uint16_t)i_ch + XCtl[i_xtouch].channelOffset;
         XCtl_TxMessage[1 + i_ch] = (i_ch << 4) + XCtl[i_xtouch].hardwareChannel[i_ch].meterLevel; // 0..8
       }
-      XCtl_sendUdpPacket(i_xtouch, XCtl_TxMessage, 9); //send 9 bytes (Ctl_TxMessage[0..8]) to port 10111
+      xctlSendUdpPacket(i_xtouch, XCtl_TxMessage, 9); //send 9 bytes (Ctl_TxMessage[0..8]) to port 10111
     }else{
       // update channel-faders
       for (uint8_t i_ch=0; i_ch<8; i_ch++) {
@@ -295,7 +295,7 @@
           XCtl_TxMessage[0] = 0xE0 + i_ch;
           XCtl_TxMessage[1] = MackieMCU.channel[i_ch + XCtl[i_xtouch].channelOffset].faderPosition & 0x7F; // MIDI-Values between 0 and 127
           XCtl_TxMessage[2] = (MackieMCU.channel[i_ch + XCtl[i_xtouch].channelOffset].faderPosition >> 7) & 0x7F;
-          XCtl_sendUdpPacket(i_xtouch, XCtl_TxMessage, 3); //send 3 bytes (Ctl_TxMessage[0..2]) to port 10111
+          xctlSendUdpPacket(i_xtouch, XCtl_TxMessage, 3); //send 3 bytes (Ctl_TxMessage[0..2]) to port 10111
         }
       }
       // update masterfader
@@ -304,7 +304,7 @@
         XCtl_TxMessage[0] = 0xE8; // E8=Masterfader
         XCtl_TxMessage[1] = MackieMCU.channel[32].faderPosition & 0x7F; // MIDI-Values between 0 and 127
         XCtl_TxMessage[2] = (MackieMCU.channel[32].faderPosition >> 7) & 0x7F;
-        XCtl_sendUdpPacket(i_xtouch, XCtl_TxMessage, 3); //send 3 bytes (Ctl_TxMessage[0..2]) to port 10111
+        xctlSendUdpPacket(i_xtouch, XCtl_TxMessage, 3); //send 3 bytes (Ctl_TxMessage[0..2]) to port 10111
       }
       XCtl[i_xtouch].forceUpdate = false;
 
@@ -314,11 +314,11 @@
         channel = i_ch + XCtl[i_xtouch].channelOffset;
         XCtl_TxMessage[1 + i_ch] = (i_ch << 4) + XCtl[i_xtouch].hardwareChannel[i_ch].meterLevel; // 0..8
       }
-      XCtl_sendUdpPacket(i_xtouch, XCtl_TxMessage, 9); //send 9 bytes (Ctl_TxMessage[0..8]) to port 10111
+      xctlSendUdpPacket(i_xtouch, XCtl_TxMessage, 9); //send 9 bytes (Ctl_TxMessage[0..8]) to port 10111
     }
   }
 
-  void handleXCtlMessages(uint8_t udpDevice) {
+  void xctlHandleCommunication(uint8_t udpDevice) {
     // message start: F0
     // message terminator: F7
 
@@ -351,12 +351,12 @@
         // Message has expected start- and end-byte
         // check the received data
 
-        if ((len == 8) && (memcmp(rxData, XCtl_Probe, 8))) {
+        if ((len == 8) && (memcmp(rxData, XCtl_Probe, 8) == 0)) {
           // we received a Probe-Message
-          XCtl_sendUdpPacket(i_xtouch, XCtl_ProbeResponse, 8);
-        }else if ((len == 18) && (memcmp(rxData, XCtl_ProbeB, 18))) {
+          xctlSendUdpPacket(i_xtouch, XCtl_ProbeResponse, 8);
+        }else if ((len == 18) && (memcmp(rxData, XCtl_ProbeB, 18) == 0)) {
           // Ignore ProbeB MSG
-        }else if ((len == 18) && (memcmp(rxData, XCtl_ProbeC, 18))) {
+        }else if ((len == 18) && (memcmp(rxData, XCtl_ProbeC, 18) == 0)) {
           // Ignore ProbeC MSG
         }else{
           // we received a unknown message between F0 and F7
@@ -846,7 +846,8 @@
             // 91 to 95 - Playback control (rewind, fast-forward, stop, play, record)
             if ((button == 91) && (buttonState)) {
               // button "rewind"
-              SerialNina.println("player:prev");          }
+              SerialNina.println("player:prev");
+            }
             if ((button == 92) && (buttonState)) {
               // button "forward"
               SerialNina.println("player:next");
@@ -877,7 +878,7 @@
     }
   }
 
-  void XCtl_prepareData(uint8_t i_xtouch) {
+  void xctlPrepareData(uint8_t i_xtouch) {
     // Update Segment Display
     if (XCtl[i_xtouch].dmxMode) {
       String playtime = secondsToHMS_B(playerinfo.time); // 00:00:00
@@ -909,7 +910,7 @@
       // update all faders and buttons for the current channel-selection
       for (uint16_t i_ch=XCtl[i_xtouch].channelOffsetDmx; i_ch<(8+XCtl[i_xtouch].channelOffsetDmx); i_ch++) {
         uint8_t hardwareFader = i_ch - XCtl[i_xtouch].channelOffsetDmx;
-        XCtl[i_xtouch].hardwareChannel[hardwareFader].faderNeedsUpdate = XCtl_checkIfFaderNeedsUpdate(MackieMCU.channelDmx[i_ch].faderPosition, XCtl[i_xtouch].hardwareChannel[hardwareFader].faderPositionHW) && (!XCtl[i_xtouch].hardwareChannel[hardwareFader].faderTouched);
+        XCtl[i_xtouch].hardwareChannel[hardwareFader].faderNeedsUpdate = xctlCheckIfFaderNeedsUpdate(MackieMCU.channelDmx[i_ch].faderPosition, XCtl[i_xtouch].hardwareChannel[hardwareFader].faderPositionHW) && (!XCtl[i_xtouch].hardwareChannel[hardwareFader].faderTouched);
         if (!XCtl[i_xtouch].hardwareChannel[hardwareFader].faderTouched) {
           XCtl[i_xtouch].hardwareChannel[hardwareFader].faderPositionHW = MackieMCU.channelDmx[i_ch].faderPosition;
         }
@@ -920,7 +921,7 @@
       // we are not using the master-fader at the moment - maybe in a later revision
       // update Masterfader
       uint16_t newFaderValue = ...;
-      XCtl[i_xtouch].hardwareMainfader.faderNeedsUpdate = XCtl_checkIfFaderNeedsUpdate(newFaderValue, MackieMCU.channel[512].faderPosition);
+      XCtl[i_xtouch].hardwareMainfader.faderNeedsUpdate = xctlCheckIfFaderNeedsUpdate(newFaderValue, MackieMCU.channel[512].faderPosition);
       if (!XCtl[i_xtouch].hardwareMainfader.faderTouched) {
         XCtl[i_xtouch].hardwareMainfader.faderPositionHW = newFaderValue; // this prevents the fader to snap to desired position after untouching it!
       }
@@ -958,7 +959,7 @@
       for (uint8_t i_ch=XCtl[i_xtouch].channelOffset; i_ch<(8+XCtl[i_xtouch].channelOffset); i_ch++) {
         uint8_t hardwareFader = i_ch - XCtl[i_xtouch].channelOffset;
         newFaderValue = round(((playerinfo.volumeCh[i_ch] + 48.0f)/54.0f) * 16383.0f);
-        XCtl[i_xtouch].hardwareChannel[hardwareFader].faderNeedsUpdate = XCtl_checkIfFaderNeedsUpdate(newFaderValue, XCtl[i_xtouch].hardwareChannel[hardwareFader].faderPositionHW) && (!XCtl[i_xtouch].hardwareChannel[hardwareFader].faderTouched);
+        XCtl[i_xtouch].hardwareChannel[hardwareFader].faderNeedsUpdate = xctlCheckIfFaderNeedsUpdate(newFaderValue, XCtl[i_xtouch].hardwareChannel[hardwareFader].faderPositionHW) && (!XCtl[i_xtouch].hardwareChannel[hardwareFader].faderTouched);
         MackieMCU.channel[i_ch].faderPosition = newFaderValue; // 0..16383
         if (!XCtl[i_xtouch].hardwareChannel[hardwareFader].faderTouched) {
           XCtl[i_xtouch].hardwareChannel[hardwareFader].faderPositionHW = newFaderValue;
@@ -968,7 +969,7 @@
 
       // update Masterfader
       newFaderValue = round(((playerinfo.volumeMain + 48.0f)/54.0f) * 16383.0f);
-      XCtl[i_xtouch].hardwareMainfader.faderNeedsUpdate = XCtl_checkIfFaderNeedsUpdate(newFaderValue, XCtl[i_xtouch].hardwareMainfader.faderPositionHW) && (!XCtl[i_xtouch].hardwareMainfader.faderTouched);
+      XCtl[i_xtouch].hardwareMainfader.faderNeedsUpdate = xctlCheckIfFaderNeedsUpdate(newFaderValue, XCtl[i_xtouch].hardwareMainfader.faderPositionHW) && (!XCtl[i_xtouch].hardwareMainfader.faderTouched);
       if (!XCtl[i_xtouch].hardwareMainfader.faderTouched) {
         XCtl[i_xtouch].hardwareMainfader.faderPositionHW = newFaderValue;
       }
@@ -986,12 +987,12 @@
     }
   }
 
-  bool XCtl_checkIfFaderNeedsUpdate(uint16_t desiredPosition, uint16_t hardwarePosition) {
+  bool xctlCheckIfFaderNeedsUpdate(uint16_t desiredPosition, uint16_t hardwarePosition) {
     int16_t difference = desiredPosition - hardwarePosition;
     return abs(difference) > 2;
   }
 
-  uint8_t XCtl_getSegmentBitmap(char c) {
+  uint8_t xctlGetSegmentBitmap(char c) {
     switch (c) {
       case ' ': return 0x00; break;
       case '0': return 0x3f; break;
@@ -1009,7 +1010,7 @@
     }
   }
 
-  void XCtl_init(uint8_t i_xtouch) {
+  void xctlInit(uint8_t i_xtouch) {
     // set default names for all 32 channels. Can be changed via UART lateron
     // we are using MackieMCU-functions for XCtl. So we are updating the MackieMCU-struct
     for (uint8_t i_ch=0; i_ch<32; i_ch++) {
@@ -1021,11 +1022,11 @@
     XCtlUdp[i_xtouch].begin(10111);
   }
 
-  void XCtl_stop(uint8_t i_xtouch) {
+  void xctlStop(uint8_t i_xtouch) {
     XCtlUdp[i_xtouch].stop();
   }
 
-  void XCtl_sendUdpPacket(uint8_t i_xtouch, const uint8_t *buffer, uint16_t size) {
+  void xctlSendUdpPacket(uint8_t i_xtouch, const uint8_t *buffer, uint16_t size) {
     bool connectionOK = XCtlUdp[i_xtouch].beginPacket(XCtl[i_xtouch].ip, 10111);
 
     if (connectionOK) {
@@ -1046,7 +1047,7 @@
     }
   }
 
-  void XCtl_sendWatchDogMessage(uint8_t i_xtouch) {
-    XCtl_sendUdpPacket(i_xtouch, XCtl_IdlePacket, 7);
+  void xctlSendWatchDogMessage(uint8_t i_xtouch) {
+    xctlSendUdpPacket(i_xtouch, XCtl_IdlePacket, 7);
   }
 #endif
