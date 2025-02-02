@@ -196,7 +196,7 @@ String executeCommand(String Command) {
           Answer = "SAMD: ERROR - OUT OF RANGE";
         }
       }else if (Command.indexOf("samd:setcolor:ch") > -1){
-        //samd:setcolor:ch1@Ch 1
+        //samd:setcolor:ch1@7
         uint8_t channel = Command.substring(16, Command.indexOf("@")).toInt() - 1;
         if ((channel >= 0) && (channel < 32)) {
           uint8_t color = Command.substring(Command.indexOf("@")+1).toInt();
@@ -221,7 +221,7 @@ String executeCommand(String Command) {
           Answer = "SAMD: ERROR - OUT OF RANGE";
         }
       }else if (Command.indexOf("samd:setcolor:dmxch") > -1){
-        //samd:setcolor:dmxch1@Ch 1
+        //samd:setcolor:dmxch1@7
         uint16_t dmxChannel = Command.substring(19, Command.indexOf("@")).toInt() - 1;
         if ((dmxChannel >= 0) && (dmxChannel < 512)) {
           uint8_t color = Command.substring(Command.indexOf("@")+1).toInt();

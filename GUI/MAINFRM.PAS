@@ -1,7 +1,7 @@
 {*****************************************
  * X-f/bape Config Tool                  *
- * v2.0.0 from 19.01.2025                *
- * (c) 2024 by Dr.-Ing. Christian Nöding *
+ * v2.0.3 from 02.02.2025                *
+ * (c) 2024-2025 by Christian Nöding     *
  * christian@noeding-online.de           *
  * https://www.github.com/xn--nding-jua  *
  *****************************************}
@@ -290,6 +290,39 @@ type
     volume_slider_ch27: TScrollBar;
     volume_slider_ch28: TScrollBar;
     XPManifest1: TXPManifest;
+    sendcolors: TButton;
+    Shape1: TShape;
+    Shape2: TShape;
+    Shape3: TShape;
+    Shape4: TShape;
+    Shape5: TShape;
+    Shape6: TShape;
+    Shape7: TShape;
+    Shape8: TShape;
+    Shape9: TShape;
+    Shape10: TShape;
+    Shape11: TShape;
+    Shape12: TShape;
+    Shape13: TShape;
+    Shape14: TShape;
+    Shape15: TShape;
+    Shape16: TShape;
+    Shape17: TShape;
+    Shape18: TShape;
+    Shape19: TShape;
+    Shape20: TShape;
+    Shape21: TShape;
+    Shape22: TShape;
+    Shape23: TShape;
+    Shape24: TShape;
+    Shape25: TShape;
+    Shape26: TShape;
+    Shape27: TShape;
+    Shape28: TShape;
+    Shape29: TShape;
+    Shape30: TShape;
+    Shape31: TShape;
+    Shape32: TShape;
     procedure Timer1Timer(Sender: TObject);
     procedure eq_type_dropdownChange(Sender: TObject);
     procedure Button1Click(Sender: TObject);
@@ -344,6 +377,10 @@ type
     procedure FormCreate(Sender: TObject);
     procedure sendnamesClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure sendcolorsClick(Sender: TObject);
+    procedure Shape1MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure chnameedit1Change(Sender: TObject);
   private
     { Private-Deklarationen}
     FirstStart:boolean;
@@ -353,6 +390,7 @@ type
     flag_recalcComp: boolean;
     flag_recalcGate: boolean;
     EQs: array[0..4] of TEQ;
+    channelcolor: array[1..32] of byte;
     CurrentEQ: byte;
     eqbitmap, compbitmap: TBitmap;
     function IntPower(base: single; exponent: integer): single;
@@ -388,6 +426,48 @@ uses
   SetupApi, Cfg, CfgMgr32;
 
 {$R *.DFM}
+
+function GetXTouchColor(colorIndex: integer):TColor;
+var
+  outputColor: TColor;
+begin
+  case colorIndex of
+    0: outputColor := clBlack;
+    1: outputColor := clRed;
+    2: outputColor := clGreen;
+    3: outputColor := clYellow;
+    4: outputColor := clBlue;
+    5: outputColor := clFuchsia;
+    6: outputColor := clAqua;
+    7: outputColor := clWhite;
+    8: outputColor := clBlack;
+    9: outputColor := clRed;
+    10: outputColor := clGreen;
+    11: outputColor := clYellow;
+    12: outputColor := clBlue;
+    13: outputColor := clFuchsia;
+    14: outputColor := clAqua;
+    15: outputColor := clWhite;
+    else
+      outputColor := 7;
+  end;
+
+  result := outputColor;
+end;
+
+function GetChannelConfig(s: string; i: integer):String;
+var
+  s1,s_rest: string;
+begin
+  s_rest := s;
+  for i:=0 to i do
+  begin
+    s1 := copy(s_rest, 0, pos(',', s_rest)-1);
+    s_rest := copy(s_rest, pos(',', s_rest)+1, length(s_rest));
+  end;
+
+  result := s1;
+end;
 
 // Delphi wrapper for CM_Get_Device_ID
 
@@ -554,6 +634,7 @@ procedure Tmainform.Timer1Timer(Sender: TObject);
 var
   i:integer;
   sl : TStringList;
+  channelsettings : String;
 begin
   if not flag_StartComplete then
   begin
@@ -587,16 +668,25 @@ begin
     comp_ratio_dropdown.ItemIndex:=0;
     comp_makeup_dropdown.ItemIndex:=0;
 
-    if FileExists(ExtractFilePath(ParamStr(0)) + '\names.txt') then
+
+    for i:=1 to 32 do
+      channelcolor[i] := 7;
+
+    if FileExists(ExtractFilePath(ParamStr(0)) + '\channels.txt') then
     begin
       sl := TStringList.Create;
-      sl.LoadFromFile(ExtractFilePath(ParamStr(0)) + '\names.txt');
+      sl.LoadFromFile(ExtractFilePath(ParamStr(0)) + '\channels.txt');
 
       if sl.Count = 32 then
       begin
         for i:=1 to 32 do
         begin
-          TEdit(FindComponent('chnameedit' + inttostr(i))).Text := sl.Strings[i - 1];
+          channelsettings := sl.Strings[i - 1];
+
+          TEdit(FindComponent('chnameedit' + inttostr(i))).Text := GetChannelConfig(channelsettings, 0);
+
+          channelcolor[i] := strtoint(GetChannelConfig(channelsettings, 1));
+          TShape(FindComponent('Shape' + inttostr(i))).Brush.Color := GetXTouchColor(channelcolor[i]);
         end;
       end;
 
@@ -1636,11 +1726,79 @@ begin
 
   for i:=1 to 32 do
   begin
-    sl.Add(TEdit(FindComponent('chnameedit' + inttostr(i))).Text);
+    sl.Add(TEdit(FindComponent('chnameedit' + inttostr(i))).Text + ',' + inttostr(channelcolor[i]) + ',' + inttostr(TScrollBar(FindComponent('volume_slider_ch' + inttostr(i))).Position) + ',');
+  end;
+  sl.SaveToFile(ExtractFilePath(ParamStr(0)) + '\channels.txt');
+
+  sl.Free;
+end;
+
+procedure Tmainform.sendcolorsClick(Sender: TObject);
+var
+  i:integer;
+begin
+  for i:=1 to 32 do
+  begin
+    SendCommand('samd:setcolor:ch' + inttostr(i) + '@' + inttostr(channelcolor[i]));
+  end;
+end;
+
+procedure Tmainform.Shape1MouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+var
+  i:integer;
+  channel: integer;
+begin
+  channel := 1;
+  for i:=1 to 32 do
+  begin
+    if (Sender = FindComponent('Shape' + inttostr(i))) then
+    begin
+      channel := i;
+      break;
+    end;
   end;
 
-  sl.SaveToFile(ExtractFilePath(ParamStr(0)) + '\names.txt');
-  sl.Free;
+  if (Button = mbLeft) then
+  begin
+    if (channelcolor[channel] < 7) then
+    begin
+      channelcolor[channel] := channelcolor[channel] + 1;
+    end else
+    begin
+      channelcolor[channel] := 0;
+    end;
+  end else if (Button = mbRight) then
+  begin
+    if (channelcolor[channel] > 0) then
+    begin
+      channelcolor[channel] := channelcolor[channel] - 1;
+    end else
+    begin
+      channelcolor[channel] := 7;
+    end;
+  end;
+
+  SendCommand('samd:setcolor:ch' + inttostr(channel) + '@' + inttostr(channelcolor[channel]));
+  TShape(Sender).Brush.Color := GetXTouchColor(channelcolor[channel]);
+end;
+
+procedure Tmainform.chnameedit1Change(Sender: TObject);
+var
+  i:integer;
+  channel: integer;
+begin
+  channel := 1;
+  for i:=1 to 32 do
+  begin
+    if (Sender = FindComponent('chnameedit' + inttostr(i))) then
+    begin
+      channel := i;
+      break;
+    end;
+  end;
+
+  SendCommand('samd:setname:ch' + inttostr(channel) + '@' + TEdit(FindComponent('chnameedit' + inttostr(channel))).Text);
 end;
 
 end.
