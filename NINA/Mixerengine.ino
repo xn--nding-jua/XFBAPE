@@ -220,10 +220,10 @@ void recalcFilterCoefficients_PEQ(struct sPEQ *peq) {
       break;
   }
 
-  // convert to Q30-format
+  // convert to Q34-format
   for (int i=0; i<3; i++) {
-    peq->a[i].s32 = coeff_a[i] * 1073741823; // convert to Q30
-    peq->b[i].s32 = coeff_b[i] * 1073741823; // convert to Q30
+    peq->a[i].s64 = coeff_a[i] * 17179869183; // convert to Q34
+    peq->b[i].s64 = coeff_b[i] * 17179869183; // convert to Q34
   }
 }
 

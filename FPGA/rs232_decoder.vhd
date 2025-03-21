@@ -121,39 +121,39 @@ entity rs232_decoder is
 		c_b4_lp	: out std_logic_vector(47 downto 0);
 		
 		-- Parametric EQ1
-		c_a0_peq1 : out std_logic_vector(31 downto 0);
-		c_a1_peq1 : out std_logic_vector(31 downto 0);
-		c_a2_peq1 : out std_logic_vector(31 downto 0);
-		c_b1_peq1 : out std_logic_vector(31 downto 0);
-		c_b2_peq1 : out std_logic_vector(31 downto 0);
+		c_a0_peq1 : out std_logic_vector(39 downto 0);
+		c_a1_peq1 : out std_logic_vector(39 downto 0);
+		c_a2_peq1 : out std_logic_vector(39 downto 0);
+		c_b1_peq1 : out std_logic_vector(39 downto 0);
+		c_b2_peq1 : out std_logic_vector(39 downto 0);
 		
 		-- Parametric EQ2
-		c_a0_peq2 : out std_logic_vector(31 downto 0);
-		c_a1_peq2 : out std_logic_vector(31 downto 0);
-		c_a2_peq2 : out std_logic_vector(31 downto 0);
-		c_b1_peq2 : out std_logic_vector(31 downto 0);
-		c_b2_peq2 : out std_logic_vector(31 downto 0);
+		c_a0_peq2 : out std_logic_vector(39 downto 0);
+		c_a1_peq2 : out std_logic_vector(39 downto 0);
+		c_a2_peq2 : out std_logic_vector(39 downto 0);
+		c_b1_peq2 : out std_logic_vector(39 downto 0);
+		c_b2_peq2 : out std_logic_vector(39 downto 0);
 		
 		-- Parametric EQ3
-		c_a0_peq3 : out std_logic_vector(31 downto 0);
-		c_a1_peq3 : out std_logic_vector(31 downto 0);
-		c_a2_peq3 : out std_logic_vector(31 downto 0);
-		c_b1_peq3 : out std_logic_vector(31 downto 0);
-		c_b2_peq3 : out std_logic_vector(31 downto 0);
+		c_a0_peq3 : out std_logic_vector(39 downto 0);
+		c_a1_peq3 : out std_logic_vector(39 downto 0);
+		c_a2_peq3 : out std_logic_vector(39 downto 0);
+		c_b1_peq3 : out std_logic_vector(39 downto 0);
+		c_b2_peq3 : out std_logic_vector(39 downto 0);
 
 		-- Parametric EQ4
-		c_a0_peq4 : out std_logic_vector(31 downto 0);
-		c_a1_peq4 : out std_logic_vector(31 downto 0);
-		c_a2_peq4 : out std_logic_vector(31 downto 0);
-		c_b1_peq4 : out std_logic_vector(31 downto 0);
-		c_b2_peq4 : out std_logic_vector(31 downto 0);
+		c_a0_peq4 : out std_logic_vector(39 downto 0);
+		c_a1_peq4 : out std_logic_vector(39 downto 0);
+		c_a2_peq4 : out std_logic_vector(39 downto 0);
+		c_b1_peq4 : out std_logic_vector(39 downto 0);
+		c_b2_peq4 : out std_logic_vector(39 downto 0);
 		
 		-- Parametric EQ5
-		c_a0_peq5 : out std_logic_vector(31 downto 0);
-		c_a1_peq5 : out std_logic_vector(31 downto 0);
-		c_a2_peq5 : out std_logic_vector(31 downto 0);
-		c_b1_peq5 : out std_logic_vector(31 downto 0);
-		c_b2_peq5 : out std_logic_vector(31 downto 0);
+		c_a0_peq5 : out std_logic_vector(39 downto 0);
+		c_a1_peq5 : out std_logic_vector(39 downto 0);
+		c_a2_peq5 : out std_logic_vector(39 downto 0);
+		c_b1_peq5 : out std_logic_vector(39 downto 0);
+		c_b2_peq5 : out std_logic_vector(39 downto 0);
 		
 		-- Noisegate ADC
 		gate1_thrsh	: out std_logic_vector(23 downto 0);
@@ -536,130 +536,205 @@ begin
 
 	
 					when 88 =>
-						c_a0_peq1(31 downto 24) <= b3;
-						c_a0_peq1(23 downto 16) <= b4;
-						c_a0_peq1(15 downto 8) <= b5;
-						c_a0_peq1(7 downto 0) <= b6;
+						--c_a0_peq1(47 downto 40) <= b3;
+						c_a0_peq1(39) <= b3(7); -- copy signed-bit from 48-bit-value
+						c_a0_peq1(38 downto 32) <= b4(6 downto 0);
+						c_a0_peq1(31 downto 24) <= b5;
+						c_a0_peq1(23 downto 16) <= b6;
+						c_a0_peq1(15 downto 8) <= b7;
+						c_a0_peq1(7 downto 0) <= b8;
 					when 89 =>
-						c_a1_peq1(31 downto 24) <= b3;
-						c_a1_peq1(23 downto 16) <= b4;
-						c_a1_peq1(15 downto 8) <= b5;
-						c_a1_peq1(7 downto 0) <= b6;
+						--c_a1_peq1(47 downto 40) <= b3;
+						c_a1_peq1(39) <= b3(7); -- copy signed-bit from 48-bit-value
+						c_a1_peq1(38 downto 32) <= b4(6 downto 0);
+						c_a1_peq1(31 downto 24) <= b5;
+						c_a1_peq1(23 downto 16) <= b6;
+						c_a1_peq1(15 downto 8) <= b7;
+						c_a1_peq1(7 downto 0) <= b8;
 					when 90 =>
-						c_a2_peq1(31 downto 24) <= b3;
-						c_a2_peq1(23 downto 16) <= b4;
-						c_a2_peq1(15 downto 8) <= b5;
-						c_a2_peq1(7 downto 0) <= b6;
+						--c_a2_peq1(47 downto 40) <= b3;
+						c_a2_peq1(39) <= b3(7); -- copy signed-bit from 48-bit-value
+						c_a2_peq1(38 downto 32) <= b4(6 downto 0);
+						c_a2_peq1(31 downto 24) <= b5;
+						c_a2_peq1(23 downto 16) <= b6;
+						c_a2_peq1(15 downto 8) <= b7;
+						c_a2_peq1(7 downto 0) <= b8;
 					when 91 =>
-						c_b1_peq1(31 downto 24) <= b3;
-						c_b1_peq1(23 downto 16) <= b4;
-						c_b1_peq1(15 downto 8) <= b5;
-						c_b1_peq1(7 downto 0) <= b6;
+						--c_b1_peq1(47 downto 40) <= b3;
+						c_b1_peq1(39) <= b3(7); -- copy signed-bit from 48-bit-value
+						c_b1_peq1(38 downto 32) <= b4(6 downto 0);
+						c_b1_peq1(31 downto 24) <= b5;
+						c_b1_peq1(23 downto 16) <= b6;
+						c_b1_peq1(15 downto 8) <= b7;
+						c_b1_peq1(7 downto 0) <= b8;
 					when 92 =>
-						c_b2_peq1(31 downto 24) <= b3;
-						c_b2_peq1(23 downto 16) <= b4;
-						c_b2_peq1(15 downto 8) <= b5;
-						c_b2_peq1(7 downto 0) <= b6;
+						--c_b2_peq1(47 downto 40) <= b3;
+						c_b2_peq1(39) <= b3(7); -- copy signed-bit from 48-bit-value
+						c_b2_peq1(38 downto 32) <= b4(6 downto 0);
+						c_b2_peq1(31 downto 24) <= b5;
+						c_b2_peq1(23 downto 16) <= b6;
+						c_b2_peq1(15 downto 8) <= b7;
+						c_b2_peq1(7 downto 0) <= b8;
 					when 93 =>
-						c_a0_peq2(31 downto 24) <= b3;
-						c_a0_peq2(23 downto 16) <= b4;
-						c_a0_peq2(15 downto 8) <= b5;
-						c_a0_peq2(7 downto 0) <= b6;
+						--c_a0_peq2(47 downto 40) <= b3;
+						c_a0_peq2(39) <= b3(7); -- copy signed-bit from 48-bit-value
+						c_a0_peq2(38 downto 32) <= b4(6 downto 0);
+						c_a0_peq2(31 downto 24) <= b5;
+						c_a0_peq2(23 downto 16) <= b6;
+						c_a0_peq2(15 downto 8) <= b7;
+						c_a0_peq2(7 downto 0) <= b8;
 					when 94 =>
-						c_a1_peq2(31 downto 24) <= b3;
-						c_a1_peq2(23 downto 16) <= b4;
-						c_a1_peq2(15 downto 8) <= b5;
-						c_a1_peq2(7 downto 0) <= b6;
+						--c_a1_peq2(47 downto 40) <= b3;
+						c_a1_peq2(39) <= b3(7); -- copy signed-bit from 48-bit-value
+						c_a1_peq2(38 downto 32) <= b4(6 downto 0);
+						c_a1_peq2(31 downto 24) <= b5;
+						c_a1_peq2(23 downto 16) <= b6;
+						c_a1_peq2(15 downto 8) <= b7;
+						c_a1_peq2(7 downto 0) <= b8;
 					when 95 =>
-						c_a2_peq2(31 downto 24) <= b3;
-						c_a2_peq2(23 downto 16) <= b4;
-						c_a2_peq2(15 downto 8) <= b5;
-						c_a2_peq2(7 downto 0) <= b6;
+						--c_a2_peq2(47 downto 40) <= b3;
+						c_a2_peq2(39) <= b3(7); -- copy signed-bit from 48-bit-value
+						c_a2_peq2(38 downto 32) <= b4(6 downto 0);
+						c_a2_peq2(31 downto 24) <= b5;
+						c_a2_peq2(23 downto 16) <= b6;
+						c_a2_peq2(15 downto 8) <= b7;
+						c_a2_peq2(7 downto 0) <= b8;
 					when 96 =>
-						c_b1_peq2(31 downto 24) <= b3;
-						c_b1_peq2(23 downto 16) <= b4;
-						c_b1_peq2(15 downto 8) <= b5;
-						c_b1_peq2(7 downto 0) <= b6;
+						--c_b1_peq2(47 downto 40) <= b3;
+						c_b1_peq2(39) <= b3(7); -- copy signed-bit from 48-bit-value
+						c_b1_peq2(38 downto 32) <= b4(6 downto 0);
+						c_b1_peq2(31 downto 24) <= b5;
+						c_b1_peq2(23 downto 16) <= b6;
+						c_b1_peq2(15 downto 8) <= b7;
+						c_b1_peq2(7 downto 0) <= b8;
 					when 97 =>
-						c_b2_peq2(31 downto 24) <= b3;
-						c_b2_peq2(23 downto 16) <= b4;
-						c_b2_peq2(15 downto 8) <= b5;
-						c_b2_peq2(7 downto 0) <= b6;
+						--c_b2_peq2(47 downto 40) <= b3;
+						c_b2_peq2(39) <= b3(7); -- copy signed-bit from 48-bit-value
+						c_b2_peq2(38 downto 32) <= b4(6 downto 0);
+						c_b2_peq2(31 downto 24) <= b5;
+						c_b2_peq2(23 downto 16) <= b6;
+						c_b2_peq2(15 downto 8) <= b7;
+						c_b2_peq2(7 downto 0) <= b8;
 					when 98 =>
-						c_a0_peq3(31 downto 24) <= b3;
-						c_a0_peq3(23 downto 16) <= b4;
-						c_a0_peq3(15 downto 8) <= b5;
-						c_a0_peq3(7 downto 0) <= b6;
+						--c_a0_peq3(47 downto 40) <= b3;
+						c_a0_peq3(39) <= b3(7); -- copy signed-bit from 48-bit-value
+						c_a0_peq3(38 downto 32) <= b4(6 downto 0);
+						c_a0_peq3(31 downto 24) <= b5;
+						c_a0_peq3(23 downto 16) <= b6;
+						c_a0_peq3(15 downto 8) <= b7;
+						c_a0_peq3(7 downto 0) <= b8;
 					when 99 =>
-						c_a1_peq3(31 downto 24) <= b3;
-						c_a1_peq3(23 downto 16) <= b4;
-						c_a1_peq3(15 downto 8) <= b5;
-						c_a1_peq3(7 downto 0) <= b6;
+						--c_a1_peq3(47 downto 40) <= b3;
+						c_a1_peq3(39) <= b3(7); -- copy signed-bit from 48-bit-value
+						c_a1_peq3(38 downto 32) <= b4(6 downto 0);
+						c_a1_peq3(31 downto 24) <= b5;
+						c_a1_peq3(23 downto 16) <= b6;
+						c_a1_peq3(15 downto 8) <= b7;
+						c_a1_peq3(7 downto 0) <= b8;
 					when 100 =>
-						c_a2_peq3(31 downto 24) <= b3;
-						c_a2_peq3(23 downto 16) <= b4;
-						c_a2_peq3(15 downto 8) <= b5;
-						c_a2_peq3(7 downto 0) <= b6;
+						--c_a2_peq3(47 downto 40) <= b3;
+						c_a2_peq3(39) <= b3(7); -- copy signed-bit from 48-bit-value
+						c_a2_peq3(38 downto 32) <= b4(6 downto 0);
+						c_a2_peq3(31 downto 24) <= b5;
+						c_a2_peq3(23 downto 16) <= b6;
+						c_a2_peq3(15 downto 8) <= b7;
+						c_a2_peq3(7 downto 0) <= b8;
 					when 101 =>
-						c_b1_peq3(31 downto 24) <= b3;
-						c_b1_peq3(23 downto 16) <= b4;
-						c_b1_peq3(15 downto 8) <= b5;
-						c_b1_peq3(7 downto 0) <= b6;
+						--c_b1_peq3(47 downto 40) <= b3;
+						c_b1_peq3(39) <= b3(7); -- copy signed-bit from 48-bit-value
+						c_b1_peq3(38 downto 32) <= b4(6 downto 0);
+						c_b1_peq3(31 downto 24) <= b5;
+						c_b1_peq3(23 downto 16) <= b6;
+						c_b1_peq3(15 downto 8) <= b7;
+						c_b1_peq3(7 downto 0) <= b8;
 					when 102 =>
-						c_b2_peq3(31 downto 24) <= b3;
-						c_b2_peq3(23 downto 16) <= b4;
-						c_b2_peq3(15 downto 8) <= b5;
-						c_b2_peq3(7 downto 0) <= b6;
+						--c_b2_peq3(47 downto 40) <= b3;
+						c_b2_peq3(39) <= b3(7); -- copy signed-bit from 48-bit-value
+						c_b2_peq3(38 downto 32) <= b4(6 downto 0);
+						c_b2_peq3(31 downto 24) <= b5;
+						c_b2_peq3(23 downto 16) <= b6;
+						c_b2_peq3(15 downto 8) <= b7;
+						c_b2_peq3(7 downto 0) <= b8;
 					when 103 =>
-						c_a0_peq4(31 downto 24) <= b3;
-						c_a0_peq4(23 downto 16) <= b4;
-						c_a0_peq4(15 downto 8) <= b5;
-						c_a0_peq4(7 downto 0) <= b6;
+						--c_a0_peq4(47 downto 40) <= b3;
+						c_a0_peq4(39) <= b3(7); -- copy signed-bit from 48-bit-value
+						c_a0_peq4(38 downto 32) <= b4(6 downto 0);
+						c_a0_peq4(31 downto 24) <= b5;
+						c_a0_peq4(23 downto 16) <= b6;
+						c_a0_peq4(15 downto 8) <= b7;
+						c_a0_peq4(7 downto 0) <= b8;
 					when 104 =>
-						c_a1_peq4(31 downto 24) <= b3;
-						c_a1_peq4(23 downto 16) <= b4;
-						c_a1_peq4(15 downto 8) <= b5;
-						c_a1_peq4(7 downto 0) <= b6;
+						--c_a1_peq4(47 downto 40) <= b3;
+						c_a1_peq4(39) <= b3(7); -- copy signed-bit from 48-bit-value
+						c_a1_peq4(38 downto 32) <= b4(6 downto 0);
+						c_a1_peq4(31 downto 24) <= b5;
+						c_a1_peq4(23 downto 16) <= b6;
+						c_a1_peq4(15 downto 8) <= b7;
+						c_a1_peq4(7 downto 0) <= b8;
 					when 105 =>
-						c_a2_peq4(31 downto 24) <= b3;
-						c_a2_peq4(23 downto 16) <= b4;
-						c_a2_peq4(15 downto 8) <= b5;
-						c_a2_peq4(7 downto 0) <= b6;
+						--c_a2_peq4(47 downto 40) <= b3;
+						c_a2_peq4(39) <= b3(7); -- copy signed-bit from 48-bit-value
+						c_a2_peq4(38 downto 32) <= b4(6 downto 0);
+						c_a2_peq4(31 downto 24) <= b5;
+						c_a2_peq4(23 downto 16) <= b6;
+						c_a2_peq4(15 downto 8) <= b7;
+						c_a2_peq4(7 downto 0) <= b8;
 					when 106 =>
-						c_b1_peq4(31 downto 24) <= b3;
-						c_b1_peq4(23 downto 16) <= b4;
-						c_b1_peq4(15 downto 8) <= b5;
-						c_b1_peq4(7 downto 0) <= b6;
+						--c_b1_peq4(47 downto 40) <= b3;
+						c_b1_peq4(39) <= b3(7); -- copy signed-bit from 48-bit-value
+						c_b1_peq4(38 downto 32) <= b4(6 downto 0);
+						c_b1_peq4(31 downto 24) <= b5;
+						c_b1_peq4(23 downto 16) <= b6;
+						c_b1_peq4(15 downto 8) <= b7;
+						c_b1_peq4(7 downto 0) <= b8;
 					when 107 =>
-						c_b2_peq4(31 downto 24) <= b3;
-						c_b2_peq4(23 downto 16) <= b4;
-						c_b2_peq4(15 downto 8) <= b5;
-						c_b2_peq4(7 downto 0) <= b6;
+						--c_b2_peq4(47 downto 40) <= b3;
+						c_b2_peq4(39) <= b3(7); -- copy signed-bit from 48-bit-value
+						c_b2_peq4(38 downto 32) <= b4(6 downto 0);
+						c_b2_peq4(31 downto 24) <= b5;
+						c_b2_peq4(23 downto 16) <= b6;
+						c_b2_peq4(15 downto 8) <= b7;
+						c_b2_peq4(7 downto 0) <= b8;
 					when 108 =>
-						c_a0_peq5(31 downto 24) <= b3;
-						c_a0_peq5(23 downto 16) <= b4;
-						c_a0_peq5(15 downto 8) <= b5;
-						c_a0_peq5(7 downto 0) <= b6;
+						--c_a0_peq5(47 downto 40) <= b3;
+						c_a0_peq5(39) <= b3(7); -- copy signed-bit from 48-bit-value
+						c_a0_peq5(38 downto 32) <= b4(6 downto 0);
+						c_a0_peq5(31 downto 24) <= b5;
+						c_a0_peq5(23 downto 16) <= b6;
+						c_a0_peq5(15 downto 8) <= b7;
+						c_a0_peq5(7 downto 0) <= b8;
 					when 109 =>
-						c_a1_peq5(31 downto 24) <= b3;
-						c_a1_peq5(23 downto 16) <= b4;
-						c_a1_peq5(15 downto 8) <= b5;
-						c_a1_peq5(7 downto 0) <= b6;
+						--c_a1_peq5(47 downto 40) <= b3;
+						c_a1_peq5(39) <= b3(7); -- copy signed-bit from 48-bit-value
+						c_a1_peq5(38 downto 32) <= b4(6 downto 0);
+						c_a1_peq5(31 downto 24) <= b5;
+						c_a1_peq5(23 downto 16) <= b6;
+						c_a1_peq5(15 downto 8) <= b7;
+						c_a1_peq5(7 downto 0) <= b8;
 					when 110 =>
-						c_a2_peq5(31 downto 24) <= b3;
-						c_a2_peq5(23 downto 16) <= b4;
-						c_a2_peq5(15 downto 8) <= b5;
-						c_a2_peq5(7 downto 0) <= b6;
+						--c_a2_peq5(47 downto 40) <= b3;
+						c_a2_peq5(39) <= b3(7); -- copy signed-bit from 48-bit-value
+						c_a2_peq5(38 downto 32) <= b4(6 downto 0);
+						c_a2_peq5(31 downto 24) <= b5;
+						c_a2_peq5(23 downto 16) <= b6;
+						c_a2_peq5(15 downto 8) <= b7;
+						c_a2_peq5(7 downto 0) <= b8;
 					when 111 =>
-						c_b1_peq5(31 downto 24) <= b3;
-						c_b1_peq5(23 downto 16) <= b4;
-						c_b1_peq5(15 downto 8) <= b5;
-						c_b1_peq5(7 downto 0) <= b6;
+						--c_b1_peq5(47 downto 40) <= b3;
+						c_b1_peq5(39) <= b3(7); -- copy signed-bit from 48-bit-value
+						c_b1_peq5(38 downto 32) <= b4(6 downto 0);
+						c_b1_peq5(31 downto 24) <= b5;
+						c_b1_peq5(23 downto 16) <= b6;
+						c_b1_peq5(15 downto 8) <= b7;
+						c_b1_peq5(7 downto 0) <= b8;
 					when 112 =>
-						c_b2_peq5(31 downto 24) <= b3;
-						c_b2_peq5(23 downto 16) <= b4;
-						c_b2_peq5(15 downto 8) <= b5;
-						c_b2_peq5(7 downto 0) <= b6;
+						--c_b2_peq5(47 downto 40) <= b3;
+						c_b2_peq5(39) <= b3(7); -- copy signed-bit from 48-bit-value
+						c_b2_peq5(38 downto 32) <= b4(6 downto 0);
+						c_b2_peq5(31 downto 24) <= b5;
+						c_b2_peq5(23 downto 16) <= b6;
+						c_b2_peq5(15 downto 8) <= b7;
+						c_b2_peq5(7 downto 0) <= b8;
 
 						
 					when 150 =>
