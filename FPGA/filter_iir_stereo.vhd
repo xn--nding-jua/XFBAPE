@@ -91,7 +91,13 @@ begin
 			
 			-- call last state to reset filter-states for next calculation
 			state <= 13;
+		elsif (bypass = '1') then
+			-- use combinatorial logic to bypass all incoming signals to the output
+			output_l <= input_l;
+			output_r <= input_r;
+			sync_out <= sync_in;
 		else
+			-- process the incoming samples
 			if rising_edge(clk) then
 				if (sync_in = '1' and state = 0) then
 					mult_in_a <= a0;
@@ -137,12 +143,7 @@ begin
 
 					out_z2_l <= out_z1_l;
 					out_z1_l <= resize(temp, out_z1_l'length); -- save value with fractions to gain higher resolution for this filter
-					
-					if (bypass = '1') then
-						output_l <= input_l;
-					else
-						output_l <= resize(shift_right(temp, fract_bits), bit_width); -- resize to 24-bit audio
-					end if;
+					output_l <= resize(shift_right(temp, fract_bits), bit_width); -- resize to 24-bit audio
 
 					-- load multiplier with a0 * input
 					mult_in_a <= a0;
@@ -190,12 +191,7 @@ begin
 
 					out_z2_r <= out_z1_r;
 					out_z1_r <= resize(temp, out_z1_r'length); -- save value with fractions to gain higher resolution for this filter
-					
-					if (bypass = '1') then
-						output_r <= input_r;
-					else
-						output_r <= resize(shift_right(temp, fract_bits), bit_width); -- resize to 24-bit audio
-					end if;
+					output_r <= resize(shift_right(temp, fract_bits), bit_width); -- resize to 24-bit audio
 
 					sync_out <= '1';
 					state <= state + 1;

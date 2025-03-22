@@ -259,8 +259,8 @@ struct sPEQ {
   float Q = 2; // Quality of PEQ (bandwidth)
   float gain = 1; // gain of PEQ
 
-  data_32b a[3];
-  data_32b b[3];
+  data_64b a[3];
+  data_64b b[3];
 };
 
 struct sLR12 {
