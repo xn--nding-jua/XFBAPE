@@ -42,7 +42,7 @@
 # ========================
 set_global_assignment -name ORIGINAL_QUARTUS_VERSION 22.1STD.0
 set_global_assignment -name PROJECT_CREATION_TIME_DATE "17:06:41  FEBRUARY 28, 2023"
-set_global_assignment -name LAST_QUARTUS_VERSION "22.1std.0 Lite Edition"
+set_global_assignment -name LAST_QUARTUS_VERSION "24.1std.0 Lite Edition"
 set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
 
 # Pin & Location Assignments
@@ -178,6 +178,35 @@ set_location_assignment PIN_T5 -to bNINA_PIO18
 set_location_assignment PIN_R5 -to bNINA_PIO20
 set_location_assignment PIN_T4 -to bNINA_PIO31
 set_location_assignment PIN_R4 -to bNINA_PIO35
+set_location_assignment PIN_T12 -to bPCI_RST
+set_location_assignment PIN_N12 -to bPCI_P20
+set_location_assignment PIN_M10 -to bPCI_P16
+set_location_assignment PIN_L8 -to bPCI_P14
+set_location_assignment PIN_R8 -to bPCI_P13
+set_location_assignment PIN_M8 -to bPCI_P12
+set_location_assignment PIN_T8 -to bPCI_P11
+set_location_assignment PIN_N8 -to bPCI_P10
+set_location_assignment PIN_L7 -to bPCI_P8
+set_location_assignment PIN_M6 -to bPCI_P7
+set_location_assignment PIN_P8 -to bPCI_P6
+set_location_assignment PIN_R11 -to bPCI_P5
+set_location_assignment PIN_P11 -to bPCI_P3
+set_location_assignment PIN_R10 -to bPCI_P1
+set_location_assignment PIN_D15 -to bPCI_P51
+set_location_assignment PIN_D16 -to bPCI_P49
+set_location_assignment PIN_F14 -to bPCI_P48
+set_location_assignment PIN_T14 -to bPCI_P47
+set_location_assignment PIN_R14 -to bPCI_P46
+set_location_assignment PIN_T15 -to bPCI_P45
+set_location_assignment PIN_P14 -to bPCI_P44
+set_location_assignment PIN_R13 -to bPCI_P42
+set_location_assignment PIN_B9 -to bPCI_P33
+set_location_assignment PIN_F13 -to bPCI_P32
+set_location_assignment PIN_A9 -to bPCI_P31
+set_location_assignment PIN_R12 -to bPCI_P30
+set_location_assignment PIN_T13 -to bPCI_P28
+set_location_assignment PIN_R9 -to bPCI_P25
+set_location_assignment PIN_T9 -to bPCI_P23
 set_global_assignment -name VHDL_FILE vu_meter.vhd
 set_global_assignment -name VHDL_FILE rs232_encoder.vhd
 set_global_assignment -name VHDL_FILE rs232_decoder.vhdl
@@ -213,35 +242,6 @@ set_global_assignment -name VHDL_FILE add_noise.vhd
 set_global_assignment -name VHDL_FILE noisegate_stereo.vhd
 set_global_assignment -name VHDL_FILE syncselector.vhd
 set_global_assignment -name VHDL_FILE compressor_stereo.vhd
-set_location_assignment PIN_T12 -to bPCI_RST
-set_location_assignment PIN_N12 -to bPCI_P20
-set_location_assignment PIN_M10 -to bPCI_P16
-set_location_assignment PIN_L8 -to bPCI_P14
-set_location_assignment PIN_R8 -to bPCI_P13
-set_location_assignment PIN_M8 -to bPCI_P12
-set_location_assignment PIN_T8 -to bPCI_P11
-set_location_assignment PIN_N8 -to bPCI_P10
-set_location_assignment PIN_L7 -to bPCI_P8
-set_location_assignment PIN_M6 -to bPCI_P7
-set_location_assignment PIN_P8 -to bPCI_P6
-set_location_assignment PIN_R11 -to bPCI_P5
-set_location_assignment PIN_P11 -to bPCI_P3
-set_location_assignment PIN_R10 -to bPCI_P1
-set_location_assignment PIN_D15 -to bPCI_P51
-set_location_assignment PIN_D16 -to bPCI_P49
-set_location_assignment PIN_F14 -to bPCI_P48
-set_location_assignment PIN_T14 -to bPCI_P47
-set_location_assignment PIN_R14 -to bPCI_P46
-set_location_assignment PIN_T15 -to bPCI_P45
-set_location_assignment PIN_P14 -to bPCI_P44
-set_location_assignment PIN_R13 -to bPCI_P42
-set_location_assignment PIN_B9 -to bPCI_P33
-set_location_assignment PIN_F13 -to bPCI_P32
-set_location_assignment PIN_A9 -to bPCI_P31
-set_location_assignment PIN_R12 -to bPCI_P30
-set_location_assignment PIN_T13 -to bPCI_P28
-set_location_assignment PIN_R9 -to bPCI_P25
-set_location_assignment PIN_T9 -to bPCI_P23
 set_global_assignment -name VHDL_FILE audiomixer_36ch.vhd
 set_global_assignment -name VHDL_FILE tdm_tx.vhd
 set_global_assignment -name VHDL_FILE tdm_rx2.vhd
